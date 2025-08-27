@@ -30,13 +30,16 @@
           <q-input
             filled
             v-model="form.etapasIntervencion"
-            label="Etapas de la intervención"
+            label="5.2 Establecimiento de los cursos de acción (etapas de la intervención).- Defina el espacio y tiempo de las actividades
+(procesos) a realizar, los insumos, los tipos o montos de los apoyos a entregar, la cobertura que se pretende alcanzar
+y/o los mecanismos de selección de los beneficiarios."
             type="textarea"
           />
           <q-input
             filled
             v-model="form.escenariosFuturosEsperar"
-            label="Escenarios futuros a esperar"
+            label="5.3 Definir escenarios futuros a esperar.- Narrativa de los resultados que se esperan lograr a mediano y largo plazo con
+la intervención pública a través del programa."
             type="textarea"
           />
         </q-card-section>
@@ -185,7 +188,7 @@ async function submitForm() {
   loading.value = true
   try {
     await api.post('/DisenoIntervencionPublica', form.value)
-    router.push('/resumen-final') // Última pantalla del flujo
+    router.push('/formulario-programa-social') // Última pantalla del flujo
   } catch (error) {
     Notify.create({
       type: 'negative',

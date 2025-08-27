@@ -69,7 +69,7 @@ async function guardarReglasOperacion() {
     })
 
     // Aquí decides si redirigir a otro formulario
-    router.push('/siguienteformulario')
+    router.push('/PoblacionAreaEnfoquePotencial')
   } catch (error) {
     console.error(error)
     Notify.create({

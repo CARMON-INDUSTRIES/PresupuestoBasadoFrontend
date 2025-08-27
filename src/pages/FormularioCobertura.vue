@@ -11,13 +11,16 @@
           <q-input
             filled
             v-model="form.identificacionCaracterizacionPoblacionPotencial"
-            label="4.1 Identificación y caracterización de la población potencial"
+            label="4.1 Identificación y caracterización de la población potencial.- Identifique y especifique la población o área de enfoque
+que presenta la necesidad y/o problema (Debe incluir sus características particulares, socioeconómicas y/o demográficas)."
             type="textarea"
           />
           <q-input
             filled
             v-model="form.identificacionCaracterizacionPoblacionObjetivo"
-            label="4.2 Identificación y caracterización de la población objetivo"
+            label="4.2 Identificación y caracterización de la población objetivo.- Identifique y especifique la población o área de enfoque
+que el programa tiene planeado o programado atender durante el ejercicio fiscal. Debe incluir sus características
+particulares, socioeconómicas y/o demográficas."
             type="textarea"
           />
 

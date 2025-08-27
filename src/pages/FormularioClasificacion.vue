@@ -59,7 +59,7 @@ async function submitForm() {
   loading.value = true
   try {
     await api.post('/ClasificacionFuncional', form.value)
-    router.push('/resumen-final')
+    router.push('/formulario-antecedente')
   } catch (error) {
     Notify.create({
       type: 'negative',

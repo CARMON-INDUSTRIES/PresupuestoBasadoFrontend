@@ -14,7 +14,7 @@ const routes = [
   },
   {
     path: '/formulario-alineacion',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -25,7 +25,7 @@ const routes = [
   },
   {
     path: '/formulario-justificacion',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -36,7 +36,7 @@ const routes = [
   },
   {
     path: '/formulario-poblacion',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -47,7 +47,7 @@ const routes = [
   },
   {
     path: '/formulario-entorno',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -58,7 +58,7 @@ const routes = [
   },
   {
     path: '/resumen-final',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -69,7 +69,7 @@ const routes = [
   },
   {
     path: '/registro-usuario',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -80,7 +80,7 @@ const routes = [
   },
   {
     path: '/formulario-ramo',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -91,7 +91,7 @@ const routes = [
   },
   {
     path: '/formulario-clasificacion',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -102,7 +102,7 @@ const routes = [
   },
   {
     path: '/formulario-antecedente',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -113,7 +113,7 @@ const routes = [
   },
   {
     path: '/formulario-identificacion-problema',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -124,7 +124,7 @@ const routes = [
   },
   {
     path: '/formulario-determinacion-justificacion',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -135,7 +135,7 @@ const routes = [
   },
   {
     path: '/formulario-cobertura',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -146,7 +146,7 @@ const routes = [
   },
   {
     path: '/formulario-diseno-intervencion',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -157,7 +157,7 @@ const routes = [
   },
   {
     path: '/formulario-programa-social',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -168,7 +168,7 @@ const routes = [
   },
   {
     path: '/formulario-padron-beneficiarios',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
@@ -179,11 +179,55 @@ const routes = [
   },
   {
     path: '/formulario-reglas-operacion',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {
         path: '',
         component: () => import('pages/FormularioReglasOperacion.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+  {
+    path: '/PoblacionAreaEnfoquePotencial',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/PoblacionAreaEnfoquePotencial.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+  {
+    path: '/FormularioAnalisisInvolucrados',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/FormularioAnalisisInvolucrados.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+  {
+    path: '/resumenes',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/ResumenesFormularios.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+  {
+    path: '/Formulario-arbol-problemas',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/FormularioArbolProblemas.vue'),
         meta: { requiresAuth: true },
       },
     ],

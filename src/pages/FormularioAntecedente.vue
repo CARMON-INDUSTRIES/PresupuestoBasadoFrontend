@@ -10,8 +10,8 @@
           <q-input
             filled
             v-model="form.descripcionPrograma"
-            label="1.1 Identifique y describa el entorno en el que operará el programa, considerando la situación, problema o necesidad de
-                  llevar a cabo una intervención pública."
+            label="1.1 Identifique y describa el entorno en el que operará el programa, considerando la situación,
+            problema o necesidad de llevar a cabo una intervención pública."
             type="textarea"
           />
           <q-input
