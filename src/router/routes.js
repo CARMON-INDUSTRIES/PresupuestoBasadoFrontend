@@ -232,6 +232,17 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/Formulario-arbol-objetivos',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/FormularioArbolObjetivos.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
 ]
 
 export default routes

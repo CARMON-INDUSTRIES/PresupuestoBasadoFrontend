@@ -88,6 +88,9 @@ import { ref, onMounted, computed } from 'vue'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 import html2pdf from 'html2pdf.js'
+//import { useRouter } from 'vue-router'
+
+//const router = useRouter()
 
 const resumen = ref({
   identificacion: null,
@@ -113,6 +116,7 @@ async function cargarDatos() {
       efectoSuperior: efectoRes.data,
     }
 
+    //router.push('/formulario-arbol-objetivos')
     console.log('✅ Datos Anexo 4:', resumen.value)
   } catch (err) {
     console.error('❌ Error al cargar Anexo 4:', err)
