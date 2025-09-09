@@ -243,6 +243,50 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/Formulario-analisis-alternativas',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/FormularioAnalisisAlternativas.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+  {
+    path: '/Formulario-estructura-analitica',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/FormularioEstructuraAnalitica.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+  {
+    path: '/Formulario-matriz-indicadores',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/FormularioMatrizIndicadores.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+  {
+    path: '/Formulario-ficha-tecnica-1',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/FormularioFichaTecnica1.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
 ]
 
 export default routes

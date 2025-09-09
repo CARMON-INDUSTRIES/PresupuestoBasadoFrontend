@@ -6,6 +6,86 @@
       </q-card-section>
 
       <q-card-section class="q-gutter-md">
+        <!-- FILA: Fin -->
+        <div class="row justify-center q-mt-lg">
+          <div class="col-12 col-md-8">
+            <q-card flat bordered class="q-pa-md text-center">
+              <div class="text-subtitle2">Fin (Efecto Superior en positivo)</div>
+              <q-input v-model="arbolObjetivos.fin" filled type="textarea" autogrow />
+              <div class="text-caption text-grey-7 q-mt-xs">
+                Basado en: {{ arbolProblemas.efectoSuperior?.descripcion || '—' }}
+              </div>
+              <div class="flecha-down"></div>
+            </q-card>
+          </div>
+        </div>
+
+        <!-- FILA: Efectos -->
+        <div class="row justify-around q-col-gutter-lg q-mt-md">
+          <div
+            v-for="(comp, cIndex) in arbolObjetivos.componentes"
+            :key="'res-' + cIndex"
+            class="col-12 col-md-3"
+          >
+            <q-card flat bordered class="q-pa-sm text-center relative-position">
+              <div class="text-subtitle2">Efectos</div>
+              <div
+                v-for="(res, rIndex) in comp.resultados"
+                :key="'resultado-' + cIndex + '-' + rIndex"
+                class="q-mb-sm"
+              >
+                <q-input
+                  v-model="arbolObjetivos.componentes[cIndex].resultados[rIndex]"
+                  filled
+                  :label="`Efecto ${rIndex + 1}`"
+                  autogrow
+                />
+                <div class="text-caption text-grey-7">
+                  Basado en: {{ arbolProblemas.componentes[cIndex]?.resultados?.[rIndex] || '—' }}
+                </div>
+              </div>
+              <div class="flecha-down"></div>
+            </q-card>
+          </div>
+        </div>
+
+        <!-- FILA: Objetivo Central -->
+        <div class="row justify-center q-mt-lg">
+          <div class="col-12 col-md-8">
+            <q-card flat bordered class="q-pa-md text-center relative-position">
+              <div class="text-subtitle2">Objetivo Central</div>
+              <q-input v-model="arbolObjetivos.objetivoCentral" filled type="textarea" autogrow />
+              <div class="text-caption text-grey-7 q-mt-xs">
+                Basado en: {{ arbolProblemas.problemaCentral?.problemaCentral || '—' }}
+              </div>
+              <div class="flecha-down"></div>
+            </q-card>
+          </div>
+        </div>
+
+        <!-- FILA: Componentes -->
+        <div class="row justify-around q-col-gutter-lg q-mt-lg">
+          <div
+            v-for="(comp, cIndex) in arbolObjetivos.componentes"
+            :key="'comp-' + cIndex"
+            class="col-12 col-md-3"
+          >
+            <q-card flat bordered class="q-pa-sm text-center relative-position">
+              <div class="text-subtitle2">Componente {{ cIndex + 1 }}</div>
+              <q-input
+                v-model="arbolObjetivos.componentes[cIndex].nombre"
+                filled
+                label="Nombre en positivo"
+                autogrow
+              />
+              <div class="text-caption text-grey-7 q-mt-xs">
+                Basado en: {{ arbolProblemas.componentes[cIndex]?.nombre || '—' }}
+              </div>
+              <div class="flecha-down"></div>
+            </q-card>
+          </div>
+        </div>
+
         <!-- FILA: Medios -->
         <div class="row justify-around q-col-gutter-lg q-mt-md">
           <div
@@ -30,86 +110,6 @@
                   Basado en: {{ arbolProblemas.componentes[cIndex]?.acciones?.[mIndex] || '—' }}
                 </div>
               </div>
-              <div class="flecha-up"></div>
-            </q-card>
-          </div>
-        </div>
-
-        <!-- FILA: Componentes -->
-        <div class="row justify-around q-col-gutter-lg q-mt-lg">
-          <div
-            v-for="(comp, cIndex) in arbolObjetivos.componentes"
-            :key="'comp-' + cIndex"
-            class="col-12 col-md-3"
-          >
-            <q-card flat bordered class="q-pa-sm text-center relative-position">
-              <div class="text-subtitle2">Componente {{ cIndex + 1 }}</div>
-              <q-input
-                v-model="arbolObjetivos.componentes[cIndex].nombre"
-                filled
-                label="Nombre en positivo"
-                autogrow
-              />
-              <div class="text-caption text-grey-7 q-mt-xs">
-                Basado en: {{ arbolProblemas.componentes[cIndex]?.nombre || '—' }}
-              </div>
-              <div class="flecha-up"></div>
-            </q-card>
-          </div>
-        </div>
-
-        <!-- FILA: Objetivo Central -->
-        <div class="row justify-center q-mt-lg">
-          <div class="col-12 col-md-8">
-            <q-card flat bordered class="q-pa-md text-center relative-position">
-              <div class="text-subtitle2">Objetivo Central</div>
-              <q-input v-model="arbolObjetivos.objetivoCentral" filled type="textarea" autogrow />
-              <div class="text-caption text-grey-7 q-mt-xs">
-                Basado en: {{ arbolProblemas.problemaCentral?.problemaCentral || '—' }}
-              </div>
-              <div class="flecha-up"></div>
-            </q-card>
-          </div>
-        </div>
-
-        <!-- FILA: Resultados -->
-        <div class="row justify-around q-col-gutter-lg q-mt-md">
-          <div
-            v-for="(comp, cIndex) in arbolObjetivos.componentes"
-            :key="'res-' + cIndex"
-            class="col-12 col-md-3"
-          >
-            <q-card flat bordered class="q-pa-sm text-center relative-position">
-              <div class="text-subtitle2">Resultados</div>
-              <div
-                v-for="(res, rIndex) in comp.resultados"
-                :key="'resultado-' + cIndex + '-' + rIndex"
-                class="q-mb-sm"
-              >
-                <q-input
-                  v-model="arbolObjetivos.componentes[cIndex].resultados[rIndex]"
-                  filled
-                  :label="`Resultado ${rIndex + 1}`"
-                  autogrow
-                />
-                <div class="text-caption text-grey-7">
-                  Basado en: {{ arbolProblemas.componentes[cIndex]?.resultados?.[rIndex] || '—' }}
-                </div>
-              </div>
-              <div class="flecha-up"></div>
-            </q-card>
-          </div>
-        </div>
-
-        <!-- FILA: Fin -->
-        <div class="row justify-center q-mt-lg">
-          <div class="col-12 col-md-8">
-            <q-card flat bordered class="q-pa-md text-center">
-              <div class="text-subtitle2">Fin (Efecto Superior en positivo)</div>
-              <q-input v-model="arbolObjetivos.fin" filled type="textarea" autogrow />
-              <div class="text-caption text-grey-7 q-mt-xs">
-                Basado en: {{ arbolProblemas.efectoSuperior?.descripcion || '—' }}
-              </div>
             </q-card>
           </div>
         </div>
@@ -123,12 +123,12 @@
 </template>
 
 <style scoped>
-.flecha-up {
+.flecha-down {
   width: 0;
   height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-bottom: 12px solid gray;
+  border-top: 12px solid gray;
   margin: 8px auto 0 auto;
 }
 </style>

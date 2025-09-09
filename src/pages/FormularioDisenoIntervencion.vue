@@ -23,7 +23,7 @@
                 }}
               </div>
               <div><strong>Acciones:</strong> {{ comp.acciones.join(', ') }}</div>
-              <div><strong>Resultados:</strong> {{ comp.resultados.join(', ') }}</div>
+              <div><strong>Efectos:</strong> {{ comp.resultados.join(', ') }}</div>
             </div>
           </div>
 
@@ -103,7 +103,7 @@ la intervención pública a través del programa."
 
           <!-- Resultados -->
           <div>
-            <div class="text-subtitle2 q-mb-sm">Resultados</div>
+            <div class="text-subtitle2 q-mb-sm">Efectos</div>
             <div
               v-for="(resultado, idx) in nuevoComponente.resultados"
               :key="'r' + idx"
@@ -114,7 +114,7 @@ la intervención pública a través del programa."
                 filled
                 dense
                 class="col"
-                placeholder="Resultado"
+                placeholder="Efecto"
               />
               <q-btn
                 dense
@@ -128,7 +128,7 @@ la intervención pública a través del programa."
             <q-btn
               flat
               icon="add"
-              label="Agregar resultado"
+              label="Agregar efecto"
               @click="nuevoComponente.resultados.push('')"
             />
           </div>

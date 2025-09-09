@@ -18,7 +18,7 @@
 
         <!-- RESULTADOS -->
         <div class="nivel resultados" v-if="hayResultados">
-          <div class="label text-black">Resultados</div>
+          <div class="label text-black">Efectos</div>
           <div class="fila">
             <div
               v-for="(comp, idx) in resumen.disenio?.componentes || []"
