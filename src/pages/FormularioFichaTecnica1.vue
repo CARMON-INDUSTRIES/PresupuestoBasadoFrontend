@@ -45,7 +45,7 @@
             flat
             class="q-ma-xs"
             :color="indiceSeleccionado === index ? 'primary' : 'grey-7'"
-            text-color="black"
+            text-color="white"
             @click="indiceSeleccionado = index"
           />
         </div>
@@ -60,7 +60,7 @@
             <span class="text-caption text-grey-7">(Nivel: {{ indicadorActivo.nivel }})</span>
           </div>
 
-          <!-- 🔥 Ahora todos los niveles tienen los mismos campos -->
+          <!-- 🔥 Campos para todos los niveles -->
           <q-select
             v-model="indicadorActivo.dimension"
             :options="dimensiones"
@@ -78,7 +78,7 @@
           <q-input
             v-model="indicadorActivo.definicion"
             type="textarea"
-            label="Definición (Qué mide y para qué lo mide)"
+            label="Definición"
             filled
             autogrow
             class="q-mb-md"
@@ -112,6 +112,49 @@
         </q-card>
       </q-card-section>
 
+      <!-- ====== DETERMINACIÓN DE METAS ====== -->
+      <q-card-section v-if="indicadorActivo">
+        <div class="text-h6 q-mb-md">III. Determinación de Metas</div>
+        <q-form @submit.prevent="agregarMeta">
+          <div class="row q-col-gutter-md">
+            <div class="col-4">
+              <q-input v-model="nuevaMeta.metaProgramada" label="Meta programada" filled />
+            </div>
+            <div class="col-3">
+              <q-input v-model.number="nuevaMeta.cantidad" label="Cantidad" type="number" filled />
+            </div>
+            <div class="col-3">
+              <q-select
+                v-model="nuevaMeta.periodoCumplimiento"
+                :options="periodos"
+                label="Periodo de cumplimiento"
+                filled
+              />
+            </div>
+            <div class="col-2 flex flex-center">
+              <q-btn color="primary" label="Agregar" type="submit" />
+            </div>
+          </div>
+        </q-form>
+
+        <q-markup-table flat bordered class="q-mt-md" v-if="metas.length">
+          <thead>
+            <tr>
+              <th>Meta Programada</th>
+              <th>Cantidad</th>
+              <th>Periodo de Cumplimiento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(meta, index) in metas" :key="'meta-' + index">
+              <td>{{ meta.metaProgramada }}</td>
+              <td>{{ meta.cantidad }}</td>
+              <td>{{ meta.periodoCumplimiento }}</td>
+            </tr>
+          </tbody>
+        </q-markup-table>
+      </q-card-section>
+
       <!-- Botones -->
       <q-card-actions align="right" v-if="indicadores.length">
         <q-btn color="primary" label="Guardar y Continuar" @click="guardar" />
@@ -130,10 +173,18 @@ const claveIndicador = ref('')
 const tipoIndicador = ref('')
 const indicadores = ref([])
 const indiceSeleccionado = ref(0)
+const metas = ref([])
 
 const dimensiones = ['Eficiencia', 'Eficacia', 'Calidad', 'Economía']
 const sentidos = ['Ascendente', 'Descendente']
 const frecuencias = ['Mensual', 'Trimestral', 'Semestral', 'Anual']
+const periodos = ['Primer trimestre', 'Segundo trimestre', 'Tercer trimestre', 'Cuarto trimestre']
+
+const nuevaMeta = ref({
+  metaProgramada: '',
+  cantidad: null,
+  periodoCumplimiento: '',
+})
 
 const indicadorActivo = computed(() => indicadores.value[indiceSeleccionado.value] || null)
 
@@ -157,7 +208,7 @@ onMounted(async () => {
         unidadMedida: '',
         rangoValor: '',
         frecuenciaMedicion: '',
-        cobertura: 'Municipal', // siempre fijo
+        cobertura: 'Municipal',
       }
     })
 
@@ -167,12 +218,26 @@ onMounted(async () => {
         nivelActual === 'fin' || nivelActual === 'propósito' ? 'Estratégico' : 'De Gestión'
     }
 
-    claveIndicador.value = '' // Generar más adelante
+    claveIndicador.value = ''
   } catch (error) {
     console.error('❌ Error al cargar datos:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar datos' })
   }
 })
+
+function agregarMeta() {
+  if (
+    !nuevaMeta.value.metaProgramada ||
+    !nuevaMeta.value.cantidad ||
+    !nuevaMeta.value.periodoCumplimiento
+  ) {
+    Notify.create({ type: 'warning', message: 'Completa todos los campos de la meta' })
+    return
+  }
+  metas.value.push({ ...nuevaMeta.value })
+  nuevaMeta.value = { metaProgramada: '', cantidad: null, periodoCumplimiento: '' }
+  Notify.create({ type: 'positive', message: 'Meta agregada' })
+}
 
 function guardar() {
   console.log('Datos a guardar:', {
@@ -180,6 +245,7 @@ function guardar() {
     claveIndicador: claveIndicador.value,
     tipoIndicador: tipoIndicador.value,
     indicadores: indicadores.value,
+    metas: metas.value,
   })
   Notify.create({ type: 'positive', message: 'Datos guardados (simulación)' })
 }
