@@ -1,9 +1,14 @@
-// src/boot/api.js
 import axios from 'axios'
+
+// Detecta si estás en desarrollo o producción
+const baseURL =
+  process.env.NODE_ENV === 'development'
+    ? 'https://localhost:7125/api' // localhost para pruebas
+    : 'https://presupuestobr2025.somee.com/api' // producción en Somee
 
 // Configura instancia
 const api = axios.create({
-  baseURL: 'https://localhost:7125/api',
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
