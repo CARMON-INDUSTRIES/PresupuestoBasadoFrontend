@@ -38,10 +38,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Notify } from 'quasar'
-import { useRouter } from 'vue-router' // 👈 import router
+import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
-const router = useRouter() // 👈 inicializamos router
+const router = useRouter()
 
 const columns = [
   {
@@ -80,8 +80,14 @@ onMounted(async () => {
 
     const efectos = componentesProblema.flatMap((c) => c.resultados || [])
     const fines = componentesObjetivo.flatMap((c) => c.resultados || [])
-    const causas = componentesProblema.flatMap((c) => c.acciones || [])
-    const medios = componentesObjetivo.flatMap((c) => c.medios || [])
+
+    // 🔹 Aseguramos que cada causa y medio sea representable como texto
+    const causas = componentesProblema.flatMap((c) =>
+      (c.acciones || []).map((a) => a?.nombre || a?.descripcion || JSON.stringify(a)),
+    )
+    const medios = componentesObjetivo.flatMap((c) =>
+      (c.medios || []).map((m) => m?.nombre || m?.descripcion || JSON.stringify(m)),
+    )
 
     const magnitudLineaBase = coberturaRes.data?.cuantificacionPoblacionAtendidaAnterior || '—'
     const magnitudResultadoEsperado =
@@ -115,7 +121,6 @@ onMounted(async () => {
   }
 })
 
-// 👇 función para redirigir
 function irAMatrizIndicadores() {
   router.push('/formulario-matriz-indicadores')
 }
