@@ -1,10 +1,12 @@
 <template>
-  <q-page padding>
+  <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="guardarReglasOperacion" class="q-gutter-md">
-      <!-- Pregunta principal -->
-      <q-card flat bordered class="q-pa-md">
+      <!-- Card principal -->
+      <q-card flat bordered class="q-pa-md bg-white">
         <q-card-section>
-          <div class="text-h6">¿Tiene reglas de operación?</div>
+          <div class="form-title">¿Tiene reglas de operación?</div>
+
+          <!-- Sí / No -->
           <q-option-group
             v-model="form.tieneReglasOperacion"
             :options="[
@@ -12,21 +14,50 @@
               { label: 'No', value: false },
             ]"
             type="radio"
+            inline
+            color="primary"
           />
-        </q-card-section>
-      </q-card>
 
-      <!-- Campos adicionales -->
-      <q-card v-if="form.tieneReglasOperacion" flat bordered class="q-pa-md">
-        <q-card-section>
-          <q-input filled type="file" label="Archivo adjunto" @change="onFileChange" />
-          <q-input v-model="form.ligaInternet" filled label="Liga de internet" type="url" />
+          <!-- Campos solo si tiene reglas de operación -->
+          <div v-if="form.tieneReglasOperacion" class="q-mt-md">
+            <q-file
+              filled
+              v-model="archivoSeleccionado"
+              label="Archivo adjunto"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg"
+              counter
+            >
+              <template v-slot:prepend>
+                <q-icon name="attach_file" />
+              </template>
+            </q-file>
+
+            <q-input
+              filled
+              v-model="form.ligaInternet"
+              label="Liga de internet"
+              type="url"
+              class="q-mt-md"
+            >
+              <template v-slot:prepend>
+                <q-icon name="link" />
+              </template>
+            </q-input>
+          </div>
         </q-card-section>
       </q-card>
 
       <!-- Botón Guardar -->
       <q-card-actions align="right">
-        <q-btn label="Guardar" color="primary" type="submit" />
+        <q-btn
+          label="Guardar"
+          color="primary"
+          text-color="white"
+          type="submit"
+          rounded
+          unelevated
+          class="submit-btn"
+        />
       </q-card-actions>
     </q-form>
   </q-page>
@@ -42,33 +73,34 @@ const router = useRouter()
 
 const form = ref({
   tieneReglasOperacion: null,
-  archivoAdjunto: '',
   ligaInternet: '',
 })
 
-function onFileChange(e) {
-  const file = e.target.files[0]
-  if (file) {
-    form.value.archivoAdjunto = file.name // temporal, luego será URL Cloudinary
-  }
-}
+const archivoSeleccionado = ref(null)
 
 async function guardarReglasOperacion() {
   try {
-    const payload = {
-      tieneReglasOperacion: form.value.tieneReglasOperacion,
-      archivoAdjunto: form.value.archivoAdjunto,
-      ligaInternet: form.value.ligaInternet,
+    const fd = new FormData()
+    fd.append('TieneReglasOperacion', form.value.tieneReglasOperacion)
+    fd.append('LigaInternet', form.value.ligaInternet || '')
+
+    if (archivoSeleccionado.value) {
+      const file =
+        archivoSeleccionado.value instanceof File
+          ? archivoSeleccionado.value
+          : archivoSeleccionado.value.file || archivoSeleccionado.value
+      fd.append('Archivo', file)
     }
 
-    await api.post('/ReglasOperacion', payload)
+    await api.post('/ReglasOperacion', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
 
     Notify.create({
       type: 'positive',
       message: 'Reglas de operación guardadas correctamente',
     })
 
-    // Aquí decides si redirigir a otro formulario
     router.push('/PoblacionAreaEnfoquePotencial')
   } catch (error) {
     console.error(error)
@@ -79,3 +111,16 @@ async function guardarReglasOperacion() {
   }
 }
 </script>
+
+<style scoped>
+.form-title {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding: 12px 40px;
+}
+</style>

@@ -1,10 +1,10 @@
 <template>
-  <q-page padding>
+  <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="guardarProgramaSocial" class="q-gutter-md">
       <!-- Pregunta principal -->
       <q-card flat bordered class="q-pa-md">
         <q-card-section>
-          <div class="text-h6">¿Es un programa social?</div>
+          <div class="form-title">¿Es un programa social?</div>
           <q-option-group
             v-model="form.esProgramaSocial"
             :options="[
@@ -12,6 +12,8 @@
               { label: 'No', value: false },
             ]"
             type="radio"
+            inline
+            color="primary"
           />
         </q-card-section>
       </q-card>
@@ -23,10 +25,8 @@
           <q-separator spaced />
 
           <div v-for="cat in categorias" :key="cat.nombre" class="q-mb-md">
-            <!-- Toggle para seleccionar/desseleccionar categoría -->
             <q-toggle v-model="cat.seleccionado" :label="cat.nombre" color="primary" />
 
-            <!-- Selección Directo/Indirecto -->
             <div v-if="cat.seleccionado" class="q-mt-sm">
               <q-option-group
                 v-model="cat.tipo"
@@ -35,6 +35,8 @@
                   { label: 'Indirecto', value: 'Indirecto' },
                 ]"
                 type="radio"
+                color="primary"
+                inline
               />
             </div>
 
@@ -45,7 +47,15 @@
 
       <!-- Botón Guardar -->
       <q-card-actions align="right">
-        <q-btn label="Guardar" color="primary" type="submit" />
+        <q-btn
+          label="Continuar"
+          color="primary"
+          text-color="white"
+          type="submit"
+          rounded
+          unelevated
+          class="submit-btn"
+        />
       </q-card-actions>
     </q-form>
   </q-page>
@@ -59,12 +69,10 @@ import api from 'src/boot/api'
 
 const router = useRouter()
 
-// Form principal
 const form = ref({
   esProgramaSocial: null,
 })
 
-// Lista de categorías con nombre y tipo
 const categorias = ref([
   { nombre: 'Alimentación', tipo: '', seleccionado: false },
   { nombre: 'Educación', tipo: '', seleccionado: false },
@@ -96,7 +104,6 @@ async function guardarProgramaSocial() {
       message: 'Programa social guardado correctamente',
     })
 
-    // Redirigir a Padrón de Beneficiarios
     router.push('/formulario-padron-beneficiarios')
   } catch (error) {
     console.error(error)
@@ -107,3 +114,20 @@ async function guardarProgramaSocial() {
   }
 }
 </script>
+
+<style scoped>
+.form-title {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* Botón guardar */
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+</style>

@@ -31,7 +31,7 @@
               <div class="text-subtitle2">Efectos</div>
               <div
                 v-for="(res, rIndex) in comp.resultados"
-                :key="'resultado-' + cIndex + '-' + rIndex"
+                :key="'resultados-' + cIndex + '-' + rIndex"
                 class="q-mb-sm"
               >
                 <q-input
@@ -107,7 +107,8 @@
                   autogrow
                 />
                 <div class="text-caption text-grey-7">
-                  Basado en: {{ arbolProblemas.componentes[cIndex]?.acciones?.[mIndex] || '—' }}
+                  Basado en:
+                  {{ arbolProblemas.componentes[cIndex]?.acciones?.[mIndex]?.descripcion || '—' }}
                 </div>
               </div>
             </q-card>
@@ -122,35 +123,31 @@
   </q-page>
 </template>
 
-<style scoped>
-.flecha-down {
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 12px solid gray;
-  margin: 8px auto 0 auto;
-}
-</style>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Notify } from 'quasar'
+import { useRouter } from 'vue-router' // 👈 importamos router
 import api from 'src/boot/api'
 
+const router = useRouter() // 👈 inicializamos router
 const loading = ref(false)
 
 const arbolProblemas = ref({
   efectoSuperior: null,
   problemaCentral: null,
-  componentes: [], // [{ nombre, acciones:[], resultados:[] }]
+  componentes: [],
 })
 
 const arbolObjetivos = ref({
   fin: '',
   objetivoCentral: '',
-  componentes: [], // [{ nombre, medios:[], resultados:[] }]
+  componentes: [],
 })
+
+function itemToString(item) {
+  if (!item) return ''
+  return typeof item === 'string' ? item : (item.descripcion ?? '')
+}
 
 onMounted(async () => {
   try {
@@ -160,7 +157,6 @@ onMounted(async () => {
       api.get('/DisenoIntervencionPublica/ultimo'),
     ])
 
-    // Normalizamos 'componentes' (puede venir como objeto o como {componentes:[]})
     const compSrc = Array.isArray(disenoRes.data?.componentes)
       ? disenoRes.data.componentes
       : Array.isArray(disenoRes.data)
@@ -170,7 +166,7 @@ onMounted(async () => {
     const componentesProblema = compSrc.map((c) => ({
       nombre: c?.nombre ?? '',
       acciones: Array.isArray(c?.acciones) ? c.acciones : [],
-      resultados: Array.isArray(c?.resultados) ? c.resultados : [],
+      resultados: c?.resultado ? [itemToString(c.resultado)] : [],
     }))
 
     arbolProblemas.value = {
@@ -179,14 +175,13 @@ onMounted(async () => {
       componentes: componentesProblema,
     }
 
-    // Construimos espejo para objetivos: medios = acciones (positivizadas por el usuario)
     arbolObjetivos.value = {
       fin: '',
       objetivoCentral: '',
       componentes: componentesProblema.map((c) => ({
         nombre: '',
-        medios: c.acciones.map(() => ''), // ✅ existe siempre (array)
-        resultados: c.resultados.map(() => ''), // ✅ existe siempre (array)
+        medios: c.acciones.map(() => ''),
+        resultados: c.resultados.map(() => ''),
       })),
     }
   } catch (error) {
@@ -210,6 +205,9 @@ async function guardar() {
 
     await api.post('/ArbolObjetivos', payload)
     Notify.create({ type: 'positive', message: 'Árbol de Objetivos guardado' })
+
+    // 👇 redirigir a la siguiente pantalla
+    router.push('/formulario-analisis-alternativas')
   } catch (error) {
     console.error('❌ Error al guardar:', error)
     Notify.create({ type: 'negative', message: 'Error al guardar el árbol de objetivos' })

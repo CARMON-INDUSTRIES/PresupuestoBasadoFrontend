@@ -2,7 +2,7 @@
   <q-page padding style="background-color: #691b31">
     <q-card flat bordered class="q-pa-lg" style="max-width: 900px; margin: auto">
       <q-card-section>
-        <div class="text-h5 text-center">Anexo 3 - Definición del Problema</div>
+        <div class="form-title text-center">Definición del Problema</div>
       </q-card-section>
 
       <!-- ================= DATOS MOSTRADOS ================= -->
@@ -14,6 +14,7 @@
             label="Problema Central o Propósito (2.1)"
             filled
             readonly
+            rounded
           />
         </div>
 
@@ -24,6 +25,7 @@
             label="Población / Área de Enfoque Potencial (4.1)"
             filled
             readonly
+            rounded
           />
           <q-input
             class="col-6"
@@ -31,10 +33,24 @@
             label="Población / Área de Enfoque Objetivo (4.2)"
             filled
             readonly
+            rounded
           />
         </div>
 
         <div class="text-subtitle1 q-mb-sm">Magnitud del Problema</div>
+        <!-- NUEVO CAMPO: Unidad de Medida -->
+        <div class="row q-col-gutter-md q-mt-md">
+          <q-input
+            class="col-12"
+            :model-value="resumen.cobertura?.unidadMedida || ''"
+            label="Unidad de Medida"
+            filled
+            readonly
+            rounded
+          />
+        </div>
+        <br />
+
         <div class="row q-col-gutter-md">
           <q-input
             class="col-4"
@@ -42,6 +58,7 @@
             label="Población Potencial"
             filled
             readonly
+            rounded
           />
           <q-input
             class="col-4"
@@ -49,6 +66,7 @@
             label="Población Objetivo"
             filled
             readonly
+            rounded
           />
           <q-input
             class="col-4"
@@ -56,6 +74,7 @@
             label="Población Atendida Ejercicio Fiscal Anterior"
             filled
             readonly
+            rounded
           />
         </div>
       </q-card-section>
@@ -70,12 +89,22 @@
           type="textarea"
           label="Describa el efecto superior o fin"
           filled
-          autogrow
+          readonly
+          rounded
         />
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn color="primary" label="Guardar" :loading="loading" @click="guardarEfectoSuperior" />
+        <q-btn
+          color="primary"
+          label="Guardar"
+          text-color="white"
+          :loading="loading"
+          rounded
+          unelevated
+          class="submit-btn"
+          @click="guardarEfectoSuperior"
+        />
       </q-card-actions>
     </q-card>
   </q-page>
@@ -88,40 +117,32 @@ import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
 const router = useRouter()
-
-// Objeto con todos los datos que se traen de los endpoints /ultimo
-const resumen = ref({
-  identificacion: null,
-  cobertura: null,
-})
-
-// Campo editable (nuevo en Anexo 3)
+const resumen = ref({ identificacion: null, cobertura: null })
 const efectoSuperior = ref('')
-
-// Loading para el botón de guardar
 const loading = ref(false)
+const objetivoMunicipal = ref(null)
 
-// Cargar los datos cuando entra al componente
 onMounted(async () => {
   try {
-    const [identificacion, cobertura] = await Promise.allSettled([
+    const [identificacion, cobertura, alineacion] = await Promise.allSettled([
       api.get('/IdentificacionDescripcionProblema/ultimo'),
       api.get('/Cobertura/ultimo'),
+      api.get('/AlineacionMunicipio/ultimo'),
     ])
 
-    if (identificacion.status === 'fulfilled') {
+    if (identificacion.status === 'fulfilled')
       resumen.value.identificacion = identificacion.value.data
-    }
-    if (cobertura.status === 'fulfilled') {
-      resumen.value.cobertura = cobertura.value.data
+    if (cobertura.status === 'fulfilled') resumen.value.cobertura = cobertura.value.data
+    if (alineacion.status === 'fulfilled') {
+      objetivoMunicipal.value = alineacion.value.data?.objetivo || ''
+      efectoSuperior.value = objetivoMunicipal.value // se precarga aquí
     }
   } catch (error) {
-    console.error('❌ Error al cargar datos del Anexo 3:', error)
+    console.error(error)
     Notify.create({ type: 'negative', message: 'Error al cargar datos del Anexo 3' })
   }
 })
 
-// Guardar el nuevo campo
 async function guardarEfectoSuperior() {
   loading.value = true
   try {
@@ -130,10 +151,26 @@ async function guardarEfectoSuperior() {
     efectoSuperior.value = ''
     router.push('/FormularioAnalisisInvolucrados')
   } catch (error) {
-    console.error('❌ Error al guardar efecto superior:', error)
+    console.error(error)
     Notify.create({ type: 'negative', message: 'Error al guardar efecto superior' })
   } finally {
     loading.value = false
   }
 }
 </script>
+
+<style scoped>
+.form-title {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+</style>

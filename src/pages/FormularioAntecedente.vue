@@ -2,41 +2,74 @@
   <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="submitForm" class="q-gutter-md">
       <q-card flat bordered class="q-pa-md">
+        <!-- Título -->
         <q-card-section>
-          <div class="text-h6 text-black">1. Antecedentes</div>
+          <div class="form-title">Antecedentes</div>
+          <q-separator color="#691b31" spaced />
         </q-card-section>
 
+        <!-- Campos del formulario -->
         <q-card-section class="q-gutter-md">
           <q-input
             filled
             v-model="form.descripcionPrograma"
-            label="1.1 Identifique y describa el entorno en el que operará el programa, considerando la situación,
-            problema o necesidad de llevar a cabo una intervención pública."
+            label="1.1 Identifique y describa el entorno en el que operará el programa, considerando la situación, problema o necesidad de llevar a cabo una intervención pública."
             type="textarea"
-          />
+            rounded
+          >
+            <template v-slot:prepend>
+              <q-icon name="description" />
+            </template>
+          </q-input>
+
           <q-input
             filled
             v-model="form.contextoHistoricoNormativo"
-            label="1.2 Incorpore información estadística y cualitativa, que permita dimensionar y describir de manera general las acciones
-                  que se hayan realizado."
+            label="1.2 Incorpore información estadística y cualitativa, que permita dimensionar y describir de manera general las acciones que se hayan realizado."
             type="textarea"
-          />
+            rounded
+          >
+            <template v-slot:prepend>
+              <q-icon name="bar_chart" />
+            </template>
+          </q-input>
+
           <q-input
             filled
             v-model="form.problematicaOrigen"
             label="1.3 Identifique los actores que están involucrados con la atención a dicho problema o necesidad."
             type="textarea"
-          />
+            rounded
+          >
+            <template v-slot:prepend>
+              <q-icon name="group" />
+            </template>
+          </q-input>
+
           <q-input
             filled
             v-model="form.experienciasPrevias"
             label="1.4 Describa la evolución del programa señalando los resultados obtenidos."
             type="textarea"
-          />
+            rounded
+          >
+            <template v-slot:prepend>
+              <q-icon name="history" />
+            </template>
+          </q-input>
         </q-card-section>
 
+        <!-- Botón -->
         <q-card-actions align="right">
-          <q-btn color="primary" label="Guardar y continuar" type="submit" :loading="loading" />
+          <q-btn
+            color="primary"
+            label="Continuar"
+            type="submit"
+            rounded
+            unelevated
+            class="submit-btn"
+            :loading="loading"
+          />
         </q-card-actions>
       </q-card>
     </q-form>
@@ -79,5 +112,27 @@ async function submitForm() {
 .q-card {
   max-width: 800px;
   margin: auto;
+}
+
+/* Título más grande y destacado */
+.form-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #691b31;
+}
+
+/* Mayor redondez de bordes en todos los campos */
+.q-field__control {
+  border-radius: 12px;
+}
+
+/* Botón con tus valores definidos */
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>

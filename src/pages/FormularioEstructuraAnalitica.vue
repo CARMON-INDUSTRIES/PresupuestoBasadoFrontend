@@ -26,6 +26,11 @@
           </template>
         </q-table>
       </q-card-section>
+
+      <!-- 🔹 Botón continuar -->
+      <q-card-actions align="right" class="q-mt-md">
+        <q-btn color="primary" label="Continuar" rounded @click="irAMatrizIndicadores" />
+      </q-card-actions>
     </q-card>
   </q-page>
 </template>
@@ -33,7 +38,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Notify } from 'quasar'
+import { useRouter } from 'vue-router' // 👈 import router
 import api from 'src/boot/api'
+
+const router = useRouter() // 👈 inicializamos router
 
 const columns = [
   {
@@ -57,7 +65,6 @@ onMounted(async () => {
       api.get('/Cobertura/ultimo'),
     ])
 
-    // 🔹 Datos base
     const problemaCentral = problemaRes.data?.problemaCentral || '—'
     const fin = objetivoRes.data?.fin || efectoRes.data?.descripcion || '—'
 
@@ -80,7 +87,6 @@ onMounted(async () => {
     const magnitudResultadoEsperado =
       coberturaRes.data?.identificacionCaracterizacionPoblacionObjetivo || '—'
 
-    // 🔹 Tabla con filas separadas
     tabla.value = [
       {
         campo: 'central',
@@ -108,6 +114,11 @@ onMounted(async () => {
     Notify.create({ type: 'negative', message: 'Error al cargar datos del Anexo 7' })
   }
 })
+
+// 👇 función para redirigir
+function irAMatrizIndicadores() {
+  router.push('/formulario-matriz-indicadores')
+}
 </script>
 
 <style scoped>

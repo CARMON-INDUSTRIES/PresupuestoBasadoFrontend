@@ -1,10 +1,12 @@
 <template>
-  <q-page padding>
+  <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="guardarPadron" class="q-gutter-md">
-      <!-- Pregunta principal -->
-      <q-card flat bordered class="q-pa-md">
+      <!-- Card principal -->
+      <q-card flat bordered class="q-pa-md bg-white">
         <q-card-section>
-          <div class="text-h6">¿Cuenta con padrón de beneficiarios?</div>
+          <div class="form-title">¿Cuenta con padrón de beneficiarios?</div>
+
+          <!-- Campo radio para Sí/No -->
           <q-option-group
             v-model="form.tienePadron"
             :options="[
@@ -12,38 +14,59 @@
               { label: 'No', value: false },
             ]"
             type="radio"
+            inline
+            color="primary"
           />
-        </q-card-section>
-      </q-card>
 
-      <!-- Campos extra si es Sí -->
-      <q-card v-if="form.tienePadron" flat bordered class="q-pa-md">
-        <q-card-section>
-          <!-- Archivo adjunto -->
-          <q-file
-            filled
-            label="Adjuntar archivo"
-            v-model="archivo"
-            accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg"
-            @update:model-value="procesarArchivo"
-          >
-            <template v-slot:prepend>
-              <q-icon name="attach_file" />
-            </template>
-          </q-file>
+          <!-- Archivo solo si tiene padrón -->
+          <div v-if="form.tienePadron" class="q-mt-md">
+            <q-file
+              filled
+              v-model="archivoSeleccionado"
+              label="Adjuntar archivo"
+              placeholder="Selecciona un archivo"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg"
+              counter
+            >
+              <template v-slot:prepend>
+                <q-icon name="attach_file" />
+              </template>
+            </q-file>
 
-          <!-- Liga de internet -->
-          <q-input filled label="Liga de internet" v-model="form.ligaInternet" type="url">
-            <template v-slot:prepend>
-              <q-icon name="link" />
-            </template>
-          </q-input>
+            <!-- Previsualización del archivo -->
+            <div v-if="archivoSeleccionado" class="q-mt-sm text-caption text-grey-8">
+              Archivo seleccionado:
+              {{ archivoSeleccionado.name || archivoSeleccionado.file?.name }}
+            </div>
+
+            <!-- Liga de internet -->
+            <q-input
+              filled
+              v-model="form.ligaInternet"
+              label="Liga de internet"
+              type="url"
+              class="q-mt-md"
+            >
+              <template v-slot:prepend>
+                <q-icon name="link" />
+              </template>
+            </q-input>
+          </div>
         </q-card-section>
       </q-card>
 
       <!-- Botón Guardar -->
       <q-card-actions align="right">
-        <q-btn label="Guardar" color="primary" type="submit" />
+        <q-btn
+          :loading="subiendo"
+          label="Guardar"
+          color="primary"
+          text-color="white"
+          type="submit"
+          rounded
+          unelevated
+          class="submit-btn"
+        />
       </q-card-actions>
     </q-form>
   </q-page>
@@ -57,50 +80,63 @@ import api from 'src/boot/api'
 
 const router = useRouter()
 
+// Formulario
 const form = ref({
   tienePadron: null,
-  archivoAdjunto: '',
   ligaInternet: '',
 })
+const archivoSeleccionado = ref(null)
+const subiendo = ref(false) // estado de loading
 
-const archivo = ref(null)
-
-// Procesar archivo (Base64 por ahora)
-function procesarArchivo(file) {
-  if (!file) {
-    form.value.archivoAdjunto = ''
-    return
-  }
-  const reader = new FileReader()
-  reader.onload = () => {
-    form.value.archivoAdjunto = reader.result // Base64 temporal
-  }
-  reader.readAsDataURL(file)
-}
-
+// Guardar padrón usando FormData
 async function guardarPadron() {
+  subiendo.value = true
   try {
-    const payload = {
-      tienePadron: form.value.tienePadron,
-      archivoAdjunto: form.value.archivoAdjunto,
-      ligaInternet: form.value.ligaInternet,
+    const fd = new FormData()
+    fd.append('TienePadron', form.value.tienePadron)
+    fd.append('LigaInternet', form.value.ligaInternet || '')
+
+    if (archivoSeleccionado.value) {
+      const file =
+        archivoSeleccionado.value instanceof File
+          ? archivoSeleccionado.value
+          : archivoSeleccionado.value.file || archivoSeleccionado.value
+      fd.append('Archivo', file)
     }
 
-    await api.post('/PadronBeneficiarios', payload)
+    await api.post('/PadronBeneficiarios', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
 
     Notify.create({
       type: 'positive',
-      message: 'Padron de Beneficiarios guardadas correctamente',
+      message: 'Padrón de Beneficiarios guardado correctamente',
     })
 
-    // Aquí decides si redirigir a otro formulario
     router.push('/formulario-reglas-operacion')
   } catch (error) {
     console.error(error)
     Notify.create({
       type: 'negative',
-      message: 'Error al guardar Padron de Beneficiarios',
+      message: 'Error al guardar Padrón de Beneficiarios',
     })
+  } finally {
+    subiendo.value = false
   }
 }
 </script>
+
+<style scoped>
+.form-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+.bg-white {
+  background: white;
+}
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding: 12px 40px;
+}
+</style>

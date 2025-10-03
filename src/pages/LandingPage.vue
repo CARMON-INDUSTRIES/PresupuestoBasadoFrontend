@@ -2,15 +2,12 @@
   <q-page class="bg-grey-2 text-dark q-pa-none">
     <!-- Hero Section -->
     <div
-      class="q-pa-lg row items-center justify-between bg-primary text-white"
-      style="min-height: 50vh"
+      class="q-pa-lg row items-center justify-between text-white"
+      style="background-color: #691b31"
     >
       <div class="col-12 col-md-6 q-pr-xl from-left">
-        <h1 class="text-h3 text-weight-bold q-mb-sm">El sistema de gestión PbR que sí funciona</h1>
-        <p class="text-subtitle1 q-mb-md">
-          Optimiza el diseño, seguimiento y validación de la Matriz de Indicadores para Resultados
-          con un solo sistema digital.
-        </p>
+        <h1 class="text-h3 text-weight-bold q-mb-sm">El sistema de gestión PbR</h1>
+
         <q-btn
           label="Probar ahora"
           class="btn-hover color-2"
@@ -37,7 +34,7 @@
         <br />
       </div>
 
-      <div class="row q-col-gutter-xl items-center bg-grey">
+      <div class="row q-col-gutter-xl items-center bg-primary">
         <div class="col-12 col-md-6 from-left">
           <q-img src="/images/ventaja1.png" style="max-width: 70%" />
         </div>
@@ -45,7 +42,7 @@
           <h3 class="text-h6 text-weight-bold q-mb-sm">Uso intuitivo y accesible</h3>
           <p class="text-body1">
             Podrás capturar tus programas, componentes y actividades con facilidad desde cualquier
-            dispositivo. Ideal para enlaces institucionales y UTED.
+            dispositivo.
           </p>
           <q-btn label="Ver funcionalidades" flat color="secondary" class="q-mt-md" />
         </div>
@@ -53,12 +50,12 @@
     </div>
 
     <!-- Seguridad/Confiabilidad Section -->
-    <div class="q-px-xl q-py-xl row items-center bg-accent">
-      <div class="col-12 col-md-6 bg-accent from-left">
+    <div class="q-px-xl q-py-xl row items-center bg-secondary">
+      <div class="col-12 col-md-6 bg-secondary from-left text-white">
         <h3 class="text-h6 text-weight-bold q-mb-sm">Acceso seguro y confiable</h3>
         <p class="text-body1">
-          Cada usuario tiene permisos específicos según su rol: UTED, Enlace, Coordinador, etc. La
-          seguridad está garantizada a nivel de autenticación y permisos.
+          Cada usuario tiene permisos específicos según su rol: La seguridad está garantizada a
+          nivel de autenticación y permisos.
         </p>
       </div>
       <div class="col-12 col-md-6 from-right">

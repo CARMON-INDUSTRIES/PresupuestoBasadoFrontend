@@ -287,6 +287,39 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/Formulario-reglas-operacion-detalle',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/FormularioReglasOperacionDetalle.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+  {
+    path: '/registro-datos',
+    component: () => import('layouts/LoginLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/RegistroDatos.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+  {
+    path: '/programacion-metas',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/ProgramacionMetas.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
 ]
 
 export default routes

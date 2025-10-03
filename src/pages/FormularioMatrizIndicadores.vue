@@ -31,7 +31,7 @@
       <q-table flat bordered separator="cell" :rows="filas" :columns="columns" row-key="id">
         <template v-slot:body-cell="props">
           <q-td :props="props">
-            <!-- Columna NIVEL en gris -->
+            <!-- Columna NIVEL -->
             <template v-if="props.col.name === 'nivel'">
               <span class="text-grey-7">{{ props.row.nivel }}</span>
             </template>
@@ -40,9 +40,7 @@
             <template v-else-if="props.col.name === 'resumenNarrativo'">
               <div class="row items-center no-wrap">
                 <div class="col text-ellipsis">
-                  <span v-if="props.row.resumenNarrativo">
-                    {{ props.row.resumenNarrativo }}
-                  </span>
+                  <span v-if="props.row.resumenNarrativo">{{ props.row.resumenNarrativo }}</span>
                   <span v-else class="text-grey-6">Sin capturar</span>
                 </div>
                 <div class="col-auto">
@@ -58,18 +56,7 @@
               </div>
             </template>
 
-            <!-- Columnas editables -->
-            <template v-else-if="props.col.editable">
-              <q-input
-                v-model="props.row[props.col.name]"
-                dense
-                outlined
-                type="textarea"
-                autogrow
-              />
-            </template>
-
-            <!-- Fallback -->
+            <!-- Columnas de texto libre -->
             <template v-else>
               {{ props.row[props.col.name] }}
             </template>
@@ -77,23 +64,24 @@
         </template>
       </q-table>
 
-      <!-- ===== Botón Guardar y Siguiente ===== -->
+      <!-- ===== Botón Guardar MIR ===== -->
       <div class="q-mt-md text-right">
         <q-btn color="primary" label="Siguiente" :loading="loading" @click="guardarMatriz" />
       </div>
 
-      <!-- ===== Modal Resumen Narrativo ===== -->
+      <!-- ===== Modal Resumen Narrativo + Indicadores + Medios + Supuestos ===== -->
       <q-dialog v-model="modalVisible" persistent>
         <q-card style="min-width: 520px">
           <q-card-section class="q-pb-none">
-            <div class="text-h6">Resumen Narrativo — {{ filaSeleccionada?.nivel }}</div>
+            <div class="text-h6">Captura — {{ filaSeleccionada?.nivel }}</div>
             <div class="text-caption text-grey-7">
-              Complete los campos según la regla de sintaxis.
+              Complete los campos de acuerdo con la sintaxis y lineamientos.
             </div>
           </q-card-section>
 
           <q-card-section>
-            <div v-for="(campo, idx) in camposNarrativos" :key="idx" class="q-mb-md">
+            <!-- Resumen narrativo -->
+            <div class="q-mb-md" v-for="(campo, idx) in camposNarrativos" :key="idx">
               <q-input
                 v-model="camposNarrativos[idx]"
                 :label="labelsNarrativos[idx]"
@@ -101,6 +89,29 @@
                 autogrow
               />
             </div>
+
+            <!-- Indicadores -->
+            <q-input
+              v-model="indicadoresTemp"
+              label="Indicadores (solo nombre)"
+              type="textarea"
+              filled
+              autogrow
+              class="q-mb-md"
+            />
+
+            <!-- Medios de verificación -->
+            <q-input
+              v-model="mediosTemp"
+              label="Medios de verificación"
+              type="textarea"
+              filled
+              autogrow
+              class="q-mb-md"
+            />
+
+            <!-- Supuestos -->
+            <q-input v-model="supuestosTemp" label="Supuestos" type="textarea" filled autogrow />
           </q-card-section>
 
           <q-card-actions align="right">
@@ -122,79 +133,59 @@ import api from 'src/boot/api'
 const router = useRouter()
 const loading = ref(false)
 
-const usuario = ref({
-  nombreMatriz: '',
-  cargo: '',
-  unidadesPresupuestales: '',
-  programaSectorial: '',
-  programaPresupuestario: '',
-})
-
+const usuario = ref({})
 const filas = ref([])
+
+// Contador de IDs numéricas
+//let filaIdCounter = 1
+
+// Modal
 const modalVisible = ref(false)
 const filaSeleccionada = ref(null)
 const camposNarrativos = ref([])
 const labelsNarrativos = ref([])
+const indicadoresTemp = ref('')
+const mediosTemp = ref('')
+const supuestosTemp = ref('')
 
 const columns = [
   { name: 'nivel', label: 'Nivel', align: 'left' },
   { name: 'resumenNarrativo', label: 'Resumen Narrativo' },
-  { name: 'indicadores', label: 'Indicadores', editable: true },
-  { name: 'medios', label: 'Medios de verificación', editable: true },
-  { name: 'supuestos', label: 'Supuestos', editable: true },
+  { name: 'indicadores', label: 'Indicadores (solo nombre)' },
+  { name: 'medios', label: 'Medios de verificación' },
+  { name: 'supuestos', label: 'Supuestos' },
 ]
 
 onMounted(async () => {
   try {
     const me = await api.get('/Cuentas/me')
-    const u = me.data || {}
-    usuario.value = {
-      nombreMatriz: u.nombreMatriz ?? '',
-      cargo: u.cargo ?? '',
-      unidadesPresupuestales: u.unidadesPresupuestales ?? '',
-      programaSectorial: u.programaSectorial ?? '',
-      programaPresupuestario: u.programaPresupuestario ?? '',
-    }
+    usuario.value = me.data || {}
 
-    const [efectoRes, objetivoRes, diseno] = await Promise.all([
-      api.get('/EfectoSuperior/ultimo'),
-      api.get('/ArbolObjetivos/ultimo'),
-      api.get('/DisenoIntervencionPublica/ultimo'),
-    ])
-
-    const efectoSuperior = efectoRes.data || {}
-    const objetivoCentral = objetivoRes.data?.objetivoCentral || ''
-    const componentes = Array.isArray(diseno.data?.componentes)
-      ? diseno.data.componentes
-      : Array.isArray(diseno.data)
-        ? diseno.data
-        : []
+    const objetivoRes = await api.get('/ArbolObjetivos/ultimo')
+    const objetivo = objetivoRes.data || { componentes: [] }
 
     const f = []
-    // 🔥 Ahora los valores de Fin y Propósito van en "nivel"
-    f.push(crearFila(`Fin: ${efectoSuperior.descripcion || ''}`))
-    f.push(crearFila(`Propósito: ${objetivoCentral}`))
+    f.push(crearFila(`Fin: ${objetivo.fin || ''}`))
+    f.push(crearFila(`Propósito: ${objetivo.objetivoCentral || ''}`))
 
-    componentes.forEach((c, ci) => {
-      const nombre = c?.nombre ?? `Componente ${ci + 1}`
-      f.push(crearFila(`Componente: ${nombre}`))
-      const acciones = Array.isArray(c?.acciones) ? c.acciones : []
-      acciones.forEach((a, ai) => {
-        const etiqueta = a || `Acción ${ai + 1}`
-        f.push(crearFila(`Actividad: ${etiqueta}`))
+    objetivo.componentes?.forEach((c, ci) => {
+      f.push(crearFila(`Componente: ${c?.nombre || `Componente ${ci + 1}`}`))
+      c.medios?.forEach((m, mi) => {
+        f.push(crearFila(`Actividad: ${m || `Actividad ${mi + 1}`}`))
       })
     })
+
     filas.value = f
   } catch (error) {
     console.error('❌ Error al cargar MIR:', error)
-    Notify.create({ type: 'negative', message: 'Error al cargar la MIR' })
+    Notify.create({ type: 'negative', message: 'Error al cargar la MIR desde Árbol de Objetivos' })
   }
 })
 
 function crearFila(nivel) {
   return {
-    id: cryptoRandomId(),
-    nivel, // 🔥 Ahora el texto completo va aquí
+    //id: filaIdCounter++, // ID numérica
+    nivel,
     resumenNarrativo: '',
     indicadores: '',
     medios: '',
@@ -202,33 +193,25 @@ function crearFila(nivel) {
   }
 }
 
-function cryptoRandomId() {
-  return Math.random().toString(36).slice(2) + Date.now().toString(36)
-}
-
 async function guardarMatriz() {
   loading.value = true
   try {
     const payload = {
-      unidadResponsable: usuario.value.nombreMatriz || usuario.value.cargo,
-      unidadPresupuestal: usuario.value.unidadesPresupuestales,
-      programaSectorial: usuario.value.programaSectorial,
-      programaPresupuestario: usuario.value.programaPresupuestario,
-      filas: filas.value.map((fila) => ({
-        nivel: fila.nivel,
-        resumenNarrativo: fila.resumenNarrativo,
-        indicadores: fila.indicadores,
-        medios: fila.medios,
-        supuestos: fila.supuestos,
-      })),
+      matriz: {
+        unidadResponsable: usuario.value.nombreMatriz || usuario.value.cargo,
+        unidadPresupuestal: usuario.value.unidadesPresupuestales,
+        programaSectorial: usuario.value.programaSectorial,
+        programaPresupuestario: usuario.value.programaPresupuestario,
+      },
+      filas: filas.value,
     }
 
     await api.post('/MatrizIndicadores', payload)
     Notify.create({ type: 'positive', message: 'Matriz guardada correctamente' })
     router.push('/formulario-ficha-tecnica-1')
   } catch (error) {
-    console.error('❌ Error al guardar:', error)
-    Notify.create({ type: 'negative', message: 'Error al guardar la matriz' })
+    console.error('❌ Error al guardar MIR:', error)
+    Notify.create({ type: 'negative', message: 'Error al guardar la MIR' })
   } finally {
     loading.value = false
   }
@@ -236,15 +219,12 @@ async function guardarMatriz() {
 
 function obtenerLabelsParaNivel(nivel) {
   if (nivel.startsWith('Fin')) return ['Contribuir a un objetivo superior']
-  if (nivel.startsWith('Propósito')) {
+  if (nivel.startsWith('Propósito'))
     return ['Sujeto beneficiario', 'Verbo en presente', 'Resultado logrado']
-  }
-  if (nivel.startsWith('Componente')) {
+  if (nivel.startsWith('Componente'))
     return ['Producto terminado o servicio proporcionado', 'Verbo en pasado participio']
-  }
-  if (nivel.startsWith('Actividad')) {
+  if (nivel.startsWith('Actividad'))
     return ['Sustantivo derivado de un verbo', 'Complemento (acciones y procesos)']
-  }
   return ['Texto']
 }
 
@@ -253,26 +233,28 @@ function abrirModal(row) {
   labelsNarrativos.value = obtenerLabelsParaNivel(row.nivel)
   const partes = (row.resumenNarrativo || '').split(' | ')
   camposNarrativos.value = labelsNarrivosLength(labelsNarrativos.value, partes)
+  indicadoresTemp.value = row.indicadores || ''
+  mediosTemp.value = row.medios || ''
+  supuestosTemp.value = row.supuestos || ''
   modalVisible.value = true
 }
 
 function labelsNarrivosLength(labels, partes) {
-  const arr = new Array(labels.length).fill('')
-  for (let i = 0; i < labels.length; i++) {
-    arr[i] = partes[i] ?? ''
-  }
-  return arr
+  return labels.map((_, i) => partes[i] ?? '')
 }
 
 function guardarNarrativo() {
   if (!filaSeleccionada.value) return
   filaSeleccionada.value.resumenNarrativo = camposNarrativos.value.join(' | ')
+  filaSeleccionada.value.indicadores = indicadoresTemp.value
+  filaSeleccionada.value.medios = mediosTemp.value
+  filaSeleccionada.value.supuestos = supuestosTemp.value
 }
 </script>
 
 <style scoped>
 .q-markup-table td.bg-primary {
-  background: #7f1d35 !important; /* vino */
+  background: #7f1d35 !important;
 }
 .q-markup-table td {
   vertical-align: middle;
