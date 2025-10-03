@@ -146,7 +146,7 @@ const form = ref({
 })
 
 const roles = [
-  { label: 'UTED', value: 'UTED' },
+  { label: 'Administador', value: 'Administador' },
   { label: 'Usuario', value: 'Usuario' },
 ]
 
