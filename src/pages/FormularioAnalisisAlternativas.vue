@@ -66,7 +66,7 @@ const router = useRouter()
 const confirmado = ref(false)
 
 const columns = [
-  { name: 'nombre', label: 'Alternativas (Componentes)', align: 'left' },
+  { name: 'nombre', label: 'Alternativas (Componentes y Actividades)', align: 'left' },
   { name: 'facultad', label: 'a) Facultad Jurídica', editable: true },
   { name: 'presupuesto', label: 'b) Presupuesto Disponible', editable: true },
   { name: 'cortoPlazo', label: 'c) Realizable en Corto Plazo', editable: true },
@@ -85,20 +85,45 @@ const opciones = [
   { label: 'N/A', value: 0 },
 ]
 
-// Cargar componentes
+// Cargar componentes y actividades
 onMounted(async () => {
   try {
     const res = await api.get('/DisenoIntervencionPublica/ultimo')
-    tabla.value = (res.data.componentes || []).map((c) => ({
-      nombre: c.nombre,
-      facultad: 0,
-      presupuesto: 0,
-      cortoPlazo: 0,
-      recursosTecnicos: 0,
-      recursosAdm: 0,
-      cultural: 0,
-      impacto: 0,
-    }))
+    const comps = res.data.componentes || []
+
+    // construimos la tabla combinando componentes y actividades
+    tabla.value = comps.flatMap((c) => {
+      const filaComponente = {
+        nombre: `Componente: ${c.nombre}`,
+        facultad: 0,
+        presupuesto: 0,
+        cortoPlazo: 0,
+        recursosTecnicos: 0,
+        recursosAdm: 0,
+        cultural: 0,
+        impacto: 0,
+      }
+
+      // Aseguramos obtener texto representativo de la actividad (si viene como objeto)
+      const filasActividades = (c.acciones || []).map((a) => {
+        // a puede ser string o objeto: buscamos propiedades comunes
+        const actividadNombre =
+          typeof a === 'string' ? a : (a.nombre ?? a.titulo ?? a.descripcion ?? JSON.stringify(a))
+
+        return {
+          nombre: `Actividad: ${actividadNombre}`,
+          facultad: 0,
+          presupuesto: 0,
+          cortoPlazo: 0,
+          recursosTecnicos: 0,
+          recursosAdm: 0,
+          cultural: 0,
+          impacto: 0,
+        }
+      })
+
+      return [filaComponente, ...filasActividades]
+    })
   } catch (error) {
     console.error('❌ Error al cargar alternativas:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar alternativas' })
@@ -119,7 +144,7 @@ function calcularTotal(row) {
   return valores.reduce((sum, v) => sum + (v || 0), 0)
 }
 
-// Calcular probabilidad
+// Calcular probabilidad (para mostrar en UI)
 function calcularProbabilidad(row) {
   const valores = [
     row.facultad,
@@ -132,7 +157,7 @@ function calcularProbabilidad(row) {
   ]
   const criteriosValidos = valores.filter((v) => v !== 0)
   const maximo = criteriosValidos.length * 3
-  const obtenido = criteriosValidos.reduce((sum, v) => sum + v, 0)
+  const obtenido = criteriosValidos.reduce((sum, v) => sum + (v || 0), 0)
   return maximo > 0 ? Math.round((obtenido / maximo) * 100) : 0
 }
 
@@ -169,22 +194,52 @@ async function guardarAnalisis() {
 
 // Confirmar con validaciones
 function validarConfirmar() {
-  const probabilidades = tabla.value.map((row) => calcularProbabilidad(row))
-  const tieneRojo = probabilidades.some((p) => p <= 70)
-  const tieneAmarillo = probabilidades.some((p) => p >= 71 && p <= 85)
+  // Construimos porcentajes sólo para filas que tengan al menos un criterio distinto de 0
+  const porcentajes = tabla.value
+    .map((row) => {
+      const valores = [
+        row.facultad,
+        row.presupuesto,
+        row.cortoPlazo,
+        row.recursosTecnicos,
+        row.recursosAdm,
+        row.cultural,
+        row.impacto,
+      ]
+      const criteriosValidos = valores.filter((v) => v !== 0)
+      if (criteriosValidos.length === 0) return null // ignorar filas sin datos
+      const maximo = criteriosValidos.length * 3
+      const obtenido = criteriosValidos.reduce((sum, v) => sum + (v || 0), 0)
+      return Math.round((obtenido / maximo) * 100)
+    })
+    .filter((p) => p !== null)
+
+  if (porcentajes.length === 0) {
+    // No hay filas con datos: avisamos y no permitimos continuar
+    Swal.fire({
+      icon: 'info',
+      title: 'Sin criterios capturados',
+      text: 'No se detectaron criterios llenos en las alternativas. Captura al menos una fila antes de confirmar.',
+      confirmButtonText: 'OK',
+    })
+    return
+  }
+
+  const tieneRojo = porcentajes.some((p) => p <= 70)
+  const tieneAmarillo = porcentajes.some((p) => p >= 71 && p <= 85)
 
   if (tieneRojo) {
     Swal.fire({
       icon: 'error',
       title: 'Correcciones necesarias',
-      text: 'Existen componentes en rojo (≤70%). Debes corregir antes de continuar.',
+      text: 'Existen alternativas en rojo (≤70%). Debes corregir antes de continuar.',
       confirmButtonText: 'Regresar',
     }).then(() => router.push('/formulario-diseno-intervencion'))
   } else if (tieneAmarillo) {
     Swal.fire({
       icon: 'warning',
       title: 'Advertencia',
-      text: 'Hay componentes en amarillo (71–85%). ¿Confirmar de todas formas?',
+      text: 'Hay alternativas en amarillo (71–85%). ¿Confirmar de todas formas?',
       showCancelButton: true,
       confirmButtonText: 'Sí, confirmar',
       cancelButtonText: 'Corregir',
@@ -201,7 +256,7 @@ function validarConfirmar() {
     Swal.fire({
       icon: 'success',
       title: '¡Todo en orden!',
-      text: 'Todos los componentes están en verde.',
+      text: 'Todas las alternativas están en verde.',
       confirmButtonText: 'OK',
     }).then(() => {
       confirmado.value = true
