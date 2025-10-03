@@ -71,7 +71,8 @@ const hoverLogout = ref(false)
 
 async function cerrarSesion() {
   try {
-    await api.post('/Cuentas/logout') // ajusta según tu endpoint real
+    await api.post('/Cuentas/logout') // Llama al endpoint simulado
+    localStorage.removeItem('jwt-token') // o donde tengas tu token
     router.push('/login') // redirige al login
   } catch (err) {
     console.error('Error al cerrar sesión:', err)
