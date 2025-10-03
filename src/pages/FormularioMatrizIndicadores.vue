@@ -28,7 +28,15 @@
       </q-markup-table>
 
       <!-- ===== Tabla MIR ===== -->
-      <q-table flat bordered separator="cell" :rows="filas" :columns="columns" row-key="id">
+      <q-table
+        flat
+        bordered
+        separator="cell"
+        :rows="filas"
+        :columns="columns"
+        row-key="id"
+        :pagination="{ rowsPerPage: 0 }"
+      >
         <template v-slot:body-cell="props">
           <q-td :props="props">
             <!-- Columna NIVEL -->
@@ -39,7 +47,7 @@
             <!-- Columna Resumen Narrativo -->
             <template v-else-if="props.col.name === 'resumenNarrativo'">
               <div class="row items-center no-wrap">
-                <div class="col text-ellipsis">
+                <div class="col">
                   <span v-if="props.row.resumenNarrativo">{{ props.row.resumenNarrativo }}</span>
                   <span v-else class="text-grey-6">Sin capturarㅤ</span>
                 </div>
@@ -254,5 +262,10 @@ function guardarNarrativo() {
 }
 .q-markup-table td {
   vertical-align: middle;
+}
+
+.q-table .q-td {
+  white-space: normal !important;
+  word-break: break-word;
 }
 </style>
