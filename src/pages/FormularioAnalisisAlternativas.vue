@@ -5,7 +5,15 @@
         <div class="text-h6">Anexo 6 - Análisis de Alternativas</div>
       </q-card-section>
 
-      <q-table flat bordered :rows="tabla" :columns="columns" row-key="nombre" separator="cell">
+      <q-table
+        flat
+        bordered
+        :rows="tabla"
+        :columns="columns"
+        row-key="nombre"
+        separator="cell"
+        :rows-per-page-options="[0]"
+      >
         <template v-slot:body-cell="props">
           <q-td :props="props">
             <!-- Nombre del componente -->

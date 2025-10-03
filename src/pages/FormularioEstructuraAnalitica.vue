@@ -18,6 +18,7 @@
           row-key="campo"
           separator="cell"
           class="anexo7-table"
+          :rows-per-page-options="[0]"
         >
           <template v-slot:body-cell="props">
             <q-td :props="props">
