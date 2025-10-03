@@ -116,10 +116,14 @@ onMounted(async () => {
 
 async function guardarDetalle() {
   try {
+    // Crear copia del formulario para POST y eliminar Id si existe
+    const payload = { ...form.value }
+    if (!form.value.Id) delete payload.Id
+
     if (!form.value.Id) {
-      await api.post('/ReglasOperacionDetalle', form.value)
+      await api.post('/ReglasOperacionDetalle', payload)
     } else {
-      await api.put(`/ReglasOperacionDetalle/${form.value.Id}`, form.value)
+      await api.put(`/ReglasOperacionDetalle/${form.value.Id}`, payload)
     }
 
     Notify.create({ type: 'positive', message: 'Detalle guardado correctamente' })
