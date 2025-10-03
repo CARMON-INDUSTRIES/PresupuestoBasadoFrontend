@@ -35,6 +35,20 @@
           @mouseleave="hoverMetas = false"
           :style="{ color: hoverMetas ? '#FFD700' : 'white' }"
         />
+
+        <!-- Botón Cerrar Sesión -->
+        <q-btn
+          flat
+          dense
+          icon="logout"
+          label="Cerrar sesión"
+          class="q-ml-md text-white"
+          @click="cerrarSesion"
+          style="transition: color 0.2s"
+          @mouseover="hoverLogout = true"
+          @mouseleave="hoverLogout = false"
+          :style="{ color: hoverLogout ? '#FFD700' : 'white' }"
+        />
       </q-toolbar>
     </q-header>
 
@@ -47,8 +61,22 @@
 
 <script setup>
 import { ref } from 'vue'
+import api from 'src/boot/api'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 const hoverRes = ref(false)
 const hoverMetas = ref(false)
+const hoverLogout = ref(false)
+
+async function cerrarSesion() {
+  try {
+    await api.post('/Cuentas/logout') // ajusta según tu endpoint real
+    router.push('/login') // redirige al login
+  } catch (err) {
+    console.error('Error al cerrar sesión:', err)
+  }
+}
 </script>
 
 <style scoped>

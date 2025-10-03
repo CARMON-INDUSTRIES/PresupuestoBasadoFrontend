@@ -41,7 +41,7 @@
               <div class="row items-center no-wrap">
                 <div class="col text-ellipsis">
                   <span v-if="props.row.resumenNarrativo">{{ props.row.resumenNarrativo }}</span>
-                  <span v-else class="text-grey-6">Sin capturar</span>
+                  <span v-else class="text-grey-6">Sin capturarㅤ</span>
                 </div>
                 <div class="col-auto">
                   <q-btn
@@ -136,10 +136,6 @@ const loading = ref(false)
 const usuario = ref({})
 const filas = ref([])
 
-// Contador de IDs numéricas
-//let filaIdCounter = 1
-
-// Modal
 const modalVisible = ref(false)
 const filaSeleccionada = ref(null)
 const camposNarrativos = ref([])
@@ -177,7 +173,7 @@ onMounted(async () => {
 
     filas.value = f
   } catch (error) {
-    console.error('❌ Error al cargar MIR:', error)
+    console.error('Error al cargar MIR:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar la MIR desde Árbol de Objetivos' })
   }
 })
