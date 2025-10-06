@@ -96,6 +96,8 @@ async function submitForm() {
   loading.value = true
   try {
     await api.post('/Antecedente', form.value)
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-identificacion-problema')
+
     router.push('/formulario-identificacion-problema')
   } catch (error) {
     Notify.create({

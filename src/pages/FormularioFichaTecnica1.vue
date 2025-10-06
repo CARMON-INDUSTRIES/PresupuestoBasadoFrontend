@@ -41,7 +41,7 @@
           <q-btn
             v-for="(ind, index) in indicadores"
             :key="'btn-' + index"
-            :label="index + 1 + '. ' + (ind.nivel || 'Sin nivel')"
+            :label="index + 1 + '. ' + (ind.indicadores || 'Sin nombre')"
             flat
             class="q-ma-xs"
             :color="indiceSeleccionado === index ? 'primary' : 'grey-7'"
@@ -57,7 +57,8 @@
         <q-card flat bordered class="q-pa-md">
           <div class="text-subtitle1 q-mb-md text-primary">
             Nombre del Indicador:
-            <span class="text-caption text-grey-7">(Nivel: {{ indicadorActivo.nivel }})</span>
+            <span class="text-black">{{ indicadorActivo.indicadores || 'Sin nombre' }}ㅤ</span>
+            <span class="text-caption text-grey-9">({{ indicadorActivo.nivel }})</span>
           </div>
 
           <!-- Campos comunes -->
@@ -217,7 +218,6 @@
       </q-card-section>
 
       <!-- ====== LÍNEAS DE ACCIÓN (V) ====== -->
-      <!-- ====== LÍNEAS DE ACCIÓN ====== -->
       <q-card-section v-if="indicadorActivo?.lineasAccion?.length">
         <div class="text-h6 q-mb-md">Líneas de Acción</div>
 
@@ -225,12 +225,19 @@
           <thead>
             <tr>
               <th>Línea de Acción</th>
+              <th>Seleccionar</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="la in indicadorActivo.lineasAccion" :key="la.id">
               <td>{{ la.lineaAccion }}</td>
-              <td></td>
+              <td>
+                <q-radio
+                  v-model="indicadorActivo.lineaAccionSeleccionada"
+                  :val="la.id"
+                  color="primary"
+                />
+              </td>
             </tr>
           </tbody>
         </q-markup-table>
@@ -532,8 +539,10 @@ onMounted(async () => {
     const filas = mir.data?.filas || []
 
     indicadores.value = filas.map((f) => ({
-      resultadoEsperado: f.resumenNarrativo || '',
+      id: f.id,
       nivel: f.nivel || '',
+      indicadores: f.indicadores || '', // 👈 Aquí viene el nombre del indicador real
+      resultadoEsperado: f.resumenNarrativo || '',
       dimension: '',
       sentido: '',
       definicion: '',
@@ -558,6 +567,7 @@ onMounted(async () => {
     await cargarLineasAccion()
 
     const nivelActual = (indicadores.value[0]?.nivel || '').toString().toLowerCase()
+
     tipoIndicador.value =
       nivelActual === 'fin' || nivelActual.includes('prop') ? 'Estratégico' : 'De Gestión'
 
@@ -591,6 +601,11 @@ async function cargarLineasAccion() {
         ramo: la.ramo,
         userId: la.userId,
       }))
+
+      // inicializar selección
+      if (!ind.lineaAccionSeleccionada && ind.lineasAccion.length) {
+        ind.lineaAccionSeleccionada = null
+      }
     })
   } catch (err) {
     console.error('❌ Error al cargar líneas de acción', err)
@@ -643,6 +658,7 @@ function guardar() {
 
   localStorage.setItem('fichaIndicador', JSON.stringify(fichaPayload))
   Notify.create({ type: 'positive', message: 'Ficha Tecnica' })
+  localStorage.setItem('ultimaRutaRegistro', '/formulario-ficha-tecnica-1')
 }
 
 onUnmounted(() => {

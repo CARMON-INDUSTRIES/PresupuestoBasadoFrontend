@@ -149,6 +149,7 @@ async function guardarEfectoSuperior() {
     await api.post('/EfectoSuperior', { descripcion: efectoSuperior.value })
     Notify.create({ type: 'positive', message: 'Efecto superior guardado correctamente' })
     efectoSuperior.value = ''
+    localStorage.setItem('ultimaRutaRegistro', '/FormularioAnalisisInvolucrados')
     router.push('/FormularioAnalisisInvolucrados')
   } catch (error) {
     console.error(error)

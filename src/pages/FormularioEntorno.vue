@@ -54,6 +54,7 @@ async function submitForm() {
   loading.value = true
   try {
     await api.post('/AnalisisEntorno', form.value)
+    localStorage.setItem('ultimaRutaRegistro', '/resumen-final')
     router.push('/resumen-final') // Puedes definir esta ruta como un resumen o dashboard
   } catch (error) {
     Notify.create({

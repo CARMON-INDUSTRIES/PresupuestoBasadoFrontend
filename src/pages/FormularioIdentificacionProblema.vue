@@ -149,6 +149,7 @@ async function submitForm() {
   try {
     await api.post('/IdentificacionDescripcionProblema', form.value)
     router.push('/formulario-determinacion-justificacion')
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-determinacion-justificacion')
   } catch (error) {
     Notify.create({
       type: 'negative',

@@ -206,7 +206,7 @@ async function guardar() {
     await api.post('/ArbolObjetivos', payload)
     Notify.create({ type: 'positive', message: 'Árbol de Objetivos guardado' })
 
-    // 👇 redirigir a la siguiente pantalla
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-analisis-alternativas')
     router.push('/formulario-analisis-alternativas')
   } catch (error) {
     console.error('❌ Error al guardar:', error)

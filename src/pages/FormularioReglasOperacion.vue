@@ -101,6 +101,7 @@ async function guardarReglasOperacion() {
       message: 'Reglas de operación guardadas correctamente',
     })
 
+    localStorage.setItem('ultimaRutaRegistro', '/PoblacionAreaEnfoquePotencial')
     router.push('/PoblacionAreaEnfoquePotencial')
   } catch (error) {
     console.error(error)

@@ -310,6 +310,17 @@ const routes = [
     ],
   },
   {
+    path: '/formulario-editar-componentes',
+    component: () => import('layouts/LoginLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/EditarComponentes.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+  {
     path: '/programacion-metas',
     component: () => import('layouts/EmptyLayout.vue'),
     children: [

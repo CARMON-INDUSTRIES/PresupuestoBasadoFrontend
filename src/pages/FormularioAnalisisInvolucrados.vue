@@ -124,6 +124,7 @@ async function cargarDatos() {
 }
 
 function irArbolProblemas() {
+  localStorage.setItem('ultimaRutaRegistro', '/formulario-arbol-problemas')
   router.push('/formulario-arbol-problemas')
 }
 

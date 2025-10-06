@@ -55,6 +55,7 @@ async function submitForm() {
   try {
     await api.post('/JustificacionPrograma', form.value)
     router.push('/formulario-poblacion') // Cambiar según la siguiente ruta
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-poblacion')
   } catch (error) {
     Notify.create({
       type: 'negative',

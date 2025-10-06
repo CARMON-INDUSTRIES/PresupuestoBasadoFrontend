@@ -127,6 +127,7 @@ async function guardarDetalle() {
     }
 
     Notify.create({ type: 'positive', message: 'Detalle guardado correctamente' })
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-programa-social')
     router.push('/formulario-programa-social')
   } catch (err) {
     console.error(err)

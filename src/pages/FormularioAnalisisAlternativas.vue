@@ -242,7 +242,7 @@ function validarConfirmar() {
       title: 'Correcciones necesarias',
       text: 'Existen alternativas en rojo (≤70%). Debes corregir antes de continuar.',
       confirmButtonText: 'Regresar',
-    }).then(() => router.push('/formulario-diseno-intervencion'))
+    }).then(() => router.push('/formulario-editar-componentes'))
   } else if (tieneAmarillo) {
     Swal.fire({
       icon: 'warning',
@@ -257,7 +257,7 @@ function validarConfirmar() {
         guardarAnalisis()
         Swal.fire('Confirmado', 'Se guardó el análisis correctamente.', 'success')
       } else if (result.dismiss === Swal.DismissReason.cancel) {
-        router.push('/formulario-diseno-intervencion')
+        router.push('/formulario-editar-componentes')
       }
     })
   } else {
@@ -283,6 +283,7 @@ function continuarFlujo() {
     })
     return
   }
+  localStorage.setItem('ultimaRutaRegistro', '/formulario-estructura-analitica')
   router.push('/formulario-estructura-analitica')
 }
 </script>

@@ -244,7 +244,7 @@ function guardarComponente(continuar = false) {
     },
   }
 
-  // 🔹 Se agrega al array de componentes existentes
+  //  Se agrega al array de componentes existentes
   form.value.componentes.push(componenteFinal)
 
   // Resetear modal
@@ -268,6 +268,7 @@ async function submitForm() {
     }
 
     await api.post('/DisenoIntervencionPublica', payload)
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-reglas-operacion-detalle')
     router.push('/Formulario-reglas-operacion-detalle')
   } catch (error) {
     Notify.create({

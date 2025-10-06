@@ -186,6 +186,7 @@ async function cargarDatos() {
 }
 
 function irArbolObjetivos() {
+  localStorage.setItem('ultimaRutaRegistro', '/formulario-arbol-objetivos')
   router.push('/formulario-arbol-objetivos')
 }
 

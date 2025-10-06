@@ -50,7 +50,7 @@
               </q-input>
             </div>
             <div class="col-4">
-              <q-input v-model="form.coordinador" label="Coordinador" filled stack-label>
+              <q-input v-model="form.coordinador" label="Coordinador" filled stack-label disable>
                 <template #prepend><q-icon name="supervisor_account" /></template>
               </q-input>
             </div>
@@ -137,7 +137,7 @@ const form = ref({
   email: '',
   nombreCompleto: '',
   cargo: '',
-  coordinador: '',
+  coordinador: 'M.R.H.Daniela Lopez Hernandez', // Valor fijo
   unidadesPresupuestales: '',
   programaPresupuestario: '',
   nombreMatriz: '',

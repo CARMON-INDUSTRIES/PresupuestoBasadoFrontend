@@ -213,6 +213,7 @@ async function guardarMatriz() {
     await api.post('/MatrizIndicadores', payload)
     Notify.create({ type: 'positive', message: 'Matriz guardada correctamente' })
     router.push('/formulario-ficha-tecnica-1')
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-ficha-tecnica-1')
   } catch (error) {
     console.error('❌ Error al guardar MIR:', error)
     Notify.create({ type: 'negative', message: 'Error al guardar la MIR' })
@@ -222,14 +223,27 @@ async function guardarMatriz() {
 }
 
 function obtenerLabelsParaNivel(nivel) {
-  if (nivel.startsWith('Fin')) return ['Contribuir a un objetivo superior']
+  if (nivel.startsWith('Fin'))
+    return [
+      'Contribuir a un objetivo superior (ejemplo: mejorar la calidad de vida, reducir la pobreza)',
+    ]
   if (nivel.startsWith('Propósito'))
-    return ['Sujeto beneficiario', 'Verbo en presente', 'Resultado logrado']
+    return [
+      'Sujeto beneficiario (ejemplo: población infantil, mujeres rurales, productores agrícolas)',
+      'Verbo en presente (ejemplo: aumenta, mejora, fortalece)',
+      'Resultado logrado (ejemplo: el acceso a servicios básicos, la productividad, la cobertura educativa)',
+    ]
   if (nivel.startsWith('Componente'))
-    return ['Producto terminado o servicio proporcionado', 'Verbo en pasado participio']
+    return [
+      'Producto terminado o servicio proporcionado (ejemplo: manual técnico elaborado, centro de atención rehabilitado, campaña ejecutada)',
+      'Verbo en pasado participio (ejemplo: capacitado, construido, desarrollado)',
+    ]
   if (nivel.startsWith('Actividad'))
-    return ['Sustantivo derivado de un verbo', 'Complemento (acciones y procesos)']
-  return ['Texto']
+    return [
+      'Sustantivo derivado de un verbo (ejemplo: crear → creación, sentir → sentimiento, bailar → baile)',
+      'Complemento (acciones y procesos) (ejemplo: de talleres, de campañas, de infraestructura)',
+    ]
+  return ['Texto (ejemplo: descripción general o sin clasificar)']
 }
 
 function abrirModal(row) {

@@ -3,12 +3,10 @@
     <!-- Navbar -->
     <q-header elevated class="bg-primary text-white">
       <q-toolbar class="q-pl-md q-pr-md">
-        <!-- Título -->
         <q-toolbar-title class="text-h6 text-weight-bold">
           Sistema de Presupuesto Basado en Resultados
         </q-toolbar-title>
 
-        <!-- Botón Resúmenes -->
         <q-btn
           flat
           dense
@@ -16,13 +14,11 @@
           label="Resúmenes"
           class="q-ml-md text-white"
           @click="$router.push('/resumenes')"
-          style="transition: color 0.2s"
+          :style="{ color: hoverRes ? '#FFD700' : 'white' }"
           @mouseover="hoverRes = true"
           @mouseleave="hoverRes = false"
-          :style="{ color: hoverRes ? '#FFD700' : 'white' }"
         />
 
-        <!-- Botón Programación Metas -->
         <q-btn
           flat
           dense
@@ -30,13 +26,11 @@
           label="Programación Metas"
           class="q-ml-md text-white"
           @click="$router.push('/programacion-metas')"
-          style="transition: color 0.2s"
+          :style="{ color: hoverMetas ? '#FFD700' : 'white' }"
           @mouseover="hoverMetas = true"
           @mouseleave="hoverMetas = false"
-          :style="{ color: hoverMetas ? '#FFD700' : 'white' }"
         />
 
-        <!-- Botón Cerrar Sesión -->
         <q-btn
           flat
           dense
@@ -44,15 +38,14 @@
           label="Cerrar sesión"
           class="q-ml-md text-white"
           @click="cerrarSesion"
-          style="transition: color 0.2s"
+          :style="{ color: hoverLogout ? '#FFD700' : 'white' }"
           @mouseover="hoverLogout = true"
           @mouseleave="hoverLogout = false"
-          :style="{ color: hoverLogout ? '#FFD700' : 'white' }"
         />
       </q-toolbar>
     </q-header>
 
-    <!-- Contenido principal -->
+    <!-- Contenido -->
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -61,19 +54,40 @@
 
 <script setup>
 import { ref } from 'vue'
-import api from 'src/boot/api'
 import { useRouter } from 'vue-router'
+import api from 'src/boot/api'
 
 const router = useRouter()
+
 const hoverRes = ref(false)
 const hoverMetas = ref(false)
 const hoverLogout = ref(false)
 
+// 🔹 Lista de todas las rutas del flujo de registro
+const rutasRegistro = [
+  '/formulario-alineacion',
+  '/formulario-identificacion',
+  '/formulario-diseno',
+  '/formulario-clasificacion',
+  '/formulario-actividad',
+  '/formulario-ficha-tecnica-1',
+]
+
+// 🧩 Guardar última ruta visitada del flujo
+router.afterEach((to) => {
+  if (rutasRegistro.includes(to.path)) {
+    localStorage.setItem('ultimaRutaRegistro', to.path)
+  }
+})
+
+// 🧭 Función para traducir rutas a texto amigable
+
+//  Cerrar sesión
 async function cerrarSesion() {
   try {
-    await api.post('/Cuentas/logout') // Llama al endpoint simulado
-    localStorage.removeItem('jwt-token') // o donde tengas tu token
-    router.push('/login') // redirige al login
+    await api.post('/Cuentas/logout')
+    localStorage.removeItem('jwt-token')
+    router.push('/login')
   } catch (err) {
     console.error('Error al cerrar sesión:', err)
   }

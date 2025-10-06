@@ -184,6 +184,7 @@ async function submitForm() {
   loading.value = true
   try {
     await api.post('/Cobertura', form.value)
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-diseno-intervencion')
     router.push('/formulario-diseno-intervencion')
   } catch (error) {
     Notify.create({

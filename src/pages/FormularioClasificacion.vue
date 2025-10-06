@@ -180,6 +180,7 @@ async function submitForm() {
     })
     Notify.create({ type: 'positive', message: 'Clasificación guardada correctamente' })
     router.push('/formulario-antecedente')
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-antecedente')
   } catch (error) {
     Notify.create({
       type: 'negative',

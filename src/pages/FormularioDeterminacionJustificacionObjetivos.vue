@@ -71,6 +71,7 @@ async function submitForm() {
   loading.value = true
   try {
     await api.post('/DeterminacionJustificacionObjetivos', form.value)
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-cobertura')
     router.push('/formulario-cobertura')
   } catch (error) {
     Notify.create({

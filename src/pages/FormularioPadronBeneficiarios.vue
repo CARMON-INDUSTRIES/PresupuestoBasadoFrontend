@@ -114,6 +114,7 @@ async function guardarPadron() {
     })
 
     router.push('/formulario-reglas-operacion')
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-reglas-operacion')
   } catch (error) {
     console.error(error)
     Notify.create({

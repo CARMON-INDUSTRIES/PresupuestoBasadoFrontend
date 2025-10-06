@@ -43,6 +43,7 @@ import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
 const router = useRouter()
+const tabla = ref([])
 
 const columns = [
   {
@@ -51,10 +52,20 @@ const columns = [
     align: 'left',
     field: 'problema',
   },
-  { name: 'solucion', label: 'SOLUCIÓN (Árbol de Objetivos)', align: 'left', field: 'solucion' },
+  {
+    name: 'solucion',
+    label: 'SOLUCIÓN (Árbol de Objetivos)',
+    align: 'left',
+    field: 'solucion',
+  },
 ]
 
-const tabla = ref([])
+// helper: obtener texto seguro de un objeto
+function texto(obj) {
+  if (!obj) return '—'
+  if (typeof obj === 'string') return obj
+  return obj.descripcion || obj.nombre || JSON.stringify(obj)
+}
 
 onMounted(async () => {
   try {
@@ -66,9 +77,11 @@ onMounted(async () => {
       api.get('/Cobertura/ultimo'),
     ])
 
+    // Problema central y fin
     const problemaCentral = problemaRes.data?.problemaCentral || '—'
     const fin = objetivoRes.data?.fin || efectoRes.data?.descripcion || '—'
 
+    // Componentes y resultados
     const componentesProblema = Array.isArray(disenoRes.data?.componentes)
       ? disenoRes.data.componentes
       : Array.isArray(disenoRes.data)
@@ -79,16 +92,23 @@ onMounted(async () => {
       ? objetivoRes.data.componentes
       : []
 
-    const efectos = componentesProblema.flatMap((c) => c.resultados || [])
-    const fines = componentesObjetivo.flatMap((c) => c.resultados || [])
+    const efectos = componentesProblema.flatMap((c) =>
+      Array.isArray(c.resultados)
+        ? c.resultados.map(texto)
+        : c.resultado
+          ? [texto(c.resultado)]
+          : [],
+    )
+    const fines = componentesObjetivo.flatMap((c) =>
+      Array.isArray(c.resultados)
+        ? c.resultados.map(texto)
+        : c.resultado
+          ? [texto(c.resultado)]
+          : [],
+    )
 
-    // 🔹 Aseguramos que cada causa y medio sea representable como texto
-    const causas = componentesProblema.flatMap((c) =>
-      (c.acciones || []).map((a) => a?.nombre || a?.descripcion || JSON.stringify(a)),
-    )
-    const medios = componentesObjetivo.flatMap((c) =>
-      (c.medios || []).map((m) => m?.nombre || m?.descripcion || JSON.stringify(m)),
-    )
+    const causas = componentesProblema.flatMap((c) => (c.acciones || []).map((a) => texto(a)))
+    const medios = componentesObjetivo.flatMap((c) => (c.medios || []).map((m) => texto(m)))
 
     const magnitudLineaBase = coberturaRes.data?.cuantificacionPoblacionAtendidaAnterior || '—'
     const magnitudResultadoEsperado =
@@ -97,8 +117,8 @@ onMounted(async () => {
     tabla.value = [
       {
         campo: 'central',
-        problema: `${problemaCentral}`,
-        solucion: `${fin}`,
+        problema: problemaCentral,
+        solucion: fin,
       },
       {
         campo: 'efectos',
@@ -123,6 +143,7 @@ onMounted(async () => {
 })
 
 function irAMatrizIndicadores() {
+  localStorage.setItem('ultimaRutaRegistro', '/formulario-matriz-indicadores')
   router.push('/formulario-matriz-indicadores')
 }
 </script>

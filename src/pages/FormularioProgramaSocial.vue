@@ -104,6 +104,7 @@ async function guardarProgramaSocial() {
       message: 'Programa social guardado correctamente',
     })
 
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-padron-beneficiarios')
     router.push('/formulario-padron-beneficiarios')
   } catch (error) {
     console.error(error)

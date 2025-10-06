@@ -78,12 +78,47 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
+import Swal from 'sweetalert2'
 import api from 'src/boot/api'
 
 const router = useRouter()
 const login = ref({ user: '', password: '' })
 const loading = ref(false)
 const showPassword = ref(false)
+
+// 🔹 Todas las rutas del flujo de registro
+const rutasRegistro = [
+  '/formulario-alineacion',
+  '/formulario-justificacion',
+  '/formulario-poblacion',
+  '/formulario-entorno',
+  '/resumen-final',
+  '/registro-usuario',
+  '/formulario-ramo',
+  '/formulario-clasificacion',
+  '/formulario-antecedente',
+  '/formulario-identificacion-problema',
+  '/formulario-determinacion-justificacion',
+  '/formulario-cobertura',
+  '/formulario-diseno-intervencion',
+  '/formulario-programa-social',
+  '/formulario-padron-beneficiarios',
+  '/formulario-reglas-operacion',
+  '/PoblacionAreaEnfoquePotencial',
+  '/FormularioAnalisisInvolucrados',
+  '/resumenes',
+  '/Formulario-arbol-problemas',
+  '/Formulario-arbol-objetivos',
+  '/Formulario-analisis-alternativas',
+  '/Formulario-estructura-analitica',
+  '/Formulario-matriz-indicadores',
+  '/Formulario-ficha-tecnica-1',
+  '/Formulario-reglas-operacion-detalle',
+  '/registro-datos',
+  '/programacion-metas',
+]
+
+const rutaFicha = '/Formulario-ficha-tecnica-1'
 
 const handleLogin = async () => {
   if (!login.value.user || !login.value.password) {
@@ -103,7 +138,36 @@ const handleLogin = async () => {
 
     const token = res.data.token
     localStorage.setItem('token', token)
-    router.push('/formulario-alineacion')
+
+    const ultimaRuta = localStorage.getItem('ultimaRutaRegistro')
+
+    // 🔹 Solo mostrar alerta si la última ruta está después de "alineación"
+    const indiceUltimaRuta = rutasRegistro.indexOf(ultimaRuta)
+    const indiceAlineacion = rutasRegistro.indexOf('/formulario-alineacion')
+
+    if (ultimaRuta && indiceUltimaRuta > indiceAlineacion && ultimaRuta !== rutaFicha) {
+      console.log('🔹 Mostrando SweetAlert para continuar en la ruta guardada')
+      await Swal.fire({
+        title: 'Registro incompleto',
+        text: `Te quedaste en: ${obtenerTextoRuta(ultimaRuta)}`,
+        icon: 'info',
+        confirmButtonText: 'Continuar desde ahí',
+        cancelButtonText: 'Empezar de nuevo',
+        showCancelButton: false,
+        confirmButtonColor: '#691B31',
+        cancelButtonColor: '#aaa',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push(ultimaRuta)
+        } else {
+          localStorage.removeItem('ultimaRutaRegistro')
+          router.push('/formulario-alineacion')
+        }
+      })
+    } else {
+      console.log('🔹 No hay registro previo válido o es alineación, redirigiendo a alineación')
+      router.push('/formulario-alineacion')
+    }
   } catch (error) {
     Notify.create({
       type: 'negative',
@@ -112,6 +176,41 @@ const handleLogin = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// 🔹 Traduce rutas a textos amigables
+function obtenerTextoRuta(ruta) {
+  const mapa = {
+    '/formulario-alineacion': 'la sección de Alineación',
+    '/formulario-justificacion': 'la sección de Justificación',
+    '/formulario-poblacion': 'la sección de Población',
+    '/formulario-entorno': 'la sección de Entorno',
+    '/resumen-final': 'el Resumen Final',
+    '/registro-usuario': 'el Registro de Usuario',
+    '/formulario-ramo': 'la sección de Ramo',
+    '/formulario-clasificacion': 'la sección de Clasificación Funcional',
+    '/formulario-antecedente': 'la sección de Antecedentes',
+    '/formulario-identificacion-problema': 'la sección de Identificación del Problema',
+    '/formulario-determinacion-justificacion': 'la sección de Determinación Justificación',
+    '/formulario-cobertura': 'la sección de Cobertura',
+    '/formulario-diseno-intervencion': 'la sección de Diseño de Intervención',
+    '/formulario-programa-social': 'la sección de Programa Social',
+    '/formulario-padron-beneficiarios': 'la sección de Padrón de Beneficiarios',
+    '/formulario-reglas-operacion': 'la sección de Reglas de Operación',
+    '/PoblacionAreaEnfoquePotencial': 'la sección de Población Área Enfoque Potencial',
+    '/FormularioAnalisisInvolucrados': 'la sección de Análisis de Involucrados',
+    '/resumenes': 'la sección de Resúmenes',
+    '/Formulario-arbol-problemas': 'la sección de Árbol de Problemas',
+    '/Formulario-arbol-objetivos': 'la sección de Árbol de Objetivos',
+    '/Formulario-analisis-alternativas': 'la sección de Análisis de Alternativas',
+    '/Formulario-estructura-analitica': 'la sección de Estructura Analítica',
+    '/Formulario-matriz-indicadores': 'la sección de Matriz de Indicadores',
+    '/Formulario-ficha-tecnica-1': 'la Ficha Técnica',
+    '/Formulario-reglas-operacion-detalle': 'la sección de Reglas de Operación Detalle',
+    '/registro-datos': 'la sección de Registro de Datos',
+    '/programacion-metas': 'la sección de Programación de Metas',
+  }
+  return mapa[ruta] || 'una sección pendiente'
 }
 </script>
 

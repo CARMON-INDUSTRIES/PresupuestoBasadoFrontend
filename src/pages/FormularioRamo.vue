@@ -43,6 +43,7 @@ async function submitForm() {
       type: 'positive',
       message: 'Ramo guardado correctamente',
     })
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-clasificacion')
     router.push('/formulario-clasificacion')
   } catch (error) {
     Notify.create({
