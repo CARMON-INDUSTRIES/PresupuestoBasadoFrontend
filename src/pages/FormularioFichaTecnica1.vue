@@ -402,7 +402,13 @@
               </td>
               <td>
                 <q-chip :color="calcularSemaforo(meta)" text-color="white">
-                  {{ calcularSemaforo(meta).toUpperCase() }}
+                  {{
+                    calcularSemaforo(meta) === 'green'
+                      ? 'VERDE'
+                      : calcularSemaforo(meta) === 'yellow'
+                        ? 'AMARILLO'
+                        : 'ROJO'
+                  }}
                 </q-chip>
               </td>
             </tr>
@@ -470,10 +476,21 @@ function calcularPorcentajeAlcanzado(meta) {
 }
 
 function calcularSemaforo(meta) {
-  const pct = calcularPorcentajeAlcanzado(meta)
-  if (pct >= 90 && pct <= 130) return 'green'
-  if (pct >= 70 && pct < 90) return 'yellow'
-  return 'red'
+  const pct = parseFloat(calcularPorcentajeAlcanzado(meta))
+  const sentido = indicadorActivo.value?.sentido || 'Ascendente'
+
+  if (sentido === 'Ascendente') {
+    if (pct >= 90 && pct <= 130) return 'green'
+    if (pct >= 70 && pct < 90) return 'yellow'
+    return 'red'
+  } else if (sentido === 'Descendente') {
+    if (pct >= 0.1 && pct <= 100) return 'green'
+    if (pct > 100 && pct <= 130) return 'yellow'
+    if (pct > 130) return 'red'
+    return 'grey'
+  }
+
+  return 'grey'
 }
 
 // ==================== WATCH PRORRATEO ====================

@@ -233,8 +233,8 @@ function validarConfirmar() {
     return
   }
 
-  const tieneRojo = porcentajes.some((p) => p <= 70)
-  const tieneAmarillo = porcentajes.some((p) => p >= 71 && p <= 85)
+  const tieneRojo = porcentajes.some((p) => p <= 69.99)
+  const tieneAmarillo = porcentajes.some((p) => p >= 70 && p <= 89.99)
 
   if (tieneRojo) {
     Swal.fire({
