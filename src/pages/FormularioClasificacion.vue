@@ -8,10 +8,10 @@
         </q-card-section>
 
         <q-card-section class="q-gutter-md">
-          <!-- Subfunción -->
+          <!-- Subfunción (selección por id) -->
           <q-select
             filled
-            v-model="form.subfuncion"
+            v-model="form.subfuncionId"
             :options="subfunciones"
             label="Subfunción"
             rounded
@@ -24,28 +24,32 @@
             </template>
           </q-select>
 
-          <!-- Función -->
+          <!-- Función (deshabilitado, muestra la jerarquía) -->
           <q-select
             filled
-            v-model="form.funcion"
+            v-model="form.funcionId"
             :options="funciones"
             label="Función"
             rounded
             disable
+            emit-value
+            map-options
           >
             <template v-slot:prepend>
               <q-icon name="work" />
             </template>
           </q-select>
 
-          <!-- Finalidad -->
+          <!-- Finalidad (deshabilitado, muestra la jerarquía) -->
           <q-select
             filled
-            v-model="form.finalidad"
+            v-model="form.finalidadId"
             :options="finalidades"
             label="Finalidad"
             rounded
             disable
+            emit-value
+            map-options
           >
             <template v-slot:prepend>
               <q-icon name="star" />
@@ -97,13 +101,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
 const router = useRouter()
 const loading = ref(false)
+
+const STORAGE_KEY = 'clasificacionFuncionalForm_v1' // clave en localStorage
 
 const anioActual = new Date().getFullYear()
 const anios = [anioActual - 1, anioActual, anioActual + 1]
@@ -113,64 +119,128 @@ const opcionesEntregaBienes = [
   'Población General y Administración Pública',
 ]
 
+// Form con ids y nombres separados para evitar problemas con selects
 const form = ref({
-  subfuncion: null,
-  funcion: null,
-  finalidad: null,
+  subfuncionId: null, // id usado por el select
+  subfuncion: '', // nombre para enviar al backend
+  funcionId: null,
+  funcion: '',
+  finalidadId: null,
+  finalidad: '',
   anioOperando: anioActual,
   entregaBienes: '',
 })
 
-// Arrays de opciones { label, value }
-const subfunciones = ref([])
-const funciones = ref([])
-const finalidades = ref([])
+// opciones para selects
+const subfunciones = ref([]) // { label, value }
+const funciones = ref([]) // { label, value }
+const finalidades = ref([]) // { label, value }
 
-// Función auxiliar para obtener label de ID
-//function labelFromList(list, id) {
-//  const item = list.find((x) => x.value === id)
-//  return item ? item.label : ''
-//}
-
-// Cargar todas las subfunciones
+// Cargar lista de subfunciones (ids)
 async function cargarSubfunciones() {
   try {
     const { data } = await api.get('/ClasificadorFuncional/subfunciones')
     subfunciones.value = data.map((x) => ({ label: x.nombre, value: x.id }))
-  } catch {
+  } catch (err) {
+    console.error('Error cargando subfunciones', err)
     Notify.create({ type: 'negative', message: 'Error cargando subfunciones' })
   }
 }
 
-// Al cambiar subfunción, se determinan función y finalidad
+// Al cambiar subfunción (se pasa el id)
 const onSubfuncionChange = async (subfuncionId) => {
-  form.value.funcion = null
-  form.value.finalidad = null
+  // limpiar jerarquía previa
+  form.value.funcionId = null
+  form.value.funcion = ''
+  form.value.finalidadId = null
+  form.value.finalidad = ''
   funciones.value = []
   finalidades.value = []
 
-  if (!subfuncionId) return
+  if (!subfuncionId) {
+    // guardar estado en localStorage
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(form.value))
+    return
+  }
 
   try {
     const { data } = await api.get(`/ClasificadorFuncional/subfuncion/${subfuncionId}/jerarquia`)
 
-    // Pintar labels correctos en selects
+    // data debe traer: subfuncionId/subfuncionNombre/funcionId/funcionNombre/finalidadId/finalidadNombre
+    form.value.subfuncionId = subfuncionId
+    form.value.subfuncion = data.subfuncionNombre ?? data.subfuncionNombre ?? form.value.subfuncion
+    form.value.funcionId = data.funcionId
+    form.value.funcion = data.funcionNombre
+    form.value.finalidadId = data.finalidadId
+    form.value.finalidad = data.finalidadNombre
+
     funciones.value = [{ label: data.funcionNombre, value: data.funcionId }]
     finalidades.value = [{ label: data.finalidadNombre, value: data.finalidadId }]
 
-    // Guardar labels (nombres) para enviar al backend
-    form.value.funcion = data.funcionNombre
-    form.value.finalidad = data.finalidadNombre
-    form.value.subfuncion = data.subfuncionNombre
-  } catch {
+    // guardar en localStorage
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(form.value))
+  } catch (err) {
+    console.error('Error al cargar jerarquía', err)
     Notify.create({ type: 'negative', message: 'Error cargando función y finalidad' })
   }
 }
+
+// Restaurar desde localStorage (intenta garantizar que selects muestren valores)
+function restaurarFormulario() {
+  const raw = localStorage.getItem(STORAGE_KEY)
+  if (!raw) return
+
+  try {
+    const parsed = JSON.parse(raw)
+
+    // Restauramos valores básicos
+    form.value.anioOperando = parsed.anioOperando ?? form.value.anioOperando
+    form.value.entregaBienes = parsed.entregaBienes ?? form.value.entregaBienes
+
+    // Si el objeto contiene ids/nombres, restaurar
+    if (parsed.subfuncionId) {
+      form.value.subfuncionId = parsed.subfuncionId
+    }
+    if (parsed.subfuncion) form.value.subfuncion = parsed.subfuncion
+    if (parsed.funcionId) form.value.funcionId = parsed.funcionId
+    if (parsed.funcion) form.value.funcion = parsed.funcion
+    if (parsed.finalidadId) form.value.finalidadId = parsed.finalidadId
+    if (parsed.finalidad) form.value.finalidad = parsed.finalidad
+
+    // Si restauramos un subfuncionId, cargamos su jerarquía para asegurar labels
+    if (form.value.subfuncionId) {
+      // llamamos al endpoint para poblar funcion/finalidad/labels
+      onSubfuncionChange(form.value.subfuncionId)
+    } else if (form.value.subfuncion) {
+      // si no hay id pero sí nombre, buscamos el id entre subfunciones cargadas
+      const found = subfunciones.value.find((s) => s.label === form.value.subfuncion)
+      if (found) {
+        onSubfuncionChange(found.value)
+      }
+    }
+  } catch (err) {
+    console.warn('No se pudo parsear el storage:', err)
+  }
+}
+
+// Guardar cada cambio automaticamente en localStorage
+watch(
+  form,
+  (newVal) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+    } catch (err) {
+      console.error('Error guardando en localStorage', err)
+    }
+  },
+  { deep: true },
+)
 
 // Submit
 async function submitForm() {
   loading.value = true
   try {
+    // Enviamos nombres (lo que espera tu backend)
     await api.post('/ClasificacionFuncional', {
       Subfuncion: form.value.subfuncion,
       Funcion: form.value.funcion,
@@ -178,10 +248,15 @@ async function submitForm() {
       AnioOperando: form.value.anioOperando,
       EntregaBienes: form.value.entregaBienes,
     })
+
     Notify.create({ type: 'positive', message: 'Clasificación guardada correctamente' })
-    router.push('/formulario-antecedente')
+
+    // limpiar storage y avanzar
+    //localStorage.removeItem(STORAGE_KEY)
     localStorage.setItem('ultimaRutaRegistro', '/formulario-antecedente')
+    router.push('/formulario-antecedente')
   } catch (error) {
+    console.error('Error enviar Clasificación:', error)
     Notify.create({
       type: 'negative',
       message: error.response?.data?.message || 'Error al guardar la clasificación',
@@ -191,7 +266,10 @@ async function submitForm() {
   }
 }
 
-onMounted(cargarSubfunciones)
+onMounted(async () => {
+  await cargarSubfunciones()
+  restaurarFormulario()
+})
 </script>
 
 <style scoped>

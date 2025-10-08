@@ -64,11 +64,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { Notify } from 'quasar'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
+const STORAGE_KEY = 'formularioReglasOperacion' // 🔹 clave localStorage
 const router = useRouter()
 
 const form = ref({
@@ -78,6 +79,30 @@ const form = ref({
 
 const archivoSeleccionado = ref(null)
 
+// 🧠 Cargar datos previos si existen
+onMounted(() => {
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved) {
+    const parsed = JSON.parse(saved)
+    form.value = parsed.form ?? form.value
+    archivoSeleccionado.value = parsed.archivo ?? archivoSeleccionado.value
+    console.log('✅ Datos cargados desde localStorage:', parsed)
+  }
+})
+
+// 💾 Guardar automáticamente al modificar cualquier campo
+watch(
+  [form, archivoSeleccionado],
+  () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ form: form.value, archivo: archivoSeleccionado.value }),
+    )
+  },
+  { deep: true },
+)
+
+// Guardar reglas de operación usando FormData
 async function guardarReglasOperacion() {
   try {
     const fd = new FormData()

@@ -62,11 +62,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { Notify } from 'quasar'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
+const STORAGE_KEY = 'formularioProgramaSocialCompleto' // 🔹 clave para localStorage
 const router = useRouter()
 
 const form = ref({
@@ -85,6 +86,30 @@ const categorias = ref([
   { nombre: 'Bienestar económico', tipo: '', seleccionado: false },
 ])
 
+// 🧠 Cargar datos previos si existen
+onMounted(() => {
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved) {
+    const parsed = JSON.parse(saved)
+    form.value = parsed.form ?? form.value
+    categorias.value = parsed.categorias ?? categorias.value
+    console.log('✅ Datos cargados desde localStorage:', parsed)
+  }
+})
+
+// 💾 Guardar automáticamente al modificar cualquier campo
+watch(
+  [form, categorias],
+  () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ form: form.value, categorias: categorias.value }),
+    )
+  },
+  { deep: true },
+)
+
+// 🚀 Enviar datos al backend
 async function guardarProgramaSocial() {
   try {
     const payload = {

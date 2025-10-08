@@ -21,7 +21,7 @@
             >
               <div class="text-subtitle2"><q-icon name="widgets" /> {{ comp.nombre }}</div>
 
-              <!-- Acciones: solo mostrar nombre -->
+              <!-- Acciones -->
               <div
                 v-for="(accion, aIdx) in comp.acciones"
                 :key="aIdx"
@@ -30,14 +30,14 @@
                 <strong class="col"> <q-icon name="task_alt" /> {{ accion.descripcion }} </strong>
               </div>
 
-              <!-- Resultado: convertir a string si es objeto -->
+              <!-- Resultado -->
               <div class="q-ml-md q-mt-sm">
-                <em
-                  ><q-icon name="flare" />
+                <em>
+                  <q-icon name="flare" />
                   {{
                     typeof comp.resultado === 'string' ? comp.resultado : comp.resultado.descripcion
-                  }}</em
-                >
+                  }}
+                </em>
               </div>
             </div>
           </div>
@@ -128,7 +128,6 @@
             </div>
 
             <div class="row q-col-gutter-md">
-              <!-- Nombre de la actividad -->
               <q-input
                 class="col-8"
                 v-model="accion.nombre"
@@ -137,8 +136,6 @@
                 dense
                 placeholder="Nombre de la actividad"
               />
-
-              <!-- Cantidad -->
               <q-input
                 class="col-4"
                 v-model.number="accion.cantidad"
@@ -149,7 +146,6 @@
                 placeholder="Cantidad"
               />
             </div>
-
             <q-separator class="q-my-sm" />
           </div>
 
@@ -160,7 +156,7 @@
             @click="nuevoComponente.acciones.push({ nombre: '', cantidad: 0 })"
           />
 
-          <!-- Resultado único del componente -->
+          <!-- Resultado -->
           <div class="q-mt-md">
             <div class="text-caption q-mb-xs">Efecto</div>
             <q-input
@@ -173,7 +169,6 @@
             />
           </div>
 
-          <!-- Botón nuevo componente -->
           <q-btn
             flat
             icon="add_circle"
@@ -185,7 +180,6 @@
         </q-card-section>
 
         <q-separator />
-
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" color="negative" v-close-popup />
           <q-btn flat label="Guardar Componente" color="primary" @click="guardarComponente()" />
@@ -196,35 +190,52 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
+
+const STORAGE_KEY = 'disenoIntervencionPublica'
 
 const router = useRouter()
 const loading = ref(false)
 const showModal = ref(false)
 
-// Formulario principal
 const form = ref({
   componentes: [],
   etapasIntervencion: '',
   escenariosFuturosEsperar: '',
 })
 
-// Nuevo componente en modal
 const nuevoComponente = ref({
   nombre: '',
   acciones: [{ nombre: '', cantidad: 0 }],
   resultado: '',
 })
 
-// Índice del próximo componente
 const proximoIndiceComp = computed(() => form.value.componentes.length + 1)
 
-/**
- * Agregar o actualizar un componente en el formulario
- */
+// Guardar cambios en localStorage automáticamente
+watch(
+  form,
+  (nuevo) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nuevo))
+  },
+  { deep: true },
+)
+
+// Recuperar datos al montar
+onMounted(() => {
+  const guardado = localStorage.getItem(STORAGE_KEY)
+  if (guardado) {
+    try {
+      form.value = JSON.parse(guardado)
+    } catch {
+      console.error('Error al parsear datos guardados')
+    }
+  }
+})
+
 function guardarComponente(continuar = false) {
   if (!nuevoComponente.value.nombre?.trim()) {
     Notify.create({ type: 'warning', message: 'El componente debe tener un nombre' })
@@ -244,18 +255,13 @@ function guardarComponente(continuar = false) {
     },
   }
 
-  //  Se agrega al array de componentes existentes
   form.value.componentes.push(componenteFinal)
 
-  // Resetear modal
   nuevoComponente.value = { nombre: '', acciones: [{ nombre: '', cantidad: 0 }], resultado: '' }
 
   if (!continuar) showModal.value = false
 }
 
-/**
- * Enviar formulario al backend
- */
 async function submitForm() {
   loading.value = true
   try {
@@ -268,6 +274,7 @@ async function submitForm() {
     }
 
     await api.post('/DisenoIntervencionPublica', payload)
+
     localStorage.setItem('ultimaRutaRegistro', '/formulario-reglas-operacion-detalle')
     router.push('/Formulario-reglas-operacion-detalle')
   } catch (error) {
@@ -280,10 +287,6 @@ async function submitForm() {
     loading.value = false
   }
 }
-
-/**
- * Para pintar acciones en el árbol: solo nombres
- */
 </script>
 
 <style scoped>

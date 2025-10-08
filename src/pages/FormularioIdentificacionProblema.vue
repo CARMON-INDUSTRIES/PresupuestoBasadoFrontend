@@ -10,7 +10,6 @@
 
         <!-- Campos del formulario -->
         <q-card-section class="q-gutter-md">
-          <!-- Problema central -->
           <q-input
             filled
             v-model="form.problemaCentral"
@@ -23,20 +22,6 @@
             </template>
           </q-input>
 
-          <!-- Involucrados -->
-          <q-input
-            filled
-            v-model="form.involucrados"
-            label="2.3 Describa las causas que han dado origen al problema. (Debe ser consistente con el Anexo III)."
-            type="textarea"
-            rounded
-          >
-            <template v-slot:prepend>
-              <q-icon name="group" />
-            </template>
-          </q-input>
-
-          <!-- Causas divididas -->
           <div class="text-subtitle1">
             2.2 Describa los involucrados, los cuales pueden ser organizaciones, empresas, grupos e
             individuos cuyos intereses serán coincidentes, complementarios o incluso antagónicos.
@@ -79,7 +64,18 @@
             </template>
           </q-input>
 
-          <!-- Efectos -->
+          <q-input
+            filled
+            v-model="form.involucrados"
+            label="2.3 Describa las causas que han dado origen al problema. (Debe ser consistente con el Anexo III)."
+            type="textarea"
+            rounded
+          >
+            <template v-slot:prepend>
+              <q-icon name="group" />
+            </template>
+          </q-input>
+
           <q-input
             filled
             v-model="form.efectos"
@@ -92,7 +88,6 @@
             </template>
           </q-input>
 
-          <!-- Evolución -->
           <q-input
             filled
             v-model="form.evolucion"
@@ -125,11 +120,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
+const STORAGE_KEY = 'formularioIdentificacionProblema'
 const router = useRouter()
 const loading = ref(false)
 
@@ -144,12 +140,32 @@ const form = ref({
   evolucion: '',
 })
 
+// 🧠 Cargar datos guardados (si existen)
+onMounted(() => {
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved) {
+    form.value = JSON.parse(saved)
+    console.log('✅ Datos cargados desde localStorage:', form.value)
+  }
+})
+
+// 💾 Guardar automáticamente cada vez que cambie algo
+watch(
+  form,
+  (newVal) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+  },
+  { deep: true },
+)
+
+// 🚀 Enviar datos
 async function submitForm() {
   loading.value = true
   try {
     await api.post('/IdentificacionDescripcionProblema', form.value)
-    router.push('/formulario-determinacion-justificacion')
     localStorage.setItem('ultimaRutaRegistro', '/formulario-determinacion-justificacion')
+    Notify.create({ type: 'positive', message: 'Identificación guardada correctamente' })
+    router.push('/formulario-determinacion-justificacion')
   } catch (error) {
     Notify.create({
       type: 'negative',
@@ -166,26 +182,17 @@ async function submitForm() {
   max-width: 800px;
   margin: auto;
 }
-
-/* Título más grande y destacado */
 .form-title {
   font-size: 2rem;
   font-weight: 700;
   color: #691b31;
 }
-
-/* Mayor redondez de bordes en todos los campos */
 .q-field__control {
   border-radius: 12px;
 }
-
-/* Botón con tus valores, texto blanco */
 .submit-btn {
   font-weight: 900;
   font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+  padding: 12px 40px;
 }
 </style>

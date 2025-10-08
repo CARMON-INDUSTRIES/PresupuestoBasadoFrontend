@@ -19,8 +19,8 @@
             <td>{{ usuario.unidadesPresupuestales || '' }}</td>
           </tr>
           <tr>
-            <td class="bg-primary text-white text-weight-bold">Programa Sectorial:</td>
-            <td>{{ usuario.programaSectorial || '' }}</td>
+            <td class="bg-primary text-white text-weight-bold">Responsable:</td>
+            <td>{{ usuario.nombreCompleto || '' }}</td>
             <td class="bg-primary text-white text-weight-bold">Programa Presupuestario:</td>
             <td>{{ usuario.programaPresupuestario || '' }}</td>
           </tr>
@@ -133,13 +133,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Notify } from 'quasar'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
 const router = useRouter()
 const loading = ref(false)
+const STORAGE_KEY = 'mirMatrizIndicadores'
 
 const usuario = ref({})
 const filas = ref([])
@@ -160,6 +161,7 @@ const columns = [
   { name: 'supuestos', label: 'Supuestos' },
 ]
 
+// Cargar datos iniciales
 onMounted(async () => {
   try {
     const me = await api.get('/Cuentas/me')
@@ -180,15 +182,30 @@ onMounted(async () => {
     })
 
     filas.value = f
+
+    // Cargar desde localStorage si existe
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      filas.value = JSON.parse(saved)
+      console.log('✅ MIR cargada desde localStorage')
+    }
   } catch (error) {
     console.error('Error al cargar MIR:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar la MIR desde Árbol de Objetivos' })
   }
 })
 
+// Guardar automáticamente en localStorage
+watch(
+  filas,
+  (newVal) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+  },
+  { deep: true },
+)
+
 function crearFila(nivel) {
   return {
-    //id: filaIdCounter++, // ID numérica
     nivel,
     resumenNarrativo: '',
     indicadores: '',
@@ -222,43 +239,38 @@ async function guardarMatriz() {
   }
 }
 
+// Modal
 function obtenerLabelsParaNivel(nivel) {
   if (nivel.startsWith('Fin'))
-    return [
-      'Contribuir a un objetivo superior (ejemplo: mejorar la calidad de vida, reducir la pobreza)',
-    ]
+    return ['Contribuir a un objetivo superior (ej: mejorar calidad de vida)']
   if (nivel.startsWith('Propósito'))
     return [
-      'Sujeto beneficiario (ejemplo: población infantil, mujeres rurales, productores agrícolas)',
-      'Verbo en presente (ejemplo: aumenta, mejora, fortalece)',
-      'Resultado logrado (ejemplo: el acceso a servicios básicos, la productividad, la cobertura educativa)',
+      'Sujeto beneficiario (ej: población infantil)',
+      'Verbo en presente (ej: aumenta, mejora)',
+      'Resultado logrado (ej: acceso a servicios básicos)',
     ]
   if (nivel.startsWith('Componente'))
     return [
-      'Producto terminado o servicio proporcionado (ejemplo: manual técnico elaborado, centro de atención rehabilitado, campaña ejecutada)',
-      'Verbo en pasado participio (ejemplo: capacitado, construido, desarrollado)',
+      'Producto terminado o servicio proporcionado',
+      'Verbo en pasado participio (ej: capacitado, construido)',
     ]
   if (nivel.startsWith('Actividad'))
     return [
-      'Sustantivo derivado de un verbo (ejemplo: crear → creación, sentir → sentimiento, bailar → baile)',
-      'Complemento (acciones y procesos) (ejemplo: de talleres, de campañas, de infraestructura)',
+      'Sustantivo derivado de un verbo (ej: creación, sentimiento)',
+      'Complemento (acciones y procesos)',
     ]
-  return ['Texto (ejemplo: descripción general o sin clasificar)']
+  return ['Texto general']
 }
 
 function abrirModal(row) {
   filaSeleccionada.value = row
   labelsNarrativos.value = obtenerLabelsParaNivel(row.nivel)
   const partes = (row.resumenNarrativo || '').split(' | ')
-  camposNarrativos.value = labelsNarrivosLength(labelsNarrativos.value, partes)
+  camposNarrativos.value = labelsNarrativos.value.map((_, i) => partes[i] ?? '')
   indicadoresTemp.value = row.indicadores || ''
   mediosTemp.value = row.medios || ''
   supuestosTemp.value = row.supuestos || ''
   modalVisible.value = true
-}
-
-function labelsNarrivosLength(labels, partes) {
-  return labels.map((_, i) => partes[i] ?? '')
 }
 
 function guardarNarrativo() {
@@ -277,7 +289,6 @@ function guardarNarrativo() {
 .q-markup-table td {
   vertical-align: middle;
 }
-
 .q-table .q-td {
   white-space: normal !important;
   word-break: break-word;

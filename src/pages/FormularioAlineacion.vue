@@ -56,7 +56,7 @@
             </template>
           </q-select>
 
-          <!-- Estrategias (selección múltiple) -->
+          <!-- Estrategias (multi) -->
           <q-select
             filled
             v-model="form.estrategias"
@@ -73,7 +73,7 @@
             </template>
           </q-select>
 
-          <!-- Líneas de acción (selección múltiple) -->
+          <!-- Líneas de acción (multi) -->
           <q-select
             filled
             v-model="form.lineasAccion"
@@ -89,7 +89,7 @@
             </template>
           </q-select>
 
-          <!-- Tipo de ramo (solo si es Municipio) -->
+          <!-- Tipo de ramo (solo municipio) -->
           <q-select
             v-if="form.tipo === 'Municipio'"
             filled
@@ -123,13 +123,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
 const router = useRouter()
 const loading = ref(false)
+
+const STORAGE_KEY = 'formAlineacion'
 
 const ramos = ['Recurso Propio', 'Recurso Estatal', 'Recurso Federal']
 
@@ -138,17 +140,16 @@ const form = ref({
   ramo: '',
   acuerdo: null,
   objetivo: null,
-  estrategias: [], // IDs de estrategias seleccionadas
-  lineasAccion: [], // IDs de líneas seleccionadas
+  estrategias: [],
+  lineasAccion: [],
 })
 
-// Opciones { label, value }
+// Opciones dinámicas
 const acuerdos = ref([])
 const objetivos = ref([])
 const estrategias = ref([])
 const lineasAccion = ref([])
 
-// Helper para obtener label por id
 function labelFromList(list, id) {
   if (id === null || id === undefined) return ''
   if (Array.isArray(id)) {
@@ -158,7 +159,7 @@ function labelFromList(list, id) {
   return found ? found.label : ''
 }
 
-// Tipo de alineación
+// 🧩 --- Carga de combos --- //
 const onTipoChange = async (tipo) => {
   form.value.acuerdo = null
   form.value.objetivo = null
@@ -180,7 +181,6 @@ const onTipoChange = async (tipo) => {
   }
 }
 
-// Cambio de acuerdo
 const onAcuerdoChange = async (acuerdoId) => {
   form.value.objetivo = null
   form.value.estrategias = []
@@ -195,6 +195,7 @@ const onAcuerdoChange = async (acuerdoId) => {
     form.value.tipo === 'Estado'
       ? `/PlanEstatal/acuerdo/${acuerdoId}/objetivos`
       : `/PlanMunicipal/acuerdo/${acuerdoId}/objetivos`
+
   try {
     const { data } = await api.get(endpoint)
     objetivos.value = data.map((o) => ({ label: o.nombre ?? o.Nombre, value: o.id ?? o.Id }))
@@ -203,7 +204,6 @@ const onAcuerdoChange = async (acuerdoId) => {
   }
 }
 
-// Cambio de objetivo
 const onObjetivoChange = async (objetivoId) => {
   form.value.estrategias = []
   form.value.lineasAccion = []
@@ -224,7 +224,6 @@ const onObjetivoChange = async (objetivoId) => {
   }
 }
 
-// Cambio de estrategias (multi)
 const onEstrategiasChange = async (selectedIds) => {
   form.value.lineasAccion = []
   lineasAccion.value = []
@@ -242,7 +241,6 @@ const onEstrategiasChange = async (selectedIds) => {
   try {
     const results = await Promise.all(promises)
     const allLineas = results.flatMap((r) => r.data)
-    // eliminar duplicados
     const unique = []
     const idsSet = new Set()
     allLineas.forEach((l) => {
@@ -258,7 +256,30 @@ const onEstrategiasChange = async (selectedIds) => {
   }
 }
 
-// Submit
+// 🧠 Restaurar progreso al montar
+onMounted(async () => {
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved) {
+    Object.assign(form.value, JSON.parse(saved))
+
+    // recargar combos dinámicos
+    if (form.value.tipo) await onTipoChange(form.value.tipo)
+    if (form.value.acuerdo) await onAcuerdoChange(form.value.acuerdo)
+    if (form.value.objetivo) await onObjetivoChange(form.value.objetivo)
+    if (form.value.estrategias.length) await onEstrategiasChange(form.value.estrategias)
+  }
+})
+
+// 💾 Guardar automáticamente cada cambio
+watch(
+  form,
+  (val) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(val))
+  },
+  { deep: true },
+)
+
+// 📤 Envío del formulario
 async function submitForm() {
   loading.value = true
   try {
@@ -278,6 +299,8 @@ async function submitForm() {
     })
 
     localStorage.setItem('tipoAlineacion', form.value.tipo)
+    //localStorage.removeItem(STORAGE_KEY)
+
     Notify.create({ type: 'positive', message: 'Alineación guardada correctamente' })
     router.push('/formulario-clasificacion')
   } catch (error) {
@@ -290,29 +313,3 @@ async function submitForm() {
   }
 }
 </script>
-
-<style scoped>
-.q-card {
-  max-width: 800px;
-  margin: auto;
-}
-
-.form-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #691b31;
-}
-
-.q-field__control {
-  border-radius: 12px;
-}
-
-.submit-btn {
-  font-weight: 900;
-  font-size: 0.9rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
-}
-</style>

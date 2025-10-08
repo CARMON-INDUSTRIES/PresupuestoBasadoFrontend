@@ -77,7 +77,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
@@ -85,6 +85,9 @@ import api from 'src/boot/api'
 const router = useRouter()
 const loading = ref(false)
 
+const STORAGE_KEY = 'antecedentesForm_v1'
+
+// Datos del formulario
 const form = ref({
   descripcionPrograma: '',
   contextoHistoricoNormativo: '',
@@ -92,12 +95,44 @@ const form = ref({
   experienciasPrevias: '',
 })
 
+// 🔁 Restaurar datos guardados
+function restaurarFormulario() {
+  const raw = localStorage.getItem(STORAGE_KEY)
+  if (!raw) return
+
+  try {
+    const data = JSON.parse(raw)
+    Object.assign(form.value, data)
+  } catch (err) {
+    console.warn('No se pudo restaurar el formulario:', err)
+  }
+}
+
+// 💾 Guardar automáticamente cada cambio
+watch(
+  form,
+  (newVal) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+  },
+  { deep: true },
+)
+
+// 🚀 Enviar formulario
 async function submitForm() {
   loading.value = true
   try {
     await api.post('/Antecedente', form.value)
+
+    Notify.create({
+      type: 'positive',
+      message: 'Antecedentes guardados correctamente',
+    })
+
+    // Limpiar almacenamiento local
+    //localStorage.removeItem(STORAGE_KEY)
     localStorage.setItem('ultimaRutaRegistro', '/formulario-identificacion-problema')
 
+    // Avanzar
     router.push('/formulario-identificacion-problema')
   } catch (error) {
     Notify.create({
@@ -108,6 +143,8 @@ async function submitForm() {
     loading.value = false
   }
 }
+
+onMounted(restaurarFormulario)
 </script>
 
 <style scoped>

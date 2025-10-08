@@ -124,13 +124,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Notify } from 'quasar'
-import { useRouter } from 'vue-router' // 👈 importamos router
+import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
-const router = useRouter() // 👈 inicializamos router
+const router = useRouter()
 const loading = ref(false)
+
+const STORAGE_KEY = 'formularioArbolObjetivos'
 
 const arbolProblemas = ref({
   efectoSuperior: null,
@@ -149,6 +151,7 @@ function itemToString(item) {
   return typeof item === 'string' ? item : (item.descripcion ?? '')
 }
 
+// 🧠 Cargar datos previos si existen
 onMounted(async () => {
   try {
     const [efectoRes, problemaRes, disenoRes] = await Promise.all([
@@ -175,14 +178,21 @@ onMounted(async () => {
       componentes: componentesProblema,
     }
 
-    arbolObjetivos.value = {
-      fin: '',
-      objetivoCentral: '',
-      componentes: componentesProblema.map((c) => ({
-        nombre: '',
-        medios: c.acciones.map(() => ''),
-        resultados: c.resultados.map(() => ''),
-      })),
+    // Cargar desde localStorage si existe
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      arbolObjetivos.value = JSON.parse(saved)
+      console.log('✅ Árbol de objetivos cargado desde localStorage')
+    } else {
+      arbolObjetivos.value = {
+        fin: '',
+        objetivoCentral: '',
+        componentes: componentesProblema.map((c) => ({
+          nombre: '',
+          medios: c.acciones.map(() => ''),
+          resultados: c.resultados.map(() => ''),
+        })),
+      }
     }
   } catch (error) {
     console.error('❌ Error al cargar árbol de problemas:', error)
@@ -190,6 +200,16 @@ onMounted(async () => {
   }
 })
 
+// 💾 Guardar automáticamente al modificar cualquier campo
+watch(
+  arbolObjetivos,
+  (newVal) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+  },
+  { deep: true },
+)
+
+// Guardar árbol de objetivos
 async function guardar() {
   loading.value = true
   try {
@@ -209,7 +229,7 @@ async function guardar() {
     localStorage.setItem('ultimaRutaRegistro', '/formulario-analisis-alternativas')
     router.push('/formulario-analisis-alternativas')
   } catch (error) {
-    console.error('❌ Error al guardar:', error)
+    console.error('Error al guardar:', error)
     Notify.create({ type: 'negative', message: 'Error al guardar el árbol de objetivos' })
   } finally {
     loading.value = false

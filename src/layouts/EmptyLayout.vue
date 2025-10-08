@@ -86,7 +86,24 @@ router.afterEach((to) => {
 async function cerrarSesion() {
   try {
     await api.post('/Cuentas/logout')
-    localStorage.removeItem('jwt-token')
+    localStorage.removeItem('token')
+    localStorage.removeItem('formAlineacion')
+    localStorage.removeItem('tipoAlineacion')
+    localStorage.removeItem('clasificacionFuncionalForm_v1')
+    localStorage.removeItem('antecedentesForm_v1')
+    localStorage.removeItem('formularioIdentificacionProblema')
+    localStorage.removeItem('formularioDeterminacionJustificacion')
+    localStorage.removeItem('formularioCobertura')
+    localStorage.removeItem('formularioCobertura')
+    localStorage.removeItem('disenoIntervencionPublica')
+    localStorage.removeItem('formularioProgramaSocial')
+    localStorage.removeItem('formularioProgramaSocialCompleto')
+    localStorage.removeItem('formularioPadronBeneficiarios')
+    localStorage.removeItem('formularioReglasOperacion')
+    localStorage.removeItem('formularioArbolObjetivos')
+    localStorage.removeItem('anexo6AnalisisAlternativas')
+    localStorage.removeItem('mirMatrizIndicadores')
+
     router.push('/login')
   } catch (err) {
     console.error('Error al cerrar sesión:', err)

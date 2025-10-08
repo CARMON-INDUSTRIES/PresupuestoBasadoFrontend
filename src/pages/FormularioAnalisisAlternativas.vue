@@ -63,16 +63,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Notify } from 'quasar'
 import Swal from 'sweetalert2'
 import api from 'src/boot/api'
 import { useRouter } from 'vue-router'
 
-const tabla = ref([])
 const router = useRouter()
+const tabla = ref([])
 const confirmado = ref(false)
 
+const STORAGE_KEY = 'anexo6AnalisisAlternativas'
+
+// Columnas y opciones
 const columns = [
   { name: 'nombre', label: 'Alternativas (Componentes y Actividades)', align: 'left' },
   { name: 'facultad', label: 'a) Facultad Jurídica', editable: true },
@@ -99,7 +102,6 @@ onMounted(async () => {
     const res = await api.get('/DisenoIntervencionPublica/ultimo')
     const comps = res.data.componentes || []
 
-    // construimos la tabla combinando componentes y actividades
     tabla.value = comps.flatMap((c) => {
       const filaComponente = {
         nombre: `Componente: ${c.nombre}`,
@@ -112,12 +114,9 @@ onMounted(async () => {
         impacto: 0,
       }
 
-      // Aseguramos obtener texto representativo de la actividad (si viene como objeto)
       const filasActividades = (c.acciones || []).map((a) => {
-        // a puede ser string o objeto: buscamos propiedades comunes
         const actividadNombre =
           typeof a === 'string' ? a : (a.nombre ?? a.titulo ?? a.descripcion ?? JSON.stringify(a))
-
         return {
           nombre: `Actividad: ${actividadNombre}`,
           facultad: 0,
@@ -132,13 +131,29 @@ onMounted(async () => {
 
       return [filaComponente, ...filasActividades]
     })
+
+    // Cargar desde localStorage si existe
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      tabla.value = JSON.parse(saved)
+      console.log('✅ Anexo 6 cargado desde localStorage')
+    }
   } catch (error) {
     console.error('❌ Error al cargar alternativas:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar alternativas' })
   }
 })
 
-// Calcular total
+// 💾 Guardar tabla automáticamente en localStorage
+watch(
+  tabla,
+  (newVal) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+  },
+  { deep: true },
+)
+
+// Calcular total y probabilidad
 function calcularTotal(row) {
   const valores = [
     row.facultad,
@@ -152,7 +167,6 @@ function calcularTotal(row) {
   return valores.reduce((sum, v) => sum + (v || 0), 0)
 }
 
-// Calcular probabilidad (para mostrar en UI)
 function calcularProbabilidad(row) {
   const valores = [
     row.facultad,
@@ -169,7 +183,6 @@ function calcularProbabilidad(row) {
   return maximo > 0 ? Math.round((obtenido / maximo) * 100) : 0
 }
 
-// Colores según probabilidad
 function getColor(valor) {
   if (valor <= 70) return 'red'
   if (valor <= 85) return 'orange'
@@ -185,8 +198,8 @@ async function guardarAnalisis() {
         facultad: row.facultad || 0,
         presupuesto: row.presupuesto || 0,
         cortoPlazo: row.cortoPlazo || 0,
-        recursosTecnicos: row.recursosTecnicos || 0,
         recursosAdministrativos: row.recursosAdm || 0,
+        recursosTecnicos: row.recursosTecnicos || 0,
         culturalSocial: row.cultural || 0,
         impacto: row.impacto || 0,
       })),
@@ -202,7 +215,6 @@ async function guardarAnalisis() {
 
 // Confirmar con validaciones
 function validarConfirmar() {
-  // Construimos porcentajes sólo para filas que tengan al menos un criterio distinto de 0
   const porcentajes = tabla.value
     .map((row) => {
       const valores = [
@@ -215,7 +227,7 @@ function validarConfirmar() {
         row.impacto,
       ]
       const criteriosValidos = valores.filter((v) => v !== 0)
-      if (criteriosValidos.length === 0) return null // ignorar filas sin datos
+      if (criteriosValidos.length === 0) return null
       const maximo = criteriosValidos.length * 3
       const obtenido = criteriosValidos.reduce((sum, v) => sum + (v || 0), 0)
       return Math.round((obtenido / maximo) * 100)
@@ -223,11 +235,10 @@ function validarConfirmar() {
     .filter((p) => p !== null)
 
   if (porcentajes.length === 0) {
-    // No hay filas con datos: avisamos y no permitimos continuar
     Swal.fire({
       icon: 'info',
       title: 'Sin criterios capturados',
-      text: 'No se detectaron criterios llenos en las alternativas. Captura al menos una fila antes de confirmar.',
+      text: 'Captura al menos una fila antes de confirmar.',
       confirmButtonText: 'OK',
     })
     return

@@ -153,11 +153,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
+const STORAGE_KEY = 'formularioCobertura'
 const router = useRouter()
 const loading = ref(false)
 
@@ -180,11 +181,31 @@ const form = ref({
   procesoIdentificacionPoblacionObjetivo: '',
 })
 
+// 🧠 Cargar datos previos si existen
+onMounted(() => {
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved) {
+    form.value = JSON.parse(saved)
+    console.log('✅ Datos cargados desde localStorage:', form.value)
+  }
+})
+
+// 💾 Guardar automáticamente al modificar cualquier campo
+watch(
+  form,
+  (newVal) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+  },
+  { deep: true },
+)
+
+// 🚀 Enviar datos al backend
 async function submitForm() {
   loading.value = true
   try {
     await api.post('/Cobertura', form.value)
     localStorage.setItem('ultimaRutaRegistro', '/formulario-diseno-intervencion')
+    Notify.create({ type: 'positive', message: 'Cobertura guardada correctamente' })
     router.push('/formulario-diseno-intervencion')
   } catch (error) {
     Notify.create({
@@ -210,20 +231,17 @@ async function submitForm() {
   color: #691b31;
 }
 
-/* Mayor redondez de bordes en todos los campos */
+/* Campos con fondo blanco y sombras suaves */
 .q-field__control {
   border-radius: 12px;
   background-color: #fff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Botón con tus valores y texto blanco */
+/* Botón */
 .submit-btn {
   font-weight: 900;
   font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+  padding: 12px 40px;
 }
 </style>

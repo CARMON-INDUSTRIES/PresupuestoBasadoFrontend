@@ -40,7 +40,7 @@
           <q-btn
             color="primary"
             text-color="white"
-            label="Guardar y continuar"
+            label="Continuar"
             type="submit"
             rounded
             unelevated
@@ -54,11 +54,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
+const STORAGE_KEY = 'formularioDeterminacionJustificacion'
 const router = useRouter()
 const loading = ref(false)
 
@@ -67,11 +68,34 @@ const form = ref({
   relacionOtrosProgramas: '',
 })
 
+// 🧠 Cargar datos guardados si existen
+onMounted(() => {
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved) {
+    form.value = JSON.parse(saved)
+    console.log('✅ Datos cargados desde localStorage:', form.value)
+  }
+})
+
+// 💾 Guardar automáticamente cada vez que cambie algo
+watch(
+  form,
+  (newVal) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+  },
+  { deep: true },
+)
+
+// 🚀 Enviar datos al backend
 async function submitForm() {
   loading.value = true
   try {
     await api.post('/DeterminacionJustificacionObjetivos', form.value)
     localStorage.setItem('ultimaRutaRegistro', '/formulario-cobertura')
+    Notify.create({
+      type: 'positive',
+      message: 'Determinación y Justificación guardada correctamente',
+    })
     router.push('/formulario-cobertura')
   } catch (error) {
     Notify.create({
@@ -108,9 +132,6 @@ async function submitForm() {
 .submit-btn {
   font-weight: 900;
   font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+  padding: 12px 40px;
 }
 </style>
