@@ -152,7 +152,7 @@ import { Notify } from 'quasar'
 const isLocal = window.location.hostname === 'localhost'
 const API_BASE_URL = isLocal
   ? 'https://localhost:7125/api'
-  : 'https://presupuestobr2025.somee.com/api'
+  : 'https://presupuestobr2025.somee.com/swagger'
 
 // Obtiene el token guardado (ajusta según tu login)
 function getToken() {
