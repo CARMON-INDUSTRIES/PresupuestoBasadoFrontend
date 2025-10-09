@@ -11,7 +11,7 @@
           flat
           dense
           icon="summarize"
-          label="Resúmenes"
+          label="Resúmenes PDF"
           class="q-ml-md text-white"
           @click="$router.push('/resumenes')"
           :style="{ color: hoverRes ? '#FFD700' : 'white' }"
