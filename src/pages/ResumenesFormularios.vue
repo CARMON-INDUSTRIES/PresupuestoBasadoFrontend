@@ -153,7 +153,6 @@ const API_BASE_URL = isLocal
   ? 'https://localhost:7125/api'
   : 'https://presupuestobr2025.somee.com/api'
 
-// Token JWT del login
 function getToken() {
   return localStorage.getItem('token') || sessionStorage.getItem('token')
 }
