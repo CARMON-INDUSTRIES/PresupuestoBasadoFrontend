@@ -10,7 +10,7 @@
       <q-list class="rounded-borders shadow-2 q-pa-sm">
         <!-- Formato Alineación -->
         <q-expansion-item
-          icon="map"
+          icon="person_outline"
           label="Formato Alineación"
           expand-separator
           class="expansion-card"
@@ -58,7 +58,7 @@
 
         <!-- Formato Análisis De Involucrados -->
         <q-expansion-item
-          icon="diversity_3"
+          icon="group_work"
           label="Formato Análisis De Involucrados"
           expand-separator
           class="expansion-card"
@@ -122,7 +122,7 @@
                 dense
                 icon="picture_as_pdf"
                 label="Descargar PDF"
-                @click="descargarPdf('FormatoFichaDeInformacionBasica2')"
+                @click="descargarPdf('FormatoFichaDeInformacionBasica1')"
               />
             </q-card-actions>
           </q-card>
@@ -148,18 +148,17 @@
 <script setup>
 import { Notify } from 'quasar'
 
-// Detecta entorno
 const isLocal = window.location.hostname === 'localhost'
 const API_BASE_URL = isLocal
   ? 'https://localhost:7125/api'
-  : 'https://presupuestobr2025.somee.com/swagger'
+  : 'https://presupuestobr2025.somee.com/api'
 
-// Obtiene el token guardado (ajusta según tu login)
+// Token JWT del login
 function getToken() {
   return localStorage.getItem('token') || sessionStorage.getItem('token')
 }
 
-// 🔽 Descargar un PDF autenticado
+// Descarga un solo PDF con autenticación
 async function descargarPdf(formato) {
   const token = getToken()
   if (!token) {
@@ -174,7 +173,10 @@ async function descargarPdf(formato) {
       },
     })
 
-    if (!response.ok) throw new Error('Error al generar el PDF')
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Error del servidor: ${errorText}`)
+    }
 
     const blob = await response.blob()
     const url = window.URL.createObjectURL(blob)
@@ -187,18 +189,21 @@ async function descargarPdf(formato) {
     Notify.create({ type: 'positive', message: `Descarga completa: ${formato}.pdf` })
   } catch (error) {
     console.error(error)
-    Notify.create({ type: 'negative', message: 'Error al descargar el PDF' })
+    Notify.create({
+      type: 'negative',
+      message: 'Error al descargar el PDF o token no autorizado',
+    })
   }
 }
 
-// 🔽 Descargar todos los PDFs
+// Descarga todos los PDFs en secuencia
 async function descargarTodos() {
   const formatos = [
     'FormatoAlineacion',
     'FormatoAnalisisInvolucrados',
     'FormatoAnalisisDeInvolucrados',
     'FormatoDefinicionDelProblema',
-    'FormatoFichaDeInformacionBasica2',
+    'FormatoFichaDeInformacionBasica1',
   ]
 
   for (const f of formatos) {
