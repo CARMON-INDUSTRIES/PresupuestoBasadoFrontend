@@ -167,14 +167,17 @@ async function descargarPdf(formato) {
 
   try {
     const response = await fetch(`${API_BASE_URL}/${formato}/ultimo`, {
+      method: 'GET',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
     })
 
     if (!response.ok) {
       const errorText = await response.text()
-      throw new Error(`Error del servidor: ${errorText}`)
+      console.error('Error del servidor:', errorText)
+      throw new Error('Error al generar el PDF')
     }
 
     const blob = await response.blob()
@@ -187,11 +190,8 @@ async function descargarPdf(formato) {
 
     Notify.create({ type: 'positive', message: `Descarga completa: ${formato}.pdf` })
   } catch (error) {
-    console.error(error)
-    Notify.create({
-      type: 'negative',
-      message: 'Error al descargar el PDF o token no autorizado',
-    })
+    console.error('Error al descargar:', error)
+    Notify.create({ type: 'negative', message: 'Error al descargar el PDF' })
   }
 }
 
