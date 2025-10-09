@@ -165,13 +165,6 @@ async function descargarPdf(formato) {
     return
   }
 
-  // 🔍 LOG para depurar el token y la URL
-  if (formato === 'FormatoAnalisisInvolucrados') {
-    console.log('📌 [DEBUG] Descargar PDF:', formato)
-    console.log('📌 [DEBUG] URL:', `${API_BASE_URL}/${formato}/ultimo`)
-    console.log('📌 [DEBUG] Token:', token)
-  }
-
   try {
     const response = await fetch(`${API_BASE_URL}/${formato}/ultimo`, {
       method: 'GET',
