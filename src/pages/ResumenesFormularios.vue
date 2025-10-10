@@ -151,6 +151,30 @@
             </q-card-actions>
           </q-card>
         </q-expansion-item>
+
+        <!-- Formato Árbol de Objetivos -->
+        <q-expansion-item
+          icon="account_tree"
+          label="Formato Árbol de Objetivos"
+          expand-separator
+          class="expansion-card"
+        >
+          <q-card flat bordered class="q-ma-sm formato-card">
+            <q-card-section>
+              <q-item-label>Descargar PDF directamente desde el backend</q-item-label>
+            </q-card-section>
+            <q-card-actions align="right">
+              <q-btn
+                color="primary"
+                rounded
+                dense
+                icon="picture_as_pdf"
+                label="Descargar PDF"
+                @click="descargarPdf('FormatoArbolDeObjetivos')"
+              />
+            </q-card-actions>
+          </q-card>
+        </q-expansion-item>
       </q-list>
 
       <q-separator spaced class="q-my-lg" />
