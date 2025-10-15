@@ -429,28 +429,24 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
+// ==================== REFS Y ESTADO ====================
 const usuario = ref({})
 const claveIndicador = ref('')
 const tipoIndicador = ref('')
 const indicadores = ref([])
 const indiceSeleccionado = ref(0)
+const modoProgramacion = ref('prorratear')
 
 const dimensiones = ['Eficiencia', 'Eficacia', 'Calidad', 'Economía']
 const sentidos = ['Ascendente', 'Descendente']
 const frecuencias = ['Mensual', 'Trimestral', 'Semestral', 'Anual']
 const periodos = ['Primer trimestre', 'Segundo trimestre', 'Tercer trimestre', 'Cuarto trimestre']
-const modoProgramacion = ref('prorratear')
-
 const currentYear = new Date().getFullYear()
 const anios = [currentYear, currentYear - 1, currentYear - 2]
 
-const nuevaMeta = ref({
-  metaProgramada: '',
-  cantidad: null,
-  periodoCumplimiento: '',
-})
-
+const nuevaMeta = ref({ metaProgramada: '', cantidad: null, periodoCumplimiento: '' })
 const indicadorActivo = computed(() => indicadores.value[indiceSeleccionado.value] || null)
+
 const siglas = ref({ resultadoEsperado: '', numerador: '', denominador: '' })
 let siglasInterval = null
 
@@ -531,7 +527,7 @@ function getMesesAcumulados(periodo) {
 // ==================== CARGA DE DATOS ====================
 onMounted(async () => {
   try {
-    // Cargar de localStorage primero
+    // Cargar respaldo local
     const local = localStorage.getItem('fichaIndicador')
     if (local) {
       const ficha = JSON.parse(local)
@@ -540,25 +536,20 @@ onMounted(async () => {
       tipoIndicador.value = ficha.tipoIndicador || ''
       indicadores.value = ficha.indicadores || []
       programacionMetas.value = ficha.programacionMetas || programacionMetas.value
-      Notify.create({ type: 'info', message: 'Ficha cargada desde LocalStorage' })
+      Notify.create({ type: 'info', message: 'Ficha cargada desde respaldo local' })
     }
 
-    // traer usuario (GET)
-    try {
-      const me = await api.get('/Cuentas/me')
-      usuario.value = me.data || {}
-    } catch (err) {
-      console.warn('No se pudo obtener /Cuentas/me', err)
-    }
+    // Obtener usuario
+    const me = await api.get('/Cuentas/me')
+    usuario.value = me.data || {}
 
-    // traer MIR (GET)
+    // Cargar MIR
     const mir = await api.get('/MatrizIndicadores/ultimo')
     const filas = mir.data?.filas || []
-
     indicadores.value = filas.map((f) => ({
       id: f.id,
       nivel: f.nivel || '',
-      indicadores: f.indicadores || '', // 👈 Aquí viene el nombre del indicador real
+      indicadores: f.indicadores || '',
       resultadoEsperado: f.resumenNarrativo || '',
       dimension: '',
       sentido: '',
@@ -580,14 +571,13 @@ onMounted(async () => {
       lineasAccion: [],
     }))
 
-    // traer líneas de acción (GET)
     await cargarLineasAccion()
 
     const nivelActual = (indicadores.value[0]?.nivel || '').toString().toLowerCase()
-
     tipoIndicador.value =
       nivelActual === 'fin' || nivelActual.includes('prop') ? 'Estratégico' : 'De Gestión'
 
+    // Generar siglas dinámicas
     siglasInterval = setInterval(() => {
       const activo = indicadorActivo.value
       if (!activo) return
@@ -618,8 +608,6 @@ async function cargarLineasAccion() {
         ramo: la.ramo,
         userId: la.userId,
       }))
-
-      // inicializar selección
       if (!ind.lineaAccionSeleccionada && ind.lineasAccion.length) {
         ind.lineaAccionSeleccionada = null
       }
@@ -663,19 +651,73 @@ function eliminarMeta(idx) {
   activo.metas.splice(idx, 1)
 }
 
-// ==================== GUARDAR LOCALSTORAGE ====================
-function guardar() {
-  const fichaPayload = {
-    usuario: usuario.value,
-    claveIndicador: claveIndicador.value,
-    tipoIndicador: tipoIndicador.value,
-    indicadores: indicadores.value,
-    programacionMetas: programacionMetas.value,
-  }
+async function guardar() {
+  try {
+    // 🔹 Aseguramos que todos los años se envíen como string
+    const indicadoresNormalizados = indicadores.value.map((ind) => ({
+      nivel: ind.nivel,
+      resultadoEsperado: ind.resultadoEsperado,
+      dimension: ind.dimension,
+      sentido: ind.sentido,
+      definicion: ind.definicion,
+      unidadMedida: ind.unidadMedida,
+      rangoValor: ind.rangoValor,
+      frecuenciaMedicion: ind.frecuenciaMedicion,
+      cobertura: ind.cobertura,
+      numerador: ind.numerador,
+      denominador: ind.denominador,
+      descripcion: ind.descripcion,
+      fuenteResultado: ind.fuentes?.resultadoEsperado || '',
+      fuenteNumerador: ind.fuentes?.numerador || '',
+      fuenteDenominador: ind.fuentes?.denominador || '',
+      lineaBaseValor: ind.lineaBase?.valor ?? null, // ✅ CAMBIO AQUÍ
+      lineaBaseUnidad: ind.lineaBase?.unidad || '',
+      lineaBaseAnio: ind.lineaBase?.anio?.toString() || '',
+      lineaBasePeriodo: ind.lineaBase?.periodo || '',
+    }))
 
-  localStorage.setItem('fichaIndicador', JSON.stringify(fichaPayload))
-  Notify.create({ type: 'positive', message: 'Ficha Tecnica' })
-  localStorage.setItem('ultimaRutaRegistro', '/formulario-ficha-tecnica-1')
+    const metasProgramadasNormalizadas = programacionMetas.value.map((m, i) => ({
+      metaProgramadaNombre: m.metaProgramada || `Meta ${i + 1}`,
+      cantidad: m.cantidad,
+      periodoCumplimiento: nuevaMeta.value.periodoCumplimiento || '',
+      mes: i + 1,
+      cantidadEsperada: m.cantidad,
+      alcanzado: m.alcanzado,
+    }))
+
+    const lineasAccionNormalizadas = indicadores.value.flatMap((ind) =>
+      (ind.lineasAccion || []).map((la) => ({
+        acuerdo: la.acuerdo,
+        objetivo: la.objetivo,
+        estrategia: la.estrategia,
+        lineaAccionTexto: la.lineaAccion,
+        ramo: la.ramo,
+      })),
+    )
+
+    // 🔹 Payload final plano, sin "model"
+    const fichaPayload = {
+      claveIndicador: claveIndicador.value,
+      tipoIndicador: tipoIndicador.value,
+      nombre: indicadorActivo.value?.indicadores || '',
+      indicadores: indicadoresNormalizados,
+      metasProgramadas: metasProgramadasNormalizadas,
+      lineasAccion: lineasAccionNormalizadas,
+    }
+
+    console.log('📤 Enviando payload:', fichaPayload)
+
+    // 🔹 Llamada directa al backend
+    const res = await api.post('/FichaIndicador', fichaPayload)
+
+    Notify.create({ type: 'positive', message: 'Ficha técnica guardada correctamente' })
+    localStorage.setItem('fichaIndicador', JSON.stringify(fichaPayload))
+
+    console.log('✅ Ficha guardada en backend:', res.data)
+  } catch (err) {
+    console.error('❌ Error al guardar ficha:', err.response?.data || err)
+    Notify.create({ type: 'negative', message: 'Error al guardar ficha en el servidor' })
+  }
 }
 
 onUnmounted(() => {

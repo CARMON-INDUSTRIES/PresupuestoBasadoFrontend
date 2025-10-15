@@ -178,7 +178,7 @@
 
         <!-- Formato Estructura Analitica -->
         <q-expansion-item
-          icon="account_tree"
+          icon="description"
           label="Formato Estructura Analitica"
           expand-separator
           class="expansion-card"
@@ -201,7 +201,7 @@
         </q-expansion-item>
 
         <q-expansion-item
-          icon="account_tree"
+          icon="groups"
           label="Formato Matriz"
           expand-separator
           class="expansion-card"
@@ -218,6 +218,29 @@
                 icon="picture_as_pdf"
                 label="Descargar PDF"
                 @click="descargarPdf('FormatoMatriz')"
+              />
+            </q-card-actions>
+          </q-card>
+        </q-expansion-item>
+
+        <q-expansion-item
+          icon="account_tree"
+          label="Formato Ficha Tecnica Del Indicador"
+          expand-separator
+          class="expansion-card"
+        >
+          <q-card flat bordered class="q-ma-sm formato-card">
+            <q-card-section>
+              <q-item-label>Descargar PDF directamente desde el backend</q-item-label>
+            </q-card-section>
+            <q-card-actions align="right">
+              <q-btn
+                color="primary"
+                rounded
+                dense
+                icon="picture_as_pdf"
+                label="Descargar PDF"
+                @click="descargarPdf('FormatoFichaFinal')"
               />
             </q-card-actions>
           </q-card>
