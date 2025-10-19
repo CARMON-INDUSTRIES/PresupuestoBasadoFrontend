@@ -11,13 +11,16 @@
         <!-- Formato Alineación -->
         <q-expansion-item
           icon="person_outline"
-          label="Formato Alineación"
+          label="Formato Alineación de la Matriz de Indicadores "
           expand-separator
           class="expansion-card"
         >
           <q-card flat bordered class="q-ma-sm formato-card">
             <q-card-section>
-              <q-item-label>Descargar PDF directamente desde el backend</q-item-label>
+              <q-item-label
+                >Formato 1 Alineación de la Matriz de Indicadores Para Resultados al Plan Municipal
+                de Desarrollo
+              </q-item-label>
             </q-card-section>
             <q-card-actions align="right">
               <q-btn
@@ -35,85 +38,13 @@
         <!-- Formato Análisis de Involucrados -->
         <q-expansion-item
           icon="groups"
-          label="Formato Análisis de Involucrados"
+          label="Formato Ficha de Informacion Básica"
           expand-separator
           class="expansion-card"
         >
           <q-card flat bordered class="q-ma-sm formato-card">
             <q-card-section>
-              <q-item-label>Descargar PDF directamente desde el backend</q-item-label>
-            </q-card-section>
-            <q-card-actions align="right">
-              <q-btn
-                color="primary"
-                rounded
-                dense
-                icon="picture_as_pdf"
-                label="Descargar PDF"
-                @click="descargarPdf('FormatoAnalisisInvolucrados')"
-              />
-            </q-card-actions>
-          </q-card>
-        </q-expansion-item>
-
-        <!-- Formato Análisis De Involucrados -->
-        <q-expansion-item
-          icon="group_work"
-          label="Formato Análisis De Involucrados"
-          expand-separator
-          class="expansion-card"
-        >
-          <q-card flat bordered class="q-ma-sm formato-card">
-            <q-card-section>
-              <q-item-label>Descargar PDF directamente desde el backend</q-item-label>
-            </q-card-section>
-            <q-card-actions align="right">
-              <q-btn
-                color="primary"
-                rounded
-                dense
-                icon="picture_as_pdf"
-                label="Descargar PDF"
-                @click="descargarPdf('FormatoAnalisisDeInvolucrados')"
-              />
-            </q-card-actions>
-          </q-card>
-        </q-expansion-item>
-
-        <!-- Formato Definición del Problema -->
-        <q-expansion-item
-          icon="analytics"
-          label="Formato Definición del Problema"
-          expand-separator
-          class="expansion-card"
-        >
-          <q-card flat bordered class="q-ma-sm formato-card">
-            <q-card-section>
-              <q-item-label>Descargar PDF directamente desde el backend</q-item-label>
-            </q-card-section>
-            <q-card-actions align="right">
-              <q-btn
-                color="primary"
-                rounded
-                dense
-                icon="picture_as_pdf"
-                label="Descargar PDF"
-                @click="descargarPdf('FormatoDefinicionDelProblema')"
-              />
-            </q-card-actions>
-          </q-card>
-        </q-expansion-item>
-
-        <!-- Formato Ficha de Información Básica -->
-        <q-expansion-item
-          icon="description"
-          label="Formato Ficha de Información Básica"
-          expand-separator
-          class="expansion-card"
-        >
-          <q-card flat bordered class="q-ma-sm formato-card">
-            <q-card-section>
-              <q-item-label>Descargar PDF directamente desde el backend</q-item-label>
+              <q-item-label>Anexo 1 Ficha de Informacion Básica</q-item-label>
             </q-card-section>
             <q-card-actions align="right">
               <q-btn
@@ -128,16 +59,64 @@
           </q-card>
         </q-expansion-item>
 
-        <!-- Formato Árbol de Problemas -->
+        <!-- Formato Análisis De Involucrados -->
         <q-expansion-item
-          icon="account_tree"
-          label="Formato Árbol de Problemas"
+          icon="group_work"
+          label="Formato Definicion Del Problema"
           expand-separator
           class="expansion-card"
         >
           <q-card flat bordered class="q-ma-sm formato-card">
             <q-card-section>
-              <q-item-label>Descargar PDF directamente desde el backend</q-item-label>
+              <q-item-label>Anexo 2 Definicion del Problema</q-item-label>
+            </q-card-section>
+            <q-card-actions align="right">
+              <q-btn
+                color="primary"
+                rounded
+                dense
+                icon="picture_as_pdf"
+                label="Descargar PDF"
+                @click="descargarPdf('FormatoDefinicionDelProblema')"
+              />
+            </q-card-actions>
+          </q-card>
+        </q-expansion-item>
+
+        <!-- Formato Definición del Problema -->
+        <q-expansion-item
+          icon="analytics"
+          label="Formato Analisis de Involucrados"
+          expand-separator
+          class="expansion-card"
+        >
+          <q-card flat bordered class="q-ma-sm formato-card">
+            <q-card-section>
+              <q-item-label>Anexo 3 Análisis de Involucrados </q-item-label>
+            </q-card-section>
+            <q-card-actions align="right">
+              <q-btn
+                color="primary"
+                rounded
+                dense
+                icon="picture_as_pdf"
+                label="Descargar PDF"
+                @click="descargarPdf('FormatoAnalisisDeInvolucrados')"
+              />
+            </q-card-actions>
+          </q-card>
+        </q-expansion-item>
+
+        <!-- Formato Ficha de Información Básica -->
+        <q-expansion-item
+          icon="description"
+          label="Formato Arbol de Problemas"
+          expand-separator
+          class="expansion-card"
+        >
+          <q-card flat bordered class="q-ma-sm formato-card">
+            <q-card-section>
+              <q-item-label>Anexo 4 Árbol de Problemas </q-item-label>
             </q-card-section>
             <q-card-actions align="right">
               <q-btn
@@ -152,7 +131,7 @@
           </q-card>
         </q-expansion-item>
 
-        <!-- Formato Árbol de Objetivos -->
+        <!-- Formato Árbol de Problemas -->
         <q-expansion-item
           icon="account_tree"
           label="Formato Árbol de Objetivos"
@@ -161,7 +140,7 @@
         >
           <q-card flat bordered class="q-ma-sm formato-card">
             <q-card-section>
-              <q-item-label>Descargar PDF directamente desde el backend</q-item-label>
+              <q-item-label>Anexo 5 Árbol de Objetivos </q-item-label>
             </q-card-section>
             <q-card-actions align="right">
               <q-btn
@@ -171,6 +150,30 @@
                 icon="picture_as_pdf"
                 label="Descargar PDF"
                 @click="descargarPdf('FormatoArbolDeObjetivos')"
+              />
+            </q-card-actions>
+          </q-card>
+        </q-expansion-item>
+
+        <!-- Formato Árbol de Objetivos -->
+        <q-expansion-item
+          icon="account_tree"
+          label="Formato Analisis de Involucrados"
+          expand-separator
+          class="expansion-card"
+        >
+          <q-card flat bordered class="q-ma-sm formato-card">
+            <q-card-section>
+              <q-item-label>Anexo 6 Análisis de Involucrados </q-item-label>
+            </q-card-section>
+            <q-card-actions align="right">
+              <q-btn
+                color="primary"
+                rounded
+                dense
+                icon="picture_as_pdf"
+                label="Descargar PDF"
+                @click="descargarPdf('FormatoArbolInvolucrados')"
               />
             </q-card-actions>
           </q-card>
