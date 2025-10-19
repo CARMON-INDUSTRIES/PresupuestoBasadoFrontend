@@ -173,7 +173,7 @@
                 dense
                 icon="picture_as_pdf"
                 label="Descargar PDF"
-                @click="descargarPdf('FormatoArbolInvolucrados')"
+                @click="descargarPdf('FormatoAnalisisInvolucrados')"
               />
             </q-card-actions>
           </q-card>
