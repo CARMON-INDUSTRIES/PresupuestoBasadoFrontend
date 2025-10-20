@@ -86,7 +86,7 @@ const login = ref({ user: '', password: '' })
 const loading = ref(false)
 const showPassword = ref(false)
 
-// 🔹 Todas las rutas del flujo de registro
+//  Todas las rutas del flujo de registro
 const rutasRegistro = [
   '/formulario-alineacion',
   '/formulario-justificacion',
@@ -141,12 +141,12 @@ const handleLogin = async () => {
 
     const ultimaRuta = localStorage.getItem('ultimaRutaRegistro')
 
-    // 🔹 Solo mostrar alerta si la última ruta está después de "alineación"
+    //  Solo mostrar alerta si la última ruta está después de "alineación"
     const indiceUltimaRuta = rutasRegistro.indexOf(ultimaRuta)
     const indiceAlineacion = rutasRegistro.indexOf('/formulario-alineacion')
 
     if (ultimaRuta && indiceUltimaRuta > indiceAlineacion && ultimaRuta !== rutaFicha) {
-      console.log('🔹 Mostrando SweetAlert para continuar en la ruta guardada')
+      console.log(' Mostrando SweetAlert para continuar en la ruta guardada')
       await Swal.fire({
         title: 'Registro incompleto',
         text: `Te quedaste en: ${obtenerTextoRuta(ultimaRuta)}`,
@@ -165,7 +165,7 @@ const handleLogin = async () => {
         }
       })
     } else {
-      console.log('🔹 No hay registro previo válido o es alineación, redirigiendo a alineación')
+      console.log(' No hay registro previo válido o es alineación, redirigiendo a alineación')
       router.push('/formulario-alineacion')
     }
   } catch (error) {
@@ -178,7 +178,7 @@ const handleLogin = async () => {
   }
 }
 
-// 🔹 Traduce rutas a textos amigables
+//  Traduce rutas a textos amigables
 function obtenerTextoRuta(ruta) {
   const mapa = {
     '/formulario-alineacion': 'la sección de Alineación',

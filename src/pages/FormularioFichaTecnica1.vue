@@ -600,13 +600,7 @@ async function cargarLineasAccion() {
 
     indicadores.value.forEach((ind) => {
       ind.lineasAccion = data.map((la) => ({
-        id: la.id,
-        acuerdo: la.acuerdo,
-        objetivo: la.objetivo,
-        estrategia: la.estrategia,
         lineaAccion: la.lineaAccion,
-        ramo: la.ramo,
-        userId: la.userId,
       }))
       if (!ind.lineaAccionSeleccionada && ind.lineasAccion.length) {
         ind.lineaAccionSeleccionada = null

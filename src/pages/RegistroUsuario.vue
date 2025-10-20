@@ -1,7 +1,7 @@
 <template>
   <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="registrarUsuario" class="q-gutter-md">
-      <q-card flat bordered class="q-pa-lg" style="max-width: 1200px; height: 500px; margin: auto">
+      <q-card flat bordered class="q-pa-lg" style="max-width: 1200px; height: 550px; margin: auto">
         <q-card-section>
           <div class="text-h5 text-center text-primary">Registro de Usuario</div>
         </q-card-section>
@@ -18,7 +18,7 @@
               <q-input
                 v-model="form.password"
                 label="Contraseña"
-                type="password"
+                type="text"
                 filled
                 stack-label
                 required
@@ -112,6 +112,23 @@
                 map-options
                 required
               >
+                <template #prepend><q-icon name="domain" /></template>
+              </q-select>
+            </div>
+
+            <div class="col-6">
+              <q-select
+                v-model="form.EntidadId"
+                :options="entidad"
+                label="Entidad Federal"
+                option-value="id"
+                option-label="nombre"
+                filled
+                stack-label
+                emit-value
+                map-options
+                required
+              >
                 <template #prepend><q-icon name="apartment" /></template>
               </q-select>
             </div>
@@ -143,6 +160,7 @@ const form = ref({
   nombreMatriz: '',
   rol: '',
   unidadAdministrativaId: null,
+  EntidadId: null,
 })
 
 const roles = [
@@ -151,6 +169,7 @@ const roles = [
 ]
 
 const unidades = ref([])
+const entidad = ref([])
 const loading = ref(false)
 
 onMounted(async () => {
@@ -159,6 +178,13 @@ onMounted(async () => {
     unidades.value = res.data
   } catch (error) {
     console.error('Error al cargar unidades:', error)
+  }
+
+  try {
+    const ent = await api.get('/Entidad')
+    entidad.value = ent.data
+  } catch (error) {
+    console.error('Error al cargar entidades:', error)
   }
 })
 
