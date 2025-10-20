@@ -71,6 +71,23 @@ const rutasRegistro = [
   '/formulario-clasificacion',
   '/formulario-actividad',
   '/formulario-ficha-tecnica-1',
+  '/formulario-matriz-indicadores',
+  '/formulario-antecedente',
+  '/formulario-identificacion-problema',
+  '/formulario-determinacion-justificacion',
+  '/formulario-cobertura',
+  '/formulario-diseno-intervencion',
+  '/formulario-reglas-operacion-detalle',
+  '/formulario-programa-social',
+  '/formulario-padron-beneficiarios',
+  '/formulario-reglas-operacion',
+  '/PoblacionAreaEnfoquePotencial',
+  '/FormularioAnalisisInvolucrados',
+  '/formulario-arbol-problemas',
+  '/formulario-arbol-objetivos',
+  '/formulario-analisis-alternativas',
+  '/formulario-estructura-analitica',
+  '/Formulario-ficha-tecnica-1',
 ]
 
 // 🧩 Guardar última ruta visitada del flujo
