@@ -158,7 +158,7 @@
         <!-- Formato Árbol de Objetivos -->
         <q-expansion-item
           icon="account_tree"
-          label="Formato Analisis de Involucrados"
+          label="Formato Analisis de Alternativas"
           expand-separator
           class="expansion-card"
         >
