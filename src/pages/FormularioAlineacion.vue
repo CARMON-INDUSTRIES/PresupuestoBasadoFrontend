@@ -104,8 +104,20 @@
           </q-select>
         </q-card-section>
 
-        <!-- Botón -->
-        <q-card-actions align="right">
+        <!-- Botones -->
+        <q-card-actions align="right" class="q-gutter-sm">
+          <!-- Botón registrar -->
+          <q-btn
+            label="Registrar alineación"
+            color="secondary"
+            text-color="white"
+            rounded
+            unelevated
+            @click="registrarAlineacion"
+            :disable="loading"
+          />
+
+          <!-- Botón continuar -->
           <q-btn
             label="Continuar"
             color="primary"
@@ -115,24 +127,28 @@
             unelevated
             class="submit-btn"
             :loading="loading"
+            :disable="!ambasCompletas"
           />
         </q-card-actions>
+
+        <!-- Indicador visual opcional -->
+        <q-card-section v-if="ambasCompletas" class="text-positive text-center q-mt-sm">
+          Ambas alineaciones (Municipal y Estatal) registradas. Ya puedes continuar.
+        </q-card-section>
       </q-card>
     </q-form>
   </q-page>
 </template>
-
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
+import Swal from 'sweetalert2'
 import api from 'src/boot/api'
 
 const router = useRouter()
 const loading = ref(false)
-
 const STORAGE_KEY = 'formAlineacion'
-
 const ramos = ['Recurso Propio', 'Recurso Estatal', 'Recurso Federal']
 
 const form = ref({
@@ -144,12 +160,21 @@ const form = ref({
   lineasAccion: [],
 })
 
-// Opciones dinámicas
+// Listas dinámicas
 const acuerdos = ref([])
 const objetivos = ref([])
 const estrategias = ref([])
 const lineasAccion = ref([])
 
+// ✅ Bandera reactiva que controla si ambas alineaciones están completas
+const ambasCompletas = ref(false)
+function verificarAlineaciones() {
+  const m = localStorage.getItem('alineacionMunicipal')
+  const e = localStorage.getItem('alineacionEstatal')
+  ambasCompletas.value = !!(m && e)
+}
+
+// 🧩 Utilidad para sacar etiquetas de listas
 function labelFromList(list, id) {
   if (id === null || id === undefined) return ''
   if (Array.isArray(id)) {
@@ -159,7 +184,7 @@ function labelFromList(list, id) {
   return found ? found.label : ''
 }
 
-// 🧩 --- Carga de combos --- //
+// --- Carga de combos ---
 const onTipoChange = async (tipo) => {
   form.value.acuerdo = null
   form.value.objetivo = null
@@ -216,6 +241,7 @@ const onObjetivoChange = async (objetivoId) => {
     form.value.tipo === 'Estado'
       ? `/PlanEstatal/objetivo/${objetivoId}/estrategias`
       : `/PlanMunicipal/objetivo/${objetivoId}/estrategias`
+
   try {
     const { data } = await api.get(endpoint)
     estrategias.value = data.map((e) => ({ label: e.nombre ?? e.Nombre, value: e.id ?? e.Id }))
@@ -256,18 +282,17 @@ const onEstrategiasChange = async (selectedIds) => {
   }
 }
 
-// 🧠 Restaurar progreso al montar
+// 🧠 Restaurar progreso y revisar si ya hay alineaciones registradas
 onMounted(async () => {
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved) {
     Object.assign(form.value, JSON.parse(saved))
-
-    // recargar combos dinámicos
     if (form.value.tipo) await onTipoChange(form.value.tipo)
     if (form.value.acuerdo) await onAcuerdoChange(form.value.acuerdo)
     if (form.value.objetivo) await onObjetivoChange(form.value.objetivo)
     if (form.value.estrategias.length) await onEstrategiasChange(form.value.estrategias)
   }
+  verificarAlineaciones()
 })
 
 // 💾 Guardar automáticamente cada cambio
@@ -279,34 +304,96 @@ watch(
   { deep: true },
 )
 
-// 📤 Envío del formulario
+// Registrar alineación (guardando también los labels)
+async function registrarAlineacion() {
+  if (!form.value.tipo) {
+    Notify.create({
+      type: 'warning',
+      message: 'Selecciona un tipo de alineación antes de registrar',
+    })
+    return
+  }
+
+  const alineacionConLabels = {
+    ...form.value,
+    acuerdoLabel: labelFromList(acuerdos.value, form.value.acuerdo),
+    objetivoLabel: labelFromList(objetivos.value, form.value.objetivo),
+    estrategiasLabels: labelFromList(estrategias.value, form.value.estrategias),
+    lineasLabels: labelFromList(lineasAccion.value, form.value.lineasAccion),
+  }
+
+  if (form.value.tipo === 'Municipio') {
+    localStorage.setItem('alineacionMunicipal', JSON.stringify(alineacionConLabels))
+    Notify.create({ type: 'positive', message: 'Alineación municipal registrada' })
+  } else if (form.value.tipo === 'Estado') {
+    localStorage.setItem('alineacionEstatal', JSON.stringify(alineacionConLabels))
+    Notify.create({ type: 'positive', message: 'Alineación estatal registrada' })
+  }
+
+  // Limpiar formulario
+  form.value = {
+    tipo: '',
+    ramo: '',
+    acuerdo: null,
+    objetivo: null,
+    estrategias: [],
+    lineasAccion: [],
+  }
+  acuerdos.value = []
+  objetivos.value = []
+  estrategias.value = []
+  lineasAccion.value = []
+  localStorage.removeItem(STORAGE_KEY)
+
+  verificarAlineaciones()
+}
+
+// 📤 Envío del formulario final
 async function submitForm() {
+  if (!ambasCompletas.value) {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Falta información',
+      text: 'Debes registrar ambas alineaciones (Municipal y Estatal) antes de continuar.',
+      confirmButtonColor: '#691b31',
+    })
+    return
+  }
+
   loading.value = true
   try {
-    const acuerdoLabel = labelFromList(acuerdos.value, form.value.acuerdo)
-    const objetivoLabel = labelFromList(objetivos.value, form.value.objetivo)
-    const estrategiaLabels = labelFromList(estrategias.value, form.value.estrategias)
-    const lineaLabels = labelFromList(lineasAccion.value, form.value.lineasAccion)
+    const alineacionMunicipal = JSON.parse(localStorage.getItem('alineacionMunicipal'))
+    const alineacionEstatal = JSON.parse(localStorage.getItem('alineacionEstatal'))
 
-    const endpoint = form.value.tipo === 'Estado' ? '/AlineacionEstado' : '/AlineacionMunicipio'
+    const alineaciones = [
+      { tipo: 'Municipio', data: alineacionMunicipal },
+      { tipo: 'Estado', data: alineacionEstatal },
+    ]
 
-    await api.post(endpoint, {
-      acuerdo: acuerdoLabel,
-      objetivo: objetivoLabel,
-      estrategia: estrategiaLabels.join(', '),
-      lineaAccion: lineaLabels.join(', '),
-      ramo: form.value.ramo,
-    })
+    for (const alineacion of alineaciones) {
+      const endpoint = alineacion.tipo === 'Estado' ? '/AlineacionEstado' : '/AlineacionMunicipio'
 
-    localStorage.setItem('tipoAlineacion', form.value.tipo)
-    //localStorage.removeItem(STORAGE_KEY)
+      // Usamos los labels guardados
+      await api.post(endpoint, {
+        acuerdo: alineacion.data.acuerdoLabel,
+        objetivo: alineacion.data.objetivoLabel,
+        estrategia: alineacion.data.estrategiasLabels.join(', '),
+        lineaAccion: alineacion.data.lineasLabels.join(', '),
+        ramo: alineacion.data.ramo,
+      })
+    }
 
-    Notify.create({ type: 'positive', message: 'Alineación guardada correctamente' })
+    localStorage.removeItem('alineacionMunicipal')
+    localStorage.removeItem('alineacionEstatal')
+    localStorage.removeItem(STORAGE_KEY)
+
+    Notify.create({ type: 'positive', message: 'Alineaciones registradas correctamente' })
     router.push('/formulario-clasificacion')
   } catch (error) {
+    console.error(error)
     Notify.create({
       type: 'negative',
-      message: error.response?.data?.message || 'Error al guardar la alineación',
+      message: error.response?.data?.message || 'Error al guardar las alineaciones',
     })
   } finally {
     loading.value = false
