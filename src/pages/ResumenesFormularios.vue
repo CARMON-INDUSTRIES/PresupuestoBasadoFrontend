@@ -164,7 +164,7 @@
         >
           <q-card flat bordered class="q-ma-sm formato-card">
             <q-card-section>
-              <q-item-label>Anexo 6 Análisis de Involucrados </q-item-label>
+              <q-item-label>Anexo 6 Análisis de Alternativas </q-item-label>
             </q-card-section>
             <q-card-actions align="right">
               <q-btn
