@@ -230,7 +230,7 @@ async function guardarMatriz() {
     await api.post('/MatrizIndicadores', payload)
     Notify.create({ type: 'positive', message: 'Matriz guardada correctamente' })
     router.push('/formulario-ficha-tecnica-1')
-    localStorage.setItem('ultimaRutaRegistro', '/formulario-ficha-tecnica-1')
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-matriz-indicadores')
   } catch (error) {
     console.error('❌ Error al guardar MIR:', error)
     Notify.create({ type: 'negative', message: 'Error al guardar la MIR' })
