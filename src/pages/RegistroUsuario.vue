@@ -82,7 +82,6 @@
               </q-input>
             </div>
 
-            <!-- Cuarta fila -->
             <div class="col-6">
               <q-select
                 v-model="form.rol"
