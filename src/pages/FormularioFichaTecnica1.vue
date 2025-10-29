@@ -218,19 +218,21 @@
       </q-card-section>
 
       <!-- ====== LÍNEAS DE ACCIÓN (V) ====== -->
-      <q-card-section v-if="indicadorActivo?.lineasAccion?.length">
+      <q-card-section v-if="filtradas.length">
         <div class="text-h6 q-mb-md">Líneas de Acción</div>
 
         <q-markup-table flat bordered>
           <thead>
             <tr>
               <th>Línea de Acción</th>
+              <th>Tipo</th>
               <th>Seleccionar</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="la in indicadorActivo.lineasAccion" :key="la.id">
-              <td>{{ la.lineaAccion }}</td>
+            <tr v-for="la in filtradas" :key="la.id">
+              <td>{{ la.lineaAccion || la.nombre }}</td>
+              <td>{{ la.tipo }}</td>
               <td>
                 <q-radio
                   v-model="indicadorActivo.lineaAccionSeleccionada"
@@ -446,6 +448,32 @@ const anios = [currentYear, currentYear - 1, currentYear - 2]
 
 const nuevaMeta = ref({ metaProgramada: '', cantidad: null, periodoCumplimiento: '' })
 const indicadorActivo = computed(() => indicadores.value[indiceSeleccionado.value] || null)
+const filtradas = computed(() => {
+  // Leer las alineaciones municipales y estatales
+  const municipal = JSON.parse(localStorage.getItem('LineaMunicipal') || '{}')
+  const estatal = JSON.parse(localStorage.getItem('LineaEstatal') || '{}')
+
+  const lineasM =
+    municipal.lineasSeleccionadas?.map((l) => ({
+      id: l.id,
+      lineaAccion: l.nombre,
+      tipo: 'Municipal',
+    })) || []
+
+  const lineasE =
+    estatal.lineasSeleccionadas?.map((l) => ({
+      id: l.id,
+      lineaAccion: l.nombre,
+      tipo: 'Estatal',
+    })) || []
+
+  // Mezclar ambas
+  const todas = [...lineasM, ...lineasE]
+
+  // Filtrar sólo las que estén en el indicador activo
+  const idsPermitidos = todas.map((l) => l.id)
+  return indicadorActivo.value?.lineasAccion?.filter((l) => idsPermitidos.includes(l.id)) || []
+})
 
 const siglas = ref({ resultadoEsperado: '', numerador: '', denominador: '' })
 let siglasInterval = null
@@ -527,7 +555,7 @@ function getMesesAcumulados(periodo) {
 // ==================== CARGA DE DATOS ====================
 onMounted(async () => {
   try {
-    // Cargar respaldo local
+    // 🔹 1. Cargar respaldo local de ficha
     const local = localStorage.getItem('fichaIndicador')
     if (local) {
       const ficha = JSON.parse(local)
@@ -539,11 +567,11 @@ onMounted(async () => {
       Notify.create({ type: 'info', message: 'Ficha cargada desde respaldo local' })
     }
 
-    // Obtener usuario
+    // 🔹 2. Cargar usuario actual
     const me = await api.get('/Cuentas/me')
     usuario.value = me.data || {}
 
-    // Cargar MIR
+    // 🔹 3. Cargar MIR y generar indicadores
     const mir = await api.get('/MatrizIndicadores/ultimo')
     const filas = mir.data?.filas || []
     indicadores.value = filas.map((f) => ({
@@ -571,13 +599,15 @@ onMounted(async () => {
       lineasAccion: [],
     }))
 
+    // 🔹 4. Cargar alineaciones desde localStorage o API
     await cargarLineasAccion()
 
+    // 🔹 5. Configurar tipo de indicador
     const nivelActual = (indicadores.value[0]?.nivel || '').toString().toLowerCase()
     tipoIndicador.value =
       nivelActual === 'fin' || nivelActual.includes('prop') ? 'Estratégico' : 'De Gestión'
 
-    // Generar siglas dinámicas
+    // 🔹 6. Generar siglas dinámicamente
     siglasInterval = setInterval(() => {
       const activo = indicadorActivo.value
       if (!activo) return
@@ -595,16 +625,43 @@ onMounted(async () => {
 
 async function cargarLineasAccion() {
   try {
+    const municipal = JSON.parse(localStorage.getItem('LineaMunicipal') || '{}')
+    const estatal = JSON.parse(localStorage.getItem('LineaEstatal') || '{}')
+
+    const lineasM =
+      municipal.lineasSeleccionadas?.map((l) => ({
+        id: l.id,
+        lineaAccion: l.nombre,
+        tipo: 'Municipal',
+      })) || []
+
+    const lineasE =
+      estatal.lineasSeleccionadas?.map((l) => ({
+        id: l.id,
+        lineaAccion: l.nombre,
+        tipo: 'Estatal',
+      })) || []
+
+    const lineasSeleccionadas = [...lineasM, ...lineasE]
+
+    if (lineasSeleccionadas.length) {
+      indicadores.value.forEach((ind) => {
+        ind.lineasAccion = lineasSeleccionadas
+      })
+
+      console.log('✅ Líneas de acción cargadas correctamente:', lineasSeleccionadas)
+      return
+    }
+
+    // Si no hay en localStorage, traer del backend (fallback)
     const res = await api.get('/AlineacionMunicipio')
     const data = res.data || []
-
     indicadores.value.forEach((ind) => {
       ind.lineasAccion = data.map((la) => ({
+        id: la.id,
         lineaAccion: la.lineaAccion,
+        tipo: 'Municipal',
       }))
-      if (!ind.lineaAccionSeleccionada && ind.lineasAccion.length) {
-        ind.lineaAccionSeleccionada = null
-      }
     })
   } catch (err) {
     console.error('❌ Error al cargar líneas de acción', err)
@@ -626,11 +683,7 @@ function generarSiglas(texto) {
 function agregarMeta() {
   const activo = indicadorActivo.value
   if (!activo) return
-  if (
-    !nuevaMeta.value.metaProgramada ||
-    !nuevaMeta.value.cantidad ||
-    !nuevaMeta.value.periodoCumplimiento
-  ) {
+  if (!nuevaMeta.value.cantidad || !nuevaMeta.value.periodoCumplimiento) {
     Notify.create({ type: 'warning', message: 'Completa todos los campos de la meta' })
     return
   }
@@ -647,70 +700,19 @@ function eliminarMeta(idx) {
 
 async function guardar() {
   try {
-    // 🔹 Aseguramos que todos los años se envíen como string
-    const indicadoresNormalizados = indicadores.value.map((ind) => ({
-      nivel: ind.nivel,
-      resultadoEsperado: ind.resultadoEsperado,
-      dimension: ind.dimension,
-      sentido: ind.sentido,
-      definicion: ind.definicion,
-      unidadMedida: ind.unidadMedida,
-      rangoValor: ind.rangoValor,
-      frecuenciaMedicion: ind.frecuenciaMedicion,
-      cobertura: ind.cobertura,
-      numerador: ind.numerador,
-      denominador: ind.denominador,
-      descripcion: ind.descripcion,
-      fuenteResultado: ind.fuentes?.resultadoEsperado || '',
-      fuenteNumerador: ind.fuentes?.numerador || '',
-      fuenteDenominador: ind.fuentes?.denominador || '',
-      lineaBaseValor: ind.lineaBase?.valor ?? null, // ✅ CAMBIO AQUÍ
-      lineaBaseUnidad: ind.lineaBase?.unidad || '',
-      lineaBaseAnio: ind.lineaBase?.anio?.toString() || '',
-      lineaBasePeriodo: ind.lineaBase?.periodo || '',
-    }))
-
-    const metasProgramadasNormalizadas = programacionMetas.value.map((m, i) => ({
-      metaProgramadaNombre: m.metaProgramada || `Meta ${i + 1}`,
-      cantidad: m.cantidad,
-      periodoCumplimiento: nuevaMeta.value.periodoCumplimiento || '',
-      mes: i + 1,
-      cantidadEsperada: m.cantidad,
-      alcanzado: m.alcanzado,
-    }))
-
-    const lineasAccionNormalizadas = indicadores.value.flatMap((ind) =>
-      (ind.lineasAccion || []).map((la) => ({
-        acuerdo: la.acuerdo,
-        objetivo: la.objetivo,
-        estrategia: la.estrategia,
-        lineaAccionTexto: la.lineaAccion,
-        ramo: la.ramo,
-      })),
-    )
-
-    // 🔹 Payload final plano, sin "model"
     const fichaPayload = {
       claveIndicador: claveIndicador.value,
       tipoIndicador: tipoIndicador.value,
-      nombre: indicadorActivo.value?.indicadores || '',
-      indicadores: indicadoresNormalizados,
-      metasProgramadas: metasProgramadasNormalizadas,
-      lineasAccion: lineasAccionNormalizadas,
+      indicadores: indicadores.value,
+      programacionMetas: programacionMetas.value,
     }
 
-    console.log('📤 Enviando payload:', fichaPayload)
-
-    // 🔹 Llamada directa al backend
-    const res = await api.post('/FichaIndicador', fichaPayload)
-
-    Notify.create({ type: 'positive', message: 'Ficha técnica guardada correctamente' })
+    await api.post('/FichaIndicador', fichaPayload)
     localStorage.setItem('fichaIndicador', JSON.stringify(fichaPayload))
-
-    console.log('✅ Ficha guardada en backend:', res.data)
+    Notify.create({ type: 'positive', message: 'Ficha técnica guardada correctamente' })
   } catch (err) {
-    console.error('❌ Error al guardar ficha:', err.response?.data || err)
-    Notify.create({ type: 'negative', message: 'Error al guardar ficha en el servidor' })
+    console.error('❌ Error al guardar ficha:', err)
+    Notify.create({ type: 'negative', message: 'Error al guardar ficha' })
   }
 }
 

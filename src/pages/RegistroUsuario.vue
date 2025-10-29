@@ -9,12 +9,12 @@
         <q-card-section>
           <div class="row q-col-gutter-md">
             <!-- Primera fila -->
-            <div class="col-4">
+            <div class="col-6">
               <q-input v-model="form.user" label="Usuario" filled stack-label required>
                 <template #prepend><q-icon name="person" /></template>
               </q-input>
             </div>
-            <div class="col-4">
+            <div class="col-6">
               <q-input
                 v-model="form.password"
                 label="Contraseña"
@@ -24,61 +24,6 @@
                 required
               >
                 <template #prepend><q-icon name="lock" /></template>
-              </q-input>
-            </div>
-            <div class="col-4">
-              <q-input
-                v-model="form.email"
-                label="Correo electrónico"
-                type="email"
-                filled
-                stack-label
-              >
-                <template #prepend><q-icon name="mail" /></template>
-              </q-input>
-            </div>
-
-            <!-- Segunda fila -->
-            <div class="col-4">
-              <q-input v-model="form.nombreCompleto" label="Nombre completo" filled stack-label>
-                <template #prepend><q-icon name="badge" /></template>
-              </q-input>
-            </div>
-            <div class="col-4">
-              <q-input v-model="form.cargo" label="Cargo" filled stack-label>
-                <template #prepend><q-icon name="work" /></template>
-              </q-input>
-            </div>
-            <div class="col-4">
-              <q-input v-model="form.coordinador" label="Coordinador" filled stack-label disable>
-                <template #prepend><q-icon name="supervisor_account" /></template>
-              </q-input>
-            </div>
-
-            <!-- Tercera fila -->
-            <div class="col-4">
-              <q-input
-                v-model="form.unidadesPresupuestales"
-                label="Unidades Presupuestales"
-                filled
-                stack-label
-              >
-                <template #prepend><q-icon name="domain" /></template>
-              </q-input>
-            </div>
-            <div class="col-4">
-              <q-input
-                v-model="form.programaPresupuestario"
-                label="Programa Presupuestario"
-                filled
-                stack-label
-              >
-                <template #prepend><q-icon name="assignment" /></template>
-              </q-input>
-            </div>
-            <div class="col-4">
-              <q-input v-model="form.nombreMatriz" label="Nombre Matriz" filled stack-label>
-                <template #prepend><q-icon name="description" /></template>
               </q-input>
             </div>
 
@@ -150,13 +95,6 @@ import api from 'src/boot/api'
 const form = ref({
   user: '',
   password: '',
-  email: '',
-  nombreCompleto: '',
-  cargo: '',
-  coordinador: 'M.R.H.Daniela Lopez Hernandez', // Valor fijo
-  unidadesPresupuestales: '',
-  programaPresupuestario: '',
-  nombreMatriz: '',
   rol: '',
   unidadAdministrativaId: null,
   EntidadId: null,

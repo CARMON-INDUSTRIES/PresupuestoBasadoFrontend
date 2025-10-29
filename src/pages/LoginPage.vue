@@ -86,7 +86,6 @@ const login = ref({ user: '', password: '' })
 const loading = ref(false)
 const showPassword = ref(false)
 
-//  Todas las rutas del flujo de registro
 const rutasRegistro = [
   '/formulario-alineacion',
   '/formulario-justificacion',
@@ -118,7 +117,7 @@ const rutasRegistro = [
   '/programacion-metas',
 ]
 
-const rutaFicha = '/Formulario-ficha-tecnica-1'
+const rutaFicha = '/formulario-ficha-tecnica-1'
 
 const handleLogin = async () => {
   if (!login.value.user || !login.value.password) {
@@ -131,6 +130,7 @@ const handleLogin = async () => {
 
   loading.value = true
   try {
+    // 1️⃣ Inicia sesión
     const res = await api.post('/Cuentas/Login', {
       user: login.value.user,
       password: login.value.password,
@@ -139,14 +139,44 @@ const handleLogin = async () => {
     const token = res.data.token
     localStorage.setItem('token', token)
 
-    const ultimaRuta = localStorage.getItem('ultimaRutaRegistro')
+    // 2️⃣ Configura el token en el header
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
-    //  Solo mostrar alerta si la última ruta está después de "alineación"
+    // 3️⃣ Obtén los datos del usuario
+    const perfilRes = await api.get('/Cuentas/me')
+    const user = perfilRes.data
+
+    // 4️⃣ Verifica si tiene datos incompletos
+    const faltanDatos =
+      !user.nombreCompleto ||
+      !user.cargo ||
+      !user.unidadesPresupuestales ||
+      !user.programaPresupuestario ||
+      !user.nombreMatriz ||
+      !user.coordinador ||
+      !user.unidadAdministrativaId ||
+      !user.entidadId
+
+    if (faltanDatos) {
+      // Usuario nuevo ➜ Completar su registro
+      localStorage.setItem('usuarioBasico', JSON.stringify({ user: user.userName }))
+      await Swal.fire({
+        title: 'Bienvenido',
+        text: 'Parece que eres un usuario nuevo. Por favor completa tu registro antes de continuar.',
+        icon: 'info',
+        confirmButtonText: 'Continuar',
+        confirmButtonColor: '#691B31',
+      })
+      router.push('/registro-usuario-detalle')
+      return
+    }
+
+    // 5️⃣ Si ya tiene su información ➜ continuar con el flujo normal
+    const ultimaRuta = localStorage.getItem('ultimaRutaRegistro')
     const indiceUltimaRuta = rutasRegistro.indexOf(ultimaRuta)
     const indiceAlineacion = rutasRegistro.indexOf('/formulario-alineacion')
 
     if (ultimaRuta && indiceUltimaRuta > indiceAlineacion && ultimaRuta !== rutaFicha) {
-      console.log(' Mostrando SweetAlert para continuar en la ruta guardada')
       await Swal.fire({
         title: 'Registro incompleto',
         text: `Te quedaste en: ${obtenerTextoRuta(ultimaRuta)}`,
@@ -165,7 +195,6 @@ const handleLogin = async () => {
         }
       })
     } else {
-      console.log(' No hay registro previo válido o es alineación, redirigiendo a alineación')
       router.push('/formulario-alineacion')
     }
   } catch (error) {
@@ -178,7 +207,7 @@ const handleLogin = async () => {
   }
 }
 
-//  Traduce rutas a textos amigables
+// 🧭 Traduce rutas a textos amigables
 function obtenerTextoRuta(ruta) {
   const mapa = {
     '/formulario-alineacion': 'la sección de Alineación',
@@ -191,13 +220,13 @@ function obtenerTextoRuta(ruta) {
     '/formulario-clasificacion': 'la sección de Clasificación Funcional',
     '/formulario-antecedente': 'la sección de Antecedentes',
     '/formulario-identificacion-problema': 'la sección de Identificación del Problema',
-    '/formulario-determinacion-justificacion': 'la sección de Determinación Justificación',
+    '/formulario-determinacion-justificacion': 'la sección de Determinación de la Justificación',
     '/formulario-cobertura': 'la sección de Cobertura',
     '/formulario-diseno-intervencion': 'la sección de Diseño de Intervención',
     '/formulario-programa-social': 'la sección de Programa Social',
     '/formulario-padron-beneficiarios': 'la sección de Padrón de Beneficiarios',
     '/formulario-reglas-operacion': 'la sección de Reglas de Operación',
-    '/PoblacionAreaEnfoquePotencial': 'la sección de Población Área Enfoque Potencial',
+    '/PoblacionAreaEnfoquePotencial': 'la sección de Población Área de Enfoque Potencial',
     '/FormularioAnalisisInvolucrados': 'la sección de Análisis de Involucrados',
     '/resumenes': 'la sección de Resúmenes',
     '/formulario-arbol-problemas': 'la sección de Árbol de Problemas',

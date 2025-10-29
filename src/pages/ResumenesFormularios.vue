@@ -258,7 +258,7 @@
           color="deep-orange"
           rounded
           icon="picture_as_pdf"
-          label="Descargar TODOS los PDFs"
+          label="Descargar TODOS los PDF"
           @click="descargarTodos"
         />
       </q-card-actions>
@@ -268,6 +268,7 @@
 
 <script setup>
 import { Notify } from 'quasar'
+import { PDFDocument } from 'pdf-lib'
 
 const isLocal = window.location.hostname === 'localhost'
 const API_BASE_URL = isLocal
@@ -278,7 +279,37 @@ function getToken() {
   return localStorage.getItem('token') || sessionStorage.getItem('token')
 }
 
-// Descarga un solo PDF con autenticación
+// Descarga un solo PDF como ArrayBuffer (no hace la descarga del archivo)
+async function fetchPdfArrayBuffer(formato) {
+  const token = getToken()
+  if (!token) throw new Error('NoAuth')
+
+  const url = `${API_BASE_URL}/${formato}/ultimo`
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '')
+    const msg = `Error en ${formato}: ${res.status} ${res.statusText} ${txt ? '- ' + txt : ''}`
+    const error = new Error(msg)
+    error.status = res.status
+    throw error
+  }
+
+  const contentType = res.headers.get('content-type') || ''
+  if (!contentType.includes('application/pdf')) {
+    const txt = await res.text().catch(() => '')
+    throw new Error(`Respuesta de ${formato} no es PDF. ${txt}`)
+  }
+
+  return await res.arrayBuffer()
+}
+
+// Función para descargar un único PDF (igual a la que ya tenías, la dejamos por separado)
 async function descargarPdf(formato) {
   const token = getToken()
   if (!token) {
@@ -290,13 +321,12 @@ async function descargarPdf(formato) {
     const response = await fetch(`${API_BASE_URL}/${formato}/ultimo`, {
       method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
     })
 
     if (!response.ok) {
-      const errorText = await response.text()
+      const errorText = await response.text().catch(() => '')
       console.error('Error del servidor:', errorText)
       throw new Error('Error al generar el PDF')
     }
@@ -312,22 +342,87 @@ async function descargarPdf(formato) {
     Notify.create({ type: 'positive', message: `Descarga completa: ${formato}.pdf` })
   } catch (error) {
     console.error('Error al descargar:', error)
-    Notify.create({ type: 'negative', message: 'Error al descargar el PDF' })
+    Notify.create({ type: 'negative', message: `Error al descargar ${formato}` })
   }
 }
 
-// Descarga todos los PDFs en secuencia
+// Descarga TODOS los PDFs, los une y genera un único PDF
 async function descargarTodos() {
+  const token = getToken()
+  if (!token) {
+    Notify.create({ type: 'warning', message: 'Debes iniciar sesión para descargar los PDFs' })
+    return
+  }
+
+  // Lista completa de endpoints (usa los nombres que usas en el backend)
   const formatos = [
     'FormatoAlineacion',
-    'FormatoAnalisisInvolucrados',
-    'FormatoAnalisisDeInvolucrados',
-    'FormatoDefinicionDelProblema',
     'FormatoFichaDeInformacionBasica1',
+    'FormatoDefinicionDelProblema',
+    'FormatoAnalisisDeInvolucrados', // revisa duplicados en tu backend vs template
+    'FormatoArbolDeProblemas',
+    'FormatoArbolDeObjetivos',
+    'FormatoAnalisisInvolucrados', // si corresponde
+    'FormatoEstructuraAnalitica',
+    'FormatoMatriz',
+    'FormatoFichaFinal', // o FormatoFichaTecnica según tu ruta real
   ]
 
-  for (const f of formatos) {
-    await descargarPdf(f)
+  Notify.create({ type: 'info', message: 'Preparando descarga consolidada...' })
+
+  // Descargar todos en paralelo, pero manejar errores por formato
+  const resultados = await Promise.allSettled(
+    formatos.map(async (f) => {
+      try {
+        const buf = await fetchPdfArrayBuffer(f)
+        return { formato: f, buffer: buf }
+      } catch (err) {
+        console.warn(`Fallo al obtener ${f}:`, err)
+        return { formato: f, error: err }
+      }
+    }),
+  )
+
+  // Filtrar los PDFs válidos
+  const pdfValidos = resultados
+    .map((r) => (r.status === 'fulfilled' ? r.value : null))
+    .filter(Boolean)
+    .filter((x) => !x.error)
+
+  if (!pdfValidos.length) {
+    Notify.create({ type: 'negative', message: 'No se pudo obtener ningún PDF para consolidar.' })
+    return
+  }
+
+  try {
+    const mergedPdf = await PDFDocument.create()
+
+    // Mantener orden original y añadir solo los válidos en ese orden
+    for (const f of formatos) {
+      const encontrado = pdfValidos.find((p) => p.formato === f)
+      if (!encontrado) continue
+      const srcPdf = await PDFDocument.load(encontrado.buffer)
+      const copied = await mergedPdf.copyPages(srcPdf, srcPdf.getPageIndices())
+      copied.forEach((p) => mergedPdf.addPage(p))
+    }
+
+    const mergedBytes = await mergedPdf.save()
+    const blob = new Blob([mergedBytes], { type: 'application/pdf' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    const today = new Date().toISOString().slice(0, 10)
+    a.href = url
+    a.download = `FormatosConsolidado_${today}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+
+    Notify.create({
+      type: 'positive',
+      message: `PDF consolidado descargado (${pdfValidos.length} archivos unidos)`,
+    })
+  } catch (err) {
+    console.error('Error al unir PDFs:', err)
+    Notify.create({ type: 'negative', message: 'Error al generar el PDF consolidado' })
   }
 }
 </script>

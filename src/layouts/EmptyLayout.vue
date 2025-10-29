@@ -10,6 +10,17 @@
         <q-btn
           flat
           dense
+          icon="home"
+          label="Inicio"
+          class="q-ml-md text-white"
+          @click="$router.push('/formulario-alineacion')"
+          :style="{ color: hoverRes ? '#FFD700' : 'white' }"
+          @mouseover="hoverRes = true"
+          @mouseleave="hoverRes = false"
+        />
+        <q-btn
+          flat
+          dense
           icon="summarize"
           label="Resúmenes PDF"
           class="q-ml-md text-white"
@@ -106,6 +117,8 @@ async function cerrarSesion() {
     localStorage.removeItem('token')
     localStorage.removeItem('formAlineacion')
     localStorage.removeItem('tipoAlineacion')
+    localStorage.removeItem('alineacionEstatal')
+    localStorage.removeItem('alineacionMunicipal')
     localStorage.removeItem('clasificacionFuncionalForm_v1')
     localStorage.removeItem('antecedentesForm_v1')
     localStorage.removeItem('formularioIdentificacionProblema')
@@ -120,6 +133,8 @@ async function cerrarSesion() {
     localStorage.removeItem('formularioArbolObjetivos')
     localStorage.removeItem('anexo6AnalisisAlternativas')
     localStorage.removeItem('mirMatrizIndicadores')
+    localStorage.removeItem('LineaEstatal')
+    localStorage.removeItem('LineaMunicipal')
 
     router.push('/login')
   } catch (err) {

@@ -2,15 +2,13 @@
   <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="submitForm" class="q-gutter-md">
       <q-card flat bordered class="q-pa-md">
-        <!-- Título -->
         <q-card-section>
           <div class="form-title">Alineación</div>
           <q-separator color="#691b31" spaced />
         </q-card-section>
 
-        <!-- Campos del formulario -->
         <q-card-section class="q-gutter-md">
-          <!-- Tipo de alineación -->
+          <!-- Tipo -->
           <q-select
             filled
             v-model="form.tipo"
@@ -56,7 +54,7 @@
             </template>
           </q-select>
 
-          <!-- Estrategias (multi) -->
+          <!-- Estrategias -->
           <q-select
             filled
             v-model="form.estrategias"
@@ -73,7 +71,7 @@
             </template>
           </q-select>
 
-          <!-- Líneas de acción (multi) -->
+          <!-- Líneas de acción -->
           <q-select
             filled
             v-model="form.lineasAccion"
@@ -89,7 +87,7 @@
             </template>
           </q-select>
 
-          <!-- Tipo de ramo (solo municipio) -->
+          <!-- Tipo de ramo -->
           <q-select
             v-if="form.tipo === 'Municipio'"
             filled
@@ -104,9 +102,7 @@
           </q-select>
         </q-card-section>
 
-        <!-- Botones -->
         <q-card-actions align="right" class="q-gutter-sm">
-          <!-- Botón registrar -->
           <q-btn
             label="Registrar alineación"
             color="secondary"
@@ -117,7 +113,6 @@
             :disable="loading"
           />
 
-          <!-- Botón continuar -->
           <q-btn
             label="Continuar"
             color="primary"
@@ -131,21 +126,26 @@
           />
         </q-card-actions>
 
-        <!-- Indicador visual opcional -->
         <q-card-section v-if="ambasCompletas" class="text-positive text-center q-mt-sm">
           Ambas alineaciones (Municipal y Estatal) registradas. Ya puedes continuar.
         </q-card-section>
       </q-card>
     </q-form>
   </q-page>
+  <!-- <q-dialog v-model="mostrarModalUsuario" persistent maximized>
+    <RegistroUsuarioDetalle @close="mostrarModalUsuario = false" />
+  </q-dialog> -->
 </template>
+
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import Swal from 'sweetalert2'
 import api from 'src/boot/api'
+//import RegistroUsuarioDetalle from 'src/pages/RegistroUsuarioDetalle.vue'
 
+const mostrarModalUsuario = ref(false)
 const router = useRouter()
 const loading = ref(false)
 const STORAGE_KEY = 'formAlineacion'
@@ -160,13 +160,11 @@ const form = ref({
   lineasAccion: [],
 })
 
-// Listas dinámicas
 const acuerdos = ref([])
 const objetivos = ref([])
 const estrategias = ref([])
 const lineasAccion = ref([])
 
-// ✅ Bandera reactiva que controla si ambas alineaciones están completas
 const ambasCompletas = ref(false)
 function verificarAlineaciones() {
   const m = localStorage.getItem('alineacionMunicipal')
@@ -174,7 +172,6 @@ function verificarAlineaciones() {
   ambasCompletas.value = !!(m && e)
 }
 
-// 🧩 Utilidad para sacar etiquetas de listas
 function labelFromList(list, id) {
   if (id === null || id === undefined) return ''
   if (Array.isArray(id)) {
@@ -184,7 +181,6 @@ function labelFromList(list, id) {
   return found ? found.label : ''
 }
 
-// --- Carga de combos ---
 const onTipoChange = async (tipo) => {
   form.value.acuerdo = null
   form.value.objetivo = null
@@ -282,7 +278,6 @@ const onEstrategiasChange = async (selectedIds) => {
   }
 }
 
-// 🧠 Restaurar progreso y revisar si ya hay alineaciones registradas
 onMounted(async () => {
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved) {
@@ -293,9 +288,36 @@ onMounted(async () => {
     if (form.value.estrategias.length) await onEstrategiasChange(form.value.estrategias)
   }
   verificarAlineaciones()
+
+  const usuarioGuardado = localStorage.getItem('usuarioBasico')
+  if (usuarioGuardado) {
+    mostrarModalUsuario.value = true
+  } else {
+    try {
+      const { data } = await api.get('/Cuentas/me')
+      if (data) {
+        localStorage.setItem(
+          'usuarioBasico',
+          JSON.stringify({
+            user: data.userName,
+            email: data.email,
+            nombreCompleto: data.nombreCompleto,
+            cargo: data.cargo,
+            coordinador: data.coordinador,
+            unidadesPresupuestales: data.unidadesPresupuestales,
+            programaPresupuestario: data.programaPresupuestario,
+            nombreMatriz: data.nombreMatriz,
+            unidadAdministrativaId: data.unidadAdministrativaId,
+          }),
+        )
+        mostrarModalUsuario.value = true
+      }
+    } catch (error) {
+      console.error('No se pudo cargar el usuario actual', error)
+    }
+  }
 })
 
-// 💾 Guardar automáticamente cada cambio
 watch(
   form,
   (val) => {
@@ -304,7 +326,6 @@ watch(
   { deep: true },
 )
 
-// Registrar alineación (guardando también los labels)
 async function registrarAlineacion() {
   if (!form.value.tipo) {
     Notify.create({
@@ -314,23 +335,41 @@ async function registrarAlineacion() {
     return
   }
 
+  // 🔹 Preparamos el objeto a guardar con labels legibles
   const alineacionConLabels = {
     ...form.value,
     acuerdoLabel: labelFromList(acuerdos.value, form.value.acuerdo),
     objetivoLabel: labelFromList(objetivos.value, form.value.objetivo),
     estrategiasLabels: labelFromList(estrategias.value, form.value.estrategias),
     lineasLabels: labelFromList(lineasAccion.value, form.value.lineasAccion),
+    lineasSeleccionadas: form.value.lineasAccion
+      .map((id) => {
+        const item = lineasAccion.value.find((l) => l.value === id)
+        return item ? { id: item.value, nombre: item.label } : null
+      })
+      .filter(Boolean),
   }
 
+  // 🔹 Guardamos según el tipo (pero ahora con nombres nuevos LineaMunicipal / LineaEstatal)
+  if (form.value.tipo === 'Municipio') {
+    localStorage.setItem('LineaMunicipal', JSON.stringify(alineacionConLabels))
+    Notify.create({
+      type: 'positive',
+      message: 'Línea de acción municipal guardada en localStorage',
+    })
+  } else if (form.value.tipo === 'Estado') {
+    localStorage.setItem('LineaEstatal', JSON.stringify(alineacionConLabels))
+    Notify.create({ type: 'positive', message: 'Línea de acción estatal guardada en localStorage' })
+  }
+
+  // 🔹 También mantenemos las claves antiguas por compatibilidad (opcional)
   if (form.value.tipo === 'Municipio') {
     localStorage.setItem('alineacionMunicipal', JSON.stringify(alineacionConLabels))
-    Notify.create({ type: 'positive', message: 'Alineación municipal registrada' })
-  } else if (form.value.tipo === 'Estado') {
+  } else {
     localStorage.setItem('alineacionEstatal', JSON.stringify(alineacionConLabels))
-    Notify.create({ type: 'positive', message: 'Alineación estatal registrada' })
   }
 
-  // Limpiar formulario
+  // 🔹 Limpiamos formulario y actualizamos estado visual
   form.value = {
     tipo: '',
     ramo: '',
@@ -348,7 +387,6 @@ async function registrarAlineacion() {
   verificarAlineaciones()
 }
 
-// 📤 Envío del formulario final
 async function submitForm() {
   if (!ambasCompletas.value) {
     await Swal.fire({
@@ -373,7 +411,6 @@ async function submitForm() {
     for (const alineacion of alineaciones) {
       const endpoint = alineacion.tipo === 'Estado' ? '/AlineacionEstado' : '/AlineacionMunicipio'
 
-      // Usamos los labels guardados
       await api.post(endpoint, {
         acuerdo: alineacion.data.acuerdoLabel,
         objetivo: alineacion.data.objetivoLabel,
@@ -383,6 +420,7 @@ async function submitForm() {
       })
     }
 
+    // Limpiar todo al terminar
     localStorage.removeItem('alineacionMunicipal')
     localStorage.removeItem('alineacionEstatal')
     localStorage.removeItem(STORAGE_KEY)
@@ -400,3 +438,11 @@ async function submitForm() {
   }
 }
 </script>
+
+<style>
+.q-dialog__backdrop,
+.q-dialog__inner {
+  z-index: 99999 !important;
+  pointer-events: all !important;
+}
+</style>

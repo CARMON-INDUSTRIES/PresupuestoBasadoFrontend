@@ -331,6 +331,17 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/registro-usuario-detalle',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/RegistroUsuarioDetalle.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
 ]
 
 export default routes
