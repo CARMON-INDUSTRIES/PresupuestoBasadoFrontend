@@ -1,47 +1,18 @@
 <template>
   <q-layout view="hHh lpR fFf">
     <!-- Navbar -->
-    <q-header elevated class="bg-primary text-white">
+    <q-header elevated class="navbar">
       <q-toolbar class="q-pl-md q-pr-md">
+        <!-- Botón para abrir sidebar -->
+        <q-btn flat dense round icon="menu" class="q-mr-md" @click="sidebarOpen = !sidebarOpen" />
+
         <q-toolbar-title class="text-h6 text-weight-bold">
           Sistema de Presupuesto Basado en Resultados
         </q-toolbar-title>
 
-        <q-btn
-          flat
-          dense
-          icon="home"
-          label="Inicio"
-          class="q-ml-md text-white"
-          @click="$router.push('/formulario-alineacion')"
-          :style="{ color: hoverRes ? '#FFD700' : 'white' }"
-          @mouseover="hoverRes = true"
-          @mouseleave="hoverRes = false"
-        />
-        <q-btn
-          flat
-          dense
-          icon="summarize"
-          label="Resúmenes PDF"
-          class="q-ml-md text-white"
-          @click="$router.push('/resumenes')"
-          :style="{ color: hoverRes ? '#FFD700' : 'white' }"
-          @mouseover="hoverRes = true"
-          @mouseleave="hoverRes = false"
-        />
+        <q-space />
 
-        <q-btn
-          flat
-          dense
-          icon="event_note"
-          label="Programación Metas"
-          class="q-ml-md text-white"
-          @click="$router.push('/programacion-metas')"
-          :style="{ color: hoverMetas ? '#FFD700' : 'white' }"
-          @mouseover="hoverMetas = true"
-          @mouseleave="hoverMetas = false"
-        />
-
+        <!-- Botón de cerrar sesión -->
         <q-btn
           flat
           dense
@@ -56,6 +27,65 @@
       </q-toolbar>
     </q-header>
 
+    <!-- Sidebar -->
+    <q-drawer v-model="sidebarOpen" side="left" show-if-above bordered :width="280" class="sidebar">
+      <div
+        class="column full-height"
+        style="
+          background-image: url('/images/sidebar.jpg');
+          background-size: cover;
+          background-position: center;
+        "
+      >
+        <!-- Avatar + nombre -->
+        <div class="column items-center q-my-xl">
+          <q-avatar size="100px" class="shadow-4 avatar-border">
+            <q-icon name="person" size="64px" />
+          </q-avatar>
+          <div class="text-h6 text-weight-bold q-mt-sm text-white">
+            {{ nombreUsuario || 'Cargando...' }}
+          </div>
+        </div>
+
+        <q-separator color="white" inset />
+
+        <!-- Menú -->
+        <q-list class="q-pa-sm">
+          <q-item
+            clickable
+            v-ripple
+            @click="goTo('/formulario-alineacion')"
+            class="hover-item text-white"
+          >
+            <q-item-section avatar><q-icon name="home" /></q-item-section>
+            <q-item-section>Inicio</q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple @click="goTo('/resumenes')" class="hover-item text-white">
+            <q-item-section avatar><q-icon name="summarize" /></q-item-section>
+            <q-item-section>Resúmenes PDF</q-item-section>
+          </q-item>
+
+          <q-item
+            clickable
+            v-ripple
+            @click="goTo('/programacion-metas')"
+            class="hover-item text-white"
+          >
+            <q-item-section avatar><q-icon name="event_note" /></q-item-section>
+            <q-item-section>Programación Metas</q-item-section>
+          </q-item>
+
+          <q-separator color="white" inset class="q-my-sm" />
+
+          <q-item clickable v-ripple @click="cerrarSesion" class="hover-item text-white">
+            <q-item-section avatar><q-icon name="logout" /></q-item-section>
+            <q-item-section>Cerrar sesión</q-item-section>
+          </q-item>
+        </q-list>
+      </div>
+    </q-drawer>
+
     <!-- Contenido -->
     <q-page-container>
       <router-view />
@@ -64,53 +94,69 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
 const router = useRouter()
-
-const hoverRes = ref(false)
-const hoverMetas = ref(false)
+const sidebarOpen = ref(false)
 const hoverLogout = ref(false)
+const nombreUsuario = ref('')
 
-// 🔹 Lista de todas las rutas del flujo de registro
+// Obtener usuario actual
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/Cuentas/me')
+    nombreUsuario.value = data.userName || data.nombre || 'Usuario'
+  } catch (err) {
+    console.error('Error al obtener usuario:', err)
+    nombreUsuario.value = 'Invitado'
+  }
+})
+
 const rutasRegistro = [
   '/formulario-alineacion',
   '/formulario-identificacion',
-  '/formulario-diseno',
+  '/formulario-diseno-intervencion',
   '/formulario-clasificacion',
   '/formulario-actividad',
   '/formulario-ficha-tecnica-1',
-  '/formulario-matriz-indicadores',
+  '/Formulario-matriz-indicadores',
   '/formulario-antecedente',
   '/formulario-identificacion-problema',
   '/formulario-determinacion-justificacion',
   '/formulario-cobertura',
+  '/formulario-justificacion',
   '/formulario-diseno-intervencion',
-  '/formulario-reglas-operacion-detalle',
+  '/Formulario-reglas-operacion-detalle',
   '/formulario-programa-social',
   '/formulario-padron-beneficiarios',
   '/formulario-reglas-operacion',
   '/PoblacionAreaEnfoquePotencial',
   '/FormularioAnalisisInvolucrados',
   '/formulario-arbol-problemas',
+  '/formulario-poblacion',
+  '/formulario-cobertura',
   '/formulario-arbol-objetivos',
   '/formulario-analisis-alternativas',
-  '/formulario-estructura-analitica',
+  '/Formulario-estructura-analitica',
   '/Formulario-ficha-tecnica-1',
 ]
 
-// 🧩 Guardar última ruta visitada del flujo
+// Guardar última ruta visitada
 router.afterEach((to) => {
   if (rutasRegistro.includes(to.path)) {
     localStorage.setItem('ultimaRutaRegistro', to.path)
   }
 })
 
-// 🧭 Función para traducir rutas a texto amigable
+// Navegar
+function goTo(ruta) {
+  sidebarOpen.value = false
+  router.push(ruta)
+}
 
-//  Cerrar sesión
+// Cerrar sesión
 async function cerrarSesion() {
   try {
     await api.post('/Cuentas/logout')
@@ -144,7 +190,23 @@ async function cerrarSesion() {
 </script>
 
 <style scoped>
-.q-header {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+.navbar {
+  background: linear-gradient(120deg, #bc995b, #691b31);
+  color: white;
+  height: 70px;
+}
+
+.sidebar {
+  backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.65);
+}
+
+.avatar-border {
+  border: 2px solid white;
+}
+
+.hover-item:hover {
+  background-color: rgba(255, 215, 0, 0.2);
+  transition: 0.2s;
 }
 </style>
