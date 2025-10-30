@@ -78,6 +78,29 @@
 
           <q-separator color="white" inset class="q-my-sm" />
 
+          <!-- Sección de Configuración -->
+          <q-expansion-item
+            icon="settings"
+            label="Configuración"
+            dense
+            expand-separator
+            class="text-white hover-item"
+          >
+            <q-list dense>
+              <q-item clickable v-ripple @click="abrirCambiarPassword">
+                <q-item-section avatar><q-icon name="lock" /></q-item-section>
+                <q-item-section>Cambiar contraseña</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="abrirCambiarFoto">
+                <q-item-section avatar><q-icon name="photo_camera" /></q-item-section>
+                <q-item-section>Foto de perfil</q-item-section>
+              </q-item>
+            </q-list>
+          </q-expansion-item>
+
+          <q-separator color="white" inset class="q-my-sm" />
+
           <q-item clickable v-ripple @click="cerrarSesion" class="hover-item text-white">
             <q-item-section avatar><q-icon name="logout" /></q-item-section>
             <q-item-section>Cerrar sesión</q-item-section>
@@ -90,6 +113,67 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+    <!-- Dialogo Cambiar Contraseña -->
+    <q-dialog v-model="dialogCambiarPassword">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Incluya mayuscula, numeros y un carácter especial</div>
+        </q-card-section>
+
+        <q-card-section>
+          <!-- Contraseña actual -->
+          <q-input
+            filled
+            v-model="passwordActual"
+            :type="showPasswordActual ? 'text' : 'password'"
+            label="Contraseña actual"
+            class="q-mb-md"
+          >
+            <template #append>
+              <q-icon
+                :name="showPasswordActual ? 'visibility_off' : 'visibility'"
+                class="cursor-pointer"
+                @click="showPasswordActual = !showPasswordActual"
+              />
+            </template>
+          </q-input>
+
+          <!-- Nueva contraseña -->
+          <q-input
+            filled
+            v-model="nuevaPassword"
+            :type="showNuevaPassword ? 'text' : 'password'"
+            label="Nueva contraseña"
+          >
+            <template #append>
+              <q-icon
+                :name="showNuevaPassword ? 'visibility_off' : 'visibility'"
+                class="cursor-pointer"
+                @click="showNuevaPassword = !showNuevaPassword"
+              />
+            </template>
+          </q-input>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="primary" v-close-popup />
+          <q-btn flat label="Guardar" color="primary" @click="cambiarPassword" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Dialogo Cambiar Foto (placeholder) -->
+    <q-dialog v-model="dialogCambiarFoto">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Cambiar foto de perfil</div>
+          <div class="text-subtitle2">Próximamente</div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cerrar" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-layout>
 </template>
 
@@ -97,11 +181,21 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
+import { Notify } from 'quasar'
 
 const router = useRouter()
 const sidebarOpen = ref(false)
 const hoverLogout = ref(false)
 const nombreUsuario = ref('')
+
+const dialogCambiarPassword = ref(false)
+const dialogCambiarFoto = ref(false)
+
+const passwordActual = ref('')
+const nuevaPassword = ref('')
+
+const showPasswordActual = ref(false)
+const showNuevaPassword = ref(false)
 
 // Obtener usuario actual
 onMounted(async () => {
@@ -156,6 +250,37 @@ function goTo(ruta) {
   router.push(ruta)
 }
 
+// Abrir diálogos
+function abrirCambiarPassword() {
+  dialogCambiarPassword.value = true
+}
+function abrirCambiarFoto() {
+  dialogCambiarFoto.value = true
+}
+
+// Cambiar contraseña
+async function cambiarPassword() {
+  if (!passwordActual.value || !nuevaPassword.value) {
+    Notify.create({ type: 'negative', message: 'Debes completar todos los campos' })
+    return
+  }
+
+  try {
+    await api.put('/Cuentas/CambiarPassword', {
+      User: nombreUsuario.value, // nombre del usuario loggeado
+      Password: nuevaPassword.value, // nueva contraseña
+    })
+
+    dialogCambiarPassword.value = false
+    passwordActual.value = ''
+    nuevaPassword.value = ''
+    Notify.create({ type: 'positive', message: 'Contraseña cambiada correctamente' })
+  } catch (err) {
+    console.error('Error al cambiar contraseña:', err)
+    Notify.create({ type: 'negative', message: 'Error al cambiar contraseña' })
+  }
+}
+
 // Cerrar sesión
 async function cerrarSesion() {
   try {
@@ -193,7 +318,7 @@ async function cerrarSesion() {
 .navbar {
   background: linear-gradient(120deg, #bc995b, #691b31);
   color: white;
-  height: 70px;
+  height: 55px;
 }
 
 .sidebar {
