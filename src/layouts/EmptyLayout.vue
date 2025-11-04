@@ -40,8 +40,9 @@
         <!-- Avatar + nombre -->
         <div class="column items-center q-my-xl">
           <q-avatar size="100px" class="shadow-4 avatar-border">
-            <q-icon name="person" size="64px" />
+            <img :src="previewFoto || fotoActual" alt="Avatar usuario" />
           </q-avatar>
+
           <div class="text-h6 text-weight-bold q-mt-sm text-white">
             {{ nombreUsuario || 'Cargando...' }}
           </div>
@@ -117,7 +118,8 @@
     <q-dialog v-model="dialogCambiarPassword">
       <q-card>
         <q-card-section>
-          <div class="text-h6">Incluya mayuscula, numeros y un carácter especial</div>
+          <div class="text-h6">ㅤㅤ ­ ­­­Cambio de Contraseña</div>
+          <div class="text-body-1">Incluya mayúscula, números y un carácter especial</div>
         </q-card-section>
 
         <q-card-section>
@@ -167,16 +169,26 @@
       <q-card>
         <q-card-section>
           <div class="text-h6">Cambiar foto de perfil</div>
-          <div class="text-subtitle2">Próximamente</div>
+          <q-uploader
+            label="Selecciona una foto"
+            accept="image/*"
+            :auto-upload="false"
+            @added="onFileAdded"
+          />
+
+          <div v-if="previewFoto" class="q-mt-md">
+            <div>Previsualización:</div>
+            <img :src="previewFoto" style="max-width: 100%; border-radius: 8px" />
+          </div>
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="Cerrar" color="primary" v-close-popup />
+          <q-btn flat label="Cancelar" color="primary" v-close-popup />
+          <q-btn flat label="Guardar" color="primary" @click="cambiarFoto" />
         </q-card-actions>
       </q-card>
     </q-dialog>
   </q-layout>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -187,6 +199,7 @@ const router = useRouter()
 const sidebarOpen = ref(false)
 const hoverLogout = ref(false)
 const nombreUsuario = ref('')
+const fotoActual = ref('/images/default-avatar.png') // imagen por defecto
 
 const dialogCambiarPassword = ref(false)
 const dialogCambiarFoto = ref(false)
@@ -197,17 +210,83 @@ const nuevaPassword = ref('')
 const showPasswordActual = ref(false)
 const showNuevaPassword = ref(false)
 
-// Obtener usuario actual
+// --- Foto de perfil ---
+const nuevaFoto = ref(null)
+const previewFoto = ref(null)
+
 onMounted(async () => {
   try {
     const { data } = await api.get('/Cuentas/me')
     nombreUsuario.value = data.userName || data.nombre || 'Usuario'
+
+    if (data.fotoUrl) {
+      // Si la URL empieza con "/uploads/", se concatena el dominio del backend
+      if (data.fotoUrl.startsWith('/uploads/')) {
+        fotoActual.value = `${import.meta.env.VITE_API_URL}${data.fotoUrl}`
+      } else {
+        fotoActual.value = data.fotoUrl
+      }
+    }
   } catch (err) {
     console.error('Error al obtener usuario:', err)
     nombreUsuario.value = 'Invitado'
   }
 })
 
+function onFileAdded(files) {
+  const file = Array.isArray(files) ? files[0] : files?.files?.[0] || files[0]
+
+  if (file) {
+    nuevaFoto.value = file
+    previewImage(file)
+  } else {
+    console.warn('No se detectó archivo al agregar.')
+  }
+}
+
+// ✅ Previsualizar imagen seleccionada
+function previewImage(file) {
+  if (file && file instanceof File) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      previewFoto.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+async function cambiarFoto() {
+  if (!nuevaFoto.value) {
+    Notify.create({ type: 'negative', message: 'Selecciona una foto primero' })
+    return
+  }
+
+  try {
+    const formData = new FormData()
+    formData.append('User', nombreUsuario.value)
+    formData.append('Foto', nuevaFoto.value)
+
+    const { data } = await api.put('/Cuentas/ActualizarPerfil', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+
+    Notify.create({ type: 'positive', message: 'Foto actualizada correctamente' })
+
+    fotoActual.value = data.fotoUrl
+
+    localStorage.setItem('fotoUsuario', data.fotoUrl)
+
+    // Limpieza
+    previewFoto.value = null
+    nuevaFoto.value = null
+    dialogCambiarFoto.value = false
+  } catch (err) {
+    console.error('Error al subir foto:', err)
+    Notify.create({ type: 'negative', message: 'Error al actualizar la foto' })
+  }
+}
+
+// --- Rutas que se registran ---
 const rutasRegistro = [
   '/formulario-alineacion',
   '/formulario-identificacion',
@@ -267,8 +346,8 @@ async function cambiarPassword() {
 
   try {
     await api.put('/Cuentas/CambiarPassword', {
-      User: nombreUsuario.value, // nombre del usuario loggeado
-      Password: nuevaPassword.value, // nueva contraseña
+      User: nombreUsuario.value,
+      Password: nuevaPassword.value,
     })
 
     dialogCambiarPassword.value = false
@@ -285,28 +364,7 @@ async function cambiarPassword() {
 async function cerrarSesion() {
   try {
     await api.post('/Cuentas/logout')
-    localStorage.removeItem('token')
-    localStorage.removeItem('formAlineacion')
-    localStorage.removeItem('tipoAlineacion')
-    localStorage.removeItem('alineacionEstatal')
-    localStorage.removeItem('alineacionMunicipal')
-    localStorage.removeItem('clasificacionFuncionalForm_v1')
-    localStorage.removeItem('antecedentesForm_v1')
-    localStorage.removeItem('formularioIdentificacionProblema')
-    localStorage.removeItem('formularioDeterminacionJustificacion')
-    localStorage.removeItem('formularioCobertura')
-    localStorage.removeItem('formularioCobertura')
-    localStorage.removeItem('disenoIntervencionPublica')
-    localStorage.removeItem('formularioProgramaSocial')
-    localStorage.removeItem('formularioProgramaSocialCompleto')
-    localStorage.removeItem('formularioPadronBeneficiarios')
-    localStorage.removeItem('formularioReglasOperacion')
-    localStorage.removeItem('formularioArbolObjetivos')
-    localStorage.removeItem('anexo6AnalisisAlternativas')
-    localStorage.removeItem('mirMatrizIndicadores')
-    localStorage.removeItem('LineaEstatal')
-    localStorage.removeItem('LineaMunicipal')
-
+    localStorage.clear()
     router.push('/login')
   } catch (err) {
     console.error('Error al cerrar sesión:', err)

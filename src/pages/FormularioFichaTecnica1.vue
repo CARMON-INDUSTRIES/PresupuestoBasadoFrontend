@@ -355,6 +355,64 @@
         </div>
       </q-card-section>
 
+      <!-- ====== APARTADO CREMA ====== -->
+      <q-card-section v-if="indicadorActivo">
+        <div class="text-h6 q-mb-md">CREMA</div>
+
+        <q-markup-table flat bordered>
+          <thead>
+            <tr class="bg-grey-3 text-bold">
+              <th>Nombre del Indicador</th>
+              <th>Claro</th>
+              <th>Relevante</th>
+              <th>Económico</th>
+              <th>Monitoreable</th>
+              <th>Adecuado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ indicadorActivo.indicadores }}</td>
+              <td>
+                <q-checkbox
+                  v-model="indicadorActivo.crema.claro"
+                  true-value="Sí"
+                  false-value="No"
+                />
+              </td>
+              <td>
+                <q-checkbox
+                  v-model="indicadorActivo.crema.relevante"
+                  true-value="Sí"
+                  false-value="No"
+                />
+              </td>
+              <td>
+                <q-checkbox
+                  v-model="indicadorActivo.crema.economico"
+                  true-value="Sí"
+                  false-value="No"
+                />
+              </td>
+              <td>
+                <q-checkbox
+                  v-model="indicadorActivo.crema.monitoreable"
+                  true-value="Sí"
+                  false-value="No"
+                />
+              </td>
+              <td>
+                <q-checkbox
+                  v-model="indicadorActivo.crema.adecuado"
+                  true-value="Sí"
+                  false-value="No"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </q-markup-table>
+      </q-card-section>
+
       <!-- ====== VI. PROGRAMACIÓN DE METAS ====== -->
       <q-card-section v-if="indicadorActivo">
         <div class="text-h6 q-mb-md">Programación de Metas</div>
@@ -597,17 +655,21 @@ onMounted(async () => {
       metas: f.metas || [],
       lineaBase: f.lineaBase || { valor: null, unidad: '', anio: '', periodo: '' },
       lineasAccion: [],
+      crema: {
+        claro: 'No',
+        relevante: 'No',
+        economico: 'No',
+        monitoreable: 'No',
+        adecuado: 'No',
+      },
     }))
 
-    // 🔹 4. Cargar alineaciones desde localStorage o API
     await cargarLineasAccion()
 
-    // 🔹 5. Configurar tipo de indicador
     const nivelActual = (indicadores.value[0]?.nivel || '').toString().toLowerCase()
     tipoIndicador.value =
       nivelActual === 'fin' || nivelActual.includes('prop') ? 'Estratégico' : 'De Gestión'
 
-    // 🔹 6. Generar siglas dinámicamente
     siglasInterval = setInterval(() => {
       const activo = indicadorActivo.value
       if (!activo) return
