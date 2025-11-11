@@ -9,20 +9,21 @@
       <q-markup-table flat bordered class="q-mb-lg">
         <tbody>
           <tr>
+            <td class="bg-primary text-white text-weight-bold">Programa Presupuestario:</td>
+            <td>{{ usuario.programaPresupuestario || '' }}</td>
             <td class="bg-primary text-white text-weight-bold" style="width: 30%">
               Unidad Responsable:
             </td>
             <td>{{ usuario.nombreMatriz || usuario.cargo || '' }}</td>
-            <td class="bg-primary text-white text-weight-bold" style="width: 30%">
-              Unidad Presupuestal Responsable de la Elaboración de la MIR:
-            </td>
-            <td>{{ usuario.unidadesPresupuestales || '' }}</td>
           </tr>
           <tr>
             <td class="bg-primary text-white text-weight-bold">Responsable:</td>
             <td>{{ usuario.nombreCompleto || '' }}</td>
-            <td class="bg-primary text-white text-weight-bold">Programa Presupuestario:</td>
-            <td>{{ usuario.programaPresupuestario || '' }}</td>
+
+            <td class="bg-primary text-white text-weight-bold" style="width: 30%">
+              Unidad Presupuestal Responsable de la Elaboración de la MIR:
+            </td>
+            <td>{{ usuario.unidadesPresupuestales || '' }}</td>
           </tr>
         </tbody>
       </q-markup-table>

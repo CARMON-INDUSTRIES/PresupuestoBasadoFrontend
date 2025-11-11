@@ -17,6 +17,12 @@
         <q-form @submit.prevent="registrarUsuario" class="q-gutter-md">
           <div class="row q-col-gutter-md">
             <div class="col-4">
+              <q-input v-model="form.NuevoUserName" label="Nombre de Usuario" filled stack-label>
+                <template #prepend><q-icon name="person" /></template>
+              </q-input>
+            </div>
+
+            <div class="col-4">
               <q-input
                 v-model="form.email"
                 label="Correo electrónico"
@@ -37,6 +43,12 @@
             <div class="col-4">
               <q-input v-model="form.cargo" label="Cargo" filled stack-label>
                 <template #prepend><q-icon name="work" /></template>
+              </q-input>
+            </div>
+
+            <div class="col-4">
+              <q-input v-model="form.coordinador" label="Coordinador" filled stack-label>
+                <template #prepend><q-icon name="badge" /></template>
               </q-input>
             </div>
 
@@ -67,6 +79,23 @@
                 <template #prepend><q-icon name="description" /></template>
               </q-input>
             </div>
+          </div>
+
+          <div class="col-6">
+            <q-select
+              v-model="form.unidadAdministrativaId"
+              :options="unidades"
+              label="Unidad Administrativa"
+              option-value="id"
+              option-label="unidad"
+              filled
+              stack-label
+              emit-value
+              map-options
+              required
+            >
+              <template #prepend><q-icon name="domain" /></template>
+            </q-select>
           </div>
 
           <q-card-actions align="right">
@@ -111,7 +140,6 @@
     </q-dialog>
   </q-page>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Notify } from 'quasar'
@@ -123,28 +151,43 @@ const confirmarPassword = ref('')
 const loading = ref(false)
 
 const form = ref({
-  user: 'hola',
+  User: '', // 👈 ya no está hardcodeado
+  NuevoUserName: '',
   email: '',
   nombreCompleto: '',
   cargo: '',
-  coordinador: 'M.R.H.Daniela Lopez Hernandez',
+  coordinador: '',
   unidadesPresupuestales: '',
   programaPresupuestario: '',
   nombreMatriz: '',
+  unidadAdministrativaId: null,
 })
 
 const unidades = ref([])
 const entidad = ref([])
 
 onMounted(async () => {
-  const datosBasicos = localStorage.getItem('usuarioBasico')
-  if (datosBasicos) Object.assign(form.value, JSON.parse(datosBasicos))
-
   try {
+    // ✅ 1. Intentar cargar datos del usuario del localStorage
+    const datosBasicos = localStorage.getItem('usuarioBasico')
+    if (datosBasicos) {
+      const datos = JSON.parse(datosBasicos)
+
+      // Copiar datos al formulario
+      Object.assign(form.value, datos)
+
+      // Asegurarse que el campo 'User' esté correcto
+      if (datos.user && !form.value.User) {
+        form.value.User = datos.user
+      }
+    }
+
+    // ✅ 2. Cargar catálogos
     const [resUnidades, resEntidades] = await Promise.all([
       api.get('/UnidadAdministrativa'),
       api.get('/Entidad'),
     ])
+
     unidades.value = resUnidades.data
     entidad.value = resEntidades.data
   } catch (err) {
@@ -152,30 +195,55 @@ onMounted(async () => {
   }
 })
 
+// =============================================================
+// ACTUALIZAR PERFIL
+// =============================================================
 async function registrarUsuario() {
+  if (!form.value.User) {
+    Notify.create({ type: 'negative', message: 'No se encontró el usuario actual' })
+    return
+  }
+
   loading.value = true
   try {
-    await api.put('/Cuentas/ActualizarPerfil', form.value)
-    Notify.create({ type: 'positive', message: 'Usuario registrado exitosamente' })
-    localStorage.removeItem('usuarioBasico')
+    await api.put('/Cuentas/ActualizarPerfil', form.value) // 👈 ya no guardamos en 'res'
+
+    Notify.create({ type: 'positive', message: 'Usuario actualizado exitosamente' })
+
+    // ✅ Guardar nueva información del usuario en localStorage
+    localStorage.setItem(
+      'usuarioBasico',
+      JSON.stringify({
+        ...form.value,
+        User: form.value.NuevoUserName || form.value.User, // si cambió el nombre, guardar el nuevo
+      }),
+    )
   } catch (err) {
-    console.log('error catastrofico', err)
-    Notify.create({ type: 'negative', message: 'Error al registrar usuario' })
+    console.error('error catastrofico', err)
+    Notify.create({ type: 'negative', message: 'Error al actualizar usuario' })
   } finally {
     loading.value = false
   }
 }
 
+// =============================================================
+// CAMBIAR CONTRASEÑA
+// =============================================================
 async function cambiarPassword() {
+  if (!form.value.User) {
+    Notify.create({ type: 'negative', message: 'No se encontró el usuario actual' })
+    return
+  }
+
   try {
     await api.put(`/Cuentas/CambiarPassword`, {
-      user: form.value.user,
+      user: form.value.User,
       password: nuevaPassword.value,
     })
     Notify.create({ type: 'positive', message: 'Contraseña actualizada correctamente' })
     abrirModal.value = false
   } catch (err) {
-    console.log('error catastrofico', err)
+    console.error('error catastrofico', err)
     Notify.create({ type: 'negative', message: 'Error al cambiar contraseña' })
   }
 }
