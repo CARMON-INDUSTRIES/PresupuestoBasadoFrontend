@@ -110,13 +110,13 @@
         <!-- Formato Ficha de Información Básica -->
         <q-expansion-item
           icon="description"
-          label="Formato Arbol de Problemas"
+          label="Formato Arbol de Problemas y Objetivos"
           expand-separator
           class="expansion-card"
         >
           <q-card flat bordered class="q-ma-sm formato-card">
             <q-card-section>
-              <q-item-label>Anexo 4 Árbol de Problemas </q-item-label>
+              <q-item-label>Anexo 4 y 5: Árbol de Problemas y objetivos </q-item-label>
             </q-card-section>
             <q-card-actions align="right">
               <q-btn
@@ -125,20 +125,20 @@
                 dense
                 icon="picture_as_pdf"
                 label="Descargar PDF"
-                @click="descargarPdf('FormatoArbolDeProblemas')"
+                @click="descargarArboles"
               />
             </q-card-actions>
           </q-card>
         </q-expansion-item>
 
         <!-- Formato Árbol de Problemas -->
-        <q-expansion-item
+        <!--<q-expansion-item
           icon="account_tree"
           label="Formato Árbol de Objetivos"
           expand-separator
           class="expansion-card"
         >
-          <q-card flat bordered class="q-ma-sm formato-card">
+           <q-card flat bordered class="q-ma-sm formato-card">
             <q-card-section>
               <q-item-label>Anexo 5 Árbol de Objetivos </q-item-label>
             </q-card-section>
@@ -153,7 +153,7 @@
               />
             </q-card-actions>
           </q-card>
-        </q-expansion-item>
+        </q-expansion-item> -->
 
         <!-- Formato Árbol de Objetivos -->
         <q-expansion-item
@@ -368,7 +368,7 @@ async function descargarTodos() {
     'FormatoFichaFinal', // o FormatoFichaTecnica según tu ruta real
   ]
 
-  Notify.create({ type: 'info', message: 'Preparando descarga consolidada...' })
+  Notify.create({ type: 'info', message: 'Preparando descarga general...' })
 
   // Descargar todos en paralelo, pero manejar errores por formato
   const resultados = await Promise.allSettled(
@@ -412,7 +412,7 @@ async function descargarTodos() {
     const a = document.createElement('a')
     const today = new Date().toISOString().slice(0, 10)
     a.href = url
-    a.download = `FormatosConsolidado_${today}.pdf`
+    a.download = `FormatosGenerales_${today}.pdf`
     a.click()
     URL.revokeObjectURL(url)
 
@@ -423,6 +423,73 @@ async function descargarTodos() {
   } catch (err) {
     console.error('Error al unir PDFs:', err)
     Notify.create({ type: 'negative', message: 'Error al generar el PDF consolidado' })
+  }
+}
+
+async function descargarArboles() {
+  const token = getToken()
+  if (!token) {
+    Notify.create({ type: 'warning', message: 'Debes iniciar sesión para descargar los PDFs' })
+    return
+  }
+
+  const formatos = ['FormatoArbolDeProblemas', 'FormatoArbolDeObjetivos']
+
+  Notify.create({ type: 'info', message: 'Preparando arbol problemas y objetivos...' })
+
+  const resultados = await Promise.allSettled(
+    formatos.map(async (f) => {
+      try {
+        const buf = await fetchPdfArrayBuffer(f)
+        return { formato: f, buffer: buf }
+      } catch (err) {
+        console.warn(`Fallo al obtener ${f}:`, err)
+        return { formato: f, error: err }
+      }
+    }),
+  )
+
+  const pdfValidos = resultados
+    .map((r) => (r.status === 'fulfilled' ? r.value : null))
+    .filter(Boolean)
+    .filter((x) => !x.error)
+
+  if (!pdfValidos.length) {
+    Notify.create({
+      type: 'negative',
+      message: 'No se pudo obtener ningún PDF Problemas u objetivos.',
+    })
+    return
+  }
+
+  try {
+    const mergedPdf = await PDFDocument.create()
+
+    for (const f of formatos) {
+      const encontrado = pdfValidos.find((p) => p.formato === f)
+      if (!encontrado) continue
+      const srcPdf = await PDFDocument.load(encontrado.buffer)
+      const copied = await mergedPdf.copyPages(srcPdf, srcPdf.getPageIndices())
+      copied.forEach((p) => mergedPdf.addPage(p))
+    }
+
+    const mergedBytes = await mergedPdf.save()
+    const blob = new Blob([mergedBytes], { type: 'application/pdf' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    const today = new Date().toISOString().slice(0, 10)
+    a.href = url
+    a.download = `FormatoArbolProblemasObjetivos_${today}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+
+    Notify.create({
+      type: 'positive',
+      message: `PDF arboles descargado (${pdfValidos.length})`,
+    })
+  } catch (err) {
+    console.error('Error al unir PDFs:', err)
+    Notify.create({ type: 'negative', message: 'Error al generar el PDF arboles' })
   }
 }
 </script>

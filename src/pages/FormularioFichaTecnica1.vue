@@ -654,7 +654,10 @@ onMounted(async () => {
       },
       metas: f.metas || [],
       lineaBase: f.lineaBase || { valor: null, unidad: '', anio: '', periodo: '' },
-      lineasAccion: [],
+
+      // ⬇️  ACTUALIZADO: ahora guarda las líneas de acción seleccionadas
+      lineasAccion: f.lineasAccion || [],
+
       crema: {
         claro: 'No',
         relevante: 'No',
