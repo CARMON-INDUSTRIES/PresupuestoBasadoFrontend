@@ -5,7 +5,6 @@
         <div class="text-h5 text-center text-black">Ficha Técnica del Indicador</div>
       </q-card-section>
 
-      <!-- ====== DATOS DE IDENTIFICACIÓN DEL PROGRAMA ====== -->
       <q-card-section class="q-pa-md bg-grey-2">
         <div class="text-h6 q-mb-md">Datos de Identificación del Programa</div>
         <q-markup-table flat bordered>
@@ -34,7 +33,6 @@
         </q-markup-table>
       </q-card-section>
 
-      <!-- ====== MENÚ HORIZONTAL DE INDICADORES ====== -->
       <q-card-section v-if="indicadores.length">
         <div class="text-h6 q-mb-md">Seleccionar Indicador</div>
         <div class="row q-col-gutter-sm no-wrap scroll-x">
@@ -61,7 +59,6 @@
             <span class="text-caption text-grey-9">({{ indicadorActivo.nivel }})</span>
           </div>
 
-          <!-- Campos comunes -->
           <div class="row q-col-gutter-md">
             <div class="col-6">
               <q-select
@@ -123,23 +120,19 @@
       </q-card-section>
 
       <!-- ====== DETERMINACIÓN DE METAS (III) ====== -->
-      <!-- Determinación de Metas Anual -->
       <q-card-section v-if="indicadorActivo">
         <div class="text-h6 q-mb-md">Determinación de Metas Anual</div>
 
         <q-form @submit.prevent="agregarMeta">
           <div class="row q-col-gutter-md">
-            <!-- Unidad de Medida (fija) -->
             <div class="col-5">
               <q-input v-model="indicadorActivo.unidadMedida" label="Unidad de Medida" filled />
             </div>
 
-            <!-- Cantidad editable -->
             <div class="col-3">
               <q-input v-model.number="nuevaMeta.cantidad" label="Cantidad" type="number" filled />
             </div>
 
-            <!-- Periodo de cumplimiento -->
             <div class="col-3">
               <q-select
                 v-model="nuevaMeta.periodoCumplimiento"
@@ -151,7 +144,6 @@
           </div>
         </q-form>
 
-        <!-- Tabla de metas -->
         <q-markup-table
           flat
           bordered
@@ -273,7 +265,6 @@
           </div>
         </div>
 
-        <!-- Debajo de la vista de la fórmula -->
         <div class="q-mt-md">
           <q-markup-table flat bordered>
             <thead>
@@ -285,7 +276,6 @@
               </tr>
             </thead>
             <tbody>
-              <!-- Fila Resultado Esperado -->
               <tr>
                 <td>{{ siglas.resultadoEsperado || 'RE' }}</td>
                 <td>
@@ -307,7 +297,6 @@
                 </td>
               </tr>
 
-              <!-- Fila Numerador -->
               <tr>
                 <td>{{ siglas.numerador || 'NUM' }}</td>
                 <td>
@@ -329,7 +318,6 @@
                 </td>
               </tr>
 
-              <!-- Fila Denominador -->
               <tr>
                 <td>{{ siglas.denominador || 'DEN' }}</td>
                 <td>
@@ -476,7 +464,6 @@
         </q-markup-table>
       </q-card-section>
 
-      <!-- ====== BOTONES ====== -->
       <q-card-actions align="right" v-if="indicadores.length">
         <q-btn color="primary" label="Guardar y Continuar" @click="guardar" />
       </q-card-actions>
@@ -489,7 +476,6 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
-// ==================== REFS Y ESTADO ====================
 const usuario = ref({})
 const claveIndicador = ref('')
 const tipoIndicador = ref('')
@@ -507,7 +493,6 @@ const anios = [currentYear, currentYear - 1, currentYear - 2]
 const nuevaMeta = ref({ metaProgramada: '', cantidad: null, periodoCumplimiento: '' })
 const indicadorActivo = computed(() => indicadores.value[indiceSeleccionado.value] || null)
 const filtradas = computed(() => {
-  // Leer las alineaciones municipales y estatales
   const municipal = JSON.parse(localStorage.getItem('LineaMunicipal') || '{}')
   const estatal = JSON.parse(localStorage.getItem('LineaEstatal') || '{}')
 
@@ -525,10 +510,8 @@ const filtradas = computed(() => {
       tipo: 'Estatal',
     })) || []
 
-  // Mezclar ambas
   const todas = [...lineasM, ...lineasE]
 
-  // Filtrar sólo las que estén en el indicador activo
   const idsPermitidos = todas.map((l) => l.id)
   return indicadorActivo.value?.lineasAccion?.filter((l) => idsPermitidos.includes(l.id)) || []
 })
@@ -545,7 +528,6 @@ const programacionMetas = ref(
   })),
 )
 
-// ==================== FUNCIONES DE CÁLCULO ====================
 function calcularPorcentajeEsperado(meta) {
   const total = programacionMetas.value.reduce((sum, m) => sum + (m.cantidad || 0), 0)
   if (!total) return 0
@@ -575,7 +557,6 @@ function calcularSemaforo(meta) {
   return 'grey'
 }
 
-// ==================== WATCH PRORRATEO ====================
 watch(
   [modoProgramacion, () => nuevaMeta.value.cantidad, () => nuevaMeta.value.periodoCumplimiento],
   ([modo, cantidad, periodo]) => {
@@ -610,10 +591,8 @@ function getMesesAcumulados(periodo) {
   }
 }
 
-// ==================== CARGA DE DATOS ====================
 onMounted(async () => {
   try {
-    // 🔹 1. Cargar respaldo local de ficha
     const local = localStorage.getItem('fichaIndicador')
     if (local) {
       const ficha = JSON.parse(local)
@@ -625,11 +604,9 @@ onMounted(async () => {
       Notify.create({ type: 'info', message: 'Ficha cargada desde respaldo local' })
     }
 
-    // 🔹 2. Cargar usuario actual
     const me = await api.get('/Cuentas/me')
     usuario.value = me.data || {}
 
-    // 🔹 3. Cargar MIR y generar indicadores
     const mir = await api.get('/MatrizIndicadores/ultimo')
     const filas = mir.data?.filas || []
     indicadores.value = filas.map((f) => ({
@@ -655,7 +632,6 @@ onMounted(async () => {
       metas: f.metas || [],
       lineaBase: f.lineaBase || { valor: null, unidad: '', anio: '', periodo: '' },
 
-      // ⬇️  ACTUALIZADO: ahora guarda las líneas de acción seleccionadas
       lineasAccion: f.lineasAccion || [],
 
       crema: {
@@ -683,7 +659,7 @@ onMounted(async () => {
       }
     }, 3000)
   } catch (error) {
-    console.error('❌ Error al cargar datos:', error)
+    console.error('Error al cargar datos:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar datos' })
   }
 })
@@ -714,11 +690,10 @@ async function cargarLineasAccion() {
         ind.lineasAccion = lineasSeleccionadas
       })
 
-      console.log('✅ Líneas de acción cargadas correctamente:', lineasSeleccionadas)
+      console.log('Líneas de acción cargadas correctamente:', lineasSeleccionadas)
       return
     }
 
-    // Si no hay en localStorage, traer del backend (fallback)
     const res = await api.get('/AlineacionMunicipio')
     const data = res.data || []
     indicadores.value.forEach((ind) => {
@@ -729,12 +704,11 @@ async function cargarLineasAccion() {
       }))
     })
   } catch (err) {
-    console.error('❌ Error al cargar líneas de acción', err)
+    console.error('Error al cargar líneas de acción', err)
     Notify.create({ type: 'negative', message: 'Error al cargar líneas de acción' })
   }
 }
 
-// ==================== UTILS ====================
 function generarSiglas(texto) {
   if (!texto) return ''
   const blacklist = ['de', 'la', 'el', 'y', 'del', 'para', 'con', 'las', 'los']
@@ -776,7 +750,7 @@ async function guardar() {
     localStorage.setItem('fichaIndicador', JSON.stringify(fichaPayload))
     Notify.create({ type: 'positive', message: 'Ficha técnica guardada correctamente' })
   } catch (err) {
-    console.error('❌ Error al guardar ficha:', err)
+    console.error('Error al guardar ficha:', err)
     Notify.create({ type: 'negative', message: 'Error al guardar ficha' })
   }
 }

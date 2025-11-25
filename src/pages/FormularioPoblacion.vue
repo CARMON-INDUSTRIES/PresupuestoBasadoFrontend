@@ -55,7 +55,7 @@ async function submitForm() {
   try {
     await api.post('/PoblacionObjetivo', form.value)
     localStorage.setItem('ultimaRutaRegistro', '/formulario-entorno')
-    router.push('/formulario-entorno') // Ruta siguiente
+    router.push('/formulario-entorno')
   } catch (error) {
     Notify.create({
       type: 'negative',

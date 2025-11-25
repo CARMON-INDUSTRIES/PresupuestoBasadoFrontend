@@ -5,7 +5,6 @@
         <div class="text-h5">Alineación de la Matriz de Indicadores para Resultados</div>
       </q-card-section>
 
-      <!-- Navegación por partes -->
       <q-tabs v-model="parteActiva" class="text-primary">
         <q-tab name="parte1" label="Parte 1" />
         <q-tab name="parte2" label="Parte 2" />
@@ -15,7 +14,6 @@
       <q-separator />
 
       <q-tab-panels v-model="parteActiva" animated>
-        <!-- ================== PARTE 1 ================== -->
         <q-tab-panel name="parte1">
           <q-card-section ref="parte1Ref">
             <div class="text-subtitle1">Datos del Usuario</div>
@@ -72,7 +70,6 @@
           </q-card-section>
         </q-tab-panel>
 
-        <!-- ================== PARTE 2 ================== -->
         <q-tab-panel name="parte2">
           <q-card-section ref="parte2Ref">
             <div class="text-subtitle1">Antecedente</div>
@@ -168,8 +165,6 @@
           </q-card-section>
         </q-tab-panel>
 
-        <!-- ================== PARTE 3 ================== -->
-        <!-- ================== PARTE 3 ================== -->
         <q-tab-panel name="parte3">
           <q-card-section ref="parte3">
             <div class="text-subtitle1">Programa Social</div>
@@ -250,7 +245,6 @@
         </q-tab-panel>
       </q-tab-panels>
 
-      <!-- Botón PDF General -->
       <q-card-actions align="right" class="q-mt-md">
         <q-btn
           color="deep-orange"
@@ -307,7 +301,7 @@ function descargarPdfParte(parte) {
 }
 
 async function descargarPdfCompleto() {
-  const el = document.querySelector('.q-card') // todo el card
+  const el = document.querySelector('.q-card')
   html2pdf()
     .set({
       margin: 0.5,

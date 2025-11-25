@@ -1,7 +1,6 @@
 <template>
   <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="guardarProgramaSocial" class="q-gutter-md">
-      <!-- Pregunta principal -->
       <q-card flat bordered class="q-pa-md">
         <q-card-section>
           <div class="form-title">¿Es un programa social?</div>
@@ -18,7 +17,6 @@
         </q-card-section>
       </q-card>
 
-      <!-- Selección de categorías -->
       <q-card v-if="form.esProgramaSocial" flat bordered class="q-pa-md">
         <q-card-section>
           <div class="text-subtitle1">Categorías</div>
@@ -45,7 +43,6 @@
         </q-card-section>
       </q-card>
 
-      <!-- Botón Guardar -->
       <q-card-actions align="right">
         <q-btn
           label="Continuar"
@@ -67,7 +64,7 @@ import { Notify } from 'quasar'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
-const STORAGE_KEY = 'formularioProgramaSocialCompleto' // 🔹 clave para localStorage
+const STORAGE_KEY = 'formularioProgramaSocialCompleto'
 const router = useRouter()
 
 const form = ref({
@@ -86,7 +83,6 @@ const categorias = ref([
   { nombre: 'Bienestar económico', tipo: '', seleccionado: false },
 ])
 
-// 🧠 Cargar datos previos si existen
 onMounted(() => {
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved) {
@@ -97,7 +93,6 @@ onMounted(() => {
   }
 })
 
-// 💾 Guardar automáticamente al modificar cualquier campo
 watch(
   [form, categorias],
   () => {
@@ -109,7 +104,6 @@ watch(
   { deep: true },
 )
 
-// 🚀 Enviar datos al backend
 async function guardarProgramaSocial() {
   try {
     const payload = {
@@ -147,7 +141,6 @@ async function guardarProgramaSocial() {
   font-weight: 700;
 }
 
-/* Botón guardar */
 .submit-btn {
   font-weight: 900;
   font-size: 0.8rem;

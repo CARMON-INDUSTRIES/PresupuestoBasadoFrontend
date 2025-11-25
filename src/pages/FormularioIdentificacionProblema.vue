@@ -2,13 +2,11 @@
   <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="submitForm" class="q-gutter-md">
       <q-card flat bordered class="q-pa-md">
-        <!-- Título -->
         <q-card-section>
           <div class="form-title">Identificación y Descripción del Problema</div>
           <q-separator color="#691b31" spaced />
         </q-card-section>
 
-        <!-- Campos del formulario -->
         <q-card-section class="q-gutter-md">
           <q-input
             filled
@@ -101,7 +99,6 @@
           </q-input>
         </q-card-section>
 
-        <!-- Botón -->
         <q-card-actions align="right">
           <q-btn
             color="primary"
@@ -140,7 +137,6 @@ const form = ref({
   evolucion: '',
 })
 
-// 🧠 Cargar datos guardados (si existen)
 onMounted(() => {
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved) {
@@ -149,7 +145,6 @@ onMounted(() => {
   }
 })
 
-// 💾 Guardar automáticamente cada vez que cambie algo
 watch(
   form,
   (newVal) => {
@@ -158,7 +153,6 @@ watch(
   { deep: true },
 )
 
-// 🚀 Enviar datos
 async function submitForm() {
   loading.value = true
   try {

@@ -8,7 +8,6 @@
         </q-card-section>
 
         <q-card-section class="q-gutter-md">
-          <!-- Subfunción (selección por id) -->
           <q-select
             filled
             v-model="form.subfuncionId"
@@ -24,7 +23,6 @@
             </template>
           </q-select>
 
-          <!-- Función (deshabilitado, muestra la jerarquía) -->
           <q-select
             filled
             v-model="form.funcionId"
@@ -40,7 +38,6 @@
             </template>
           </q-select>
 
-          <!-- Finalidad (deshabilitado, muestra la jerarquía) -->
           <q-select
             filled
             v-model="form.finalidadId"
@@ -56,7 +53,6 @@
             </template>
           </q-select>
 
-          <!-- Año -->
           <q-select
             filled
             v-model="form.anioOperando"
@@ -69,7 +65,6 @@
             </template>
           </q-select>
 
-          <!-- Entrega de bienes -->
           <q-select
             filled
             v-model="form.entregaBienes"
@@ -109,7 +104,7 @@ import api from 'src/boot/api'
 const router = useRouter()
 const loading = ref(false)
 
-const STORAGE_KEY = 'clasificacionFuncionalForm_v1' // clave en localStorage
+const STORAGE_KEY = 'clasificacionFuncionalForm_v1'
 
 const anioActual = new Date().getFullYear()
 const anios = [anioActual - 1, anioActual, anioActual + 1]
@@ -119,10 +114,9 @@ const opcionesEntregaBienes = [
   'Población General y Administración Pública',
 ]
 
-// Form con ids y nombres separados para evitar problemas con selects
 const form = ref({
-  subfuncionId: null, // id usado por el select
-  subfuncion: '', // nombre para enviar al backend
+  subfuncionId: null,
+  subfuncion: '',
   funcionId: null,
   funcion: '',
   finalidadId: null,
@@ -131,12 +125,10 @@ const form = ref({
   entregaBienes: '',
 })
 
-// opciones para selects
-const subfunciones = ref([]) // { label, value }
-const funciones = ref([]) // { label, value }
-const finalidades = ref([]) // { label, value }
+const subfunciones = ref([])
+const funciones = ref([])
+const finalidades = ref([])
 
-// Cargar lista de subfunciones (ids)
 async function cargarSubfunciones() {
   try {
     const { data } = await api.get('/ClasificadorFuncional/subfunciones')
@@ -147,9 +139,7 @@ async function cargarSubfunciones() {
   }
 }
 
-// Al cambiar subfunción (se pasa el id)
 const onSubfuncionChange = async (subfuncionId) => {
-  // limpiar jerarquía previa
   form.value.funcionId = null
   form.value.funcion = ''
   form.value.finalidadId = null
@@ -158,7 +148,6 @@ const onSubfuncionChange = async (subfuncionId) => {
   finalidades.value = []
 
   if (!subfuncionId) {
-    // guardar estado en localStorage
     localStorage.setItem(STORAGE_KEY, JSON.stringify(form.value))
     return
   }
@@ -177,7 +166,6 @@ const onSubfuncionChange = async (subfuncionId) => {
     funciones.value = [{ label: data.funcionNombre, value: data.funcionId }]
     finalidades.value = [{ label: data.finalidadNombre, value: data.finalidadId }]
 
-    // guardar en localStorage
     localStorage.setItem(STORAGE_KEY, JSON.stringify(form.value))
   } catch (err) {
     console.error('Error al cargar jerarquía', err)
@@ -185,7 +173,6 @@ const onSubfuncionChange = async (subfuncionId) => {
   }
 }
 
-// Restaurar desde localStorage (intenta garantizar que selects muestren valores)
 function restaurarFormulario() {
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) return
@@ -193,11 +180,9 @@ function restaurarFormulario() {
   try {
     const parsed = JSON.parse(raw)
 
-    // Restauramos valores básicos
     form.value.anioOperando = parsed.anioOperando ?? form.value.anioOperando
     form.value.entregaBienes = parsed.entregaBienes ?? form.value.entregaBienes
 
-    // Si el objeto contiene ids/nombres, restaurar
     if (parsed.subfuncionId) {
       form.value.subfuncionId = parsed.subfuncionId
     }
@@ -207,12 +192,9 @@ function restaurarFormulario() {
     if (parsed.finalidadId) form.value.finalidadId = parsed.finalidadId
     if (parsed.finalidad) form.value.finalidad = parsed.finalidad
 
-    // Si restauramos un subfuncionId, cargamos su jerarquía para asegurar labels
     if (form.value.subfuncionId) {
-      // llamamos al endpoint para poblar funcion/finalidad/labels
       onSubfuncionChange(form.value.subfuncionId)
     } else if (form.value.subfuncion) {
-      // si no hay id pero sí nombre, buscamos el id entre subfunciones cargadas
       const found = subfunciones.value.find((s) => s.label === form.value.subfuncion)
       if (found) {
         onSubfuncionChange(found.value)
@@ -223,7 +205,6 @@ function restaurarFormulario() {
   }
 }
 
-// Guardar cada cambio automaticamente en localStorage
 watch(
   form,
   (newVal) => {
@@ -236,11 +217,9 @@ watch(
   { deep: true },
 )
 
-// Submit
 async function submitForm() {
   loading.value = true
   try {
-    // Enviamos nombres (lo que espera tu backend)
     await api.post('/ClasificacionFuncional', {
       Subfuncion: form.value.subfuncion,
       Funcion: form.value.funcion,
@@ -251,8 +230,6 @@ async function submitForm() {
 
     Notify.create({ type: 'positive', message: 'Clasificación guardada correctamente' })
 
-    // limpiar storage y avanzar
-    //localStorage.removeItem(STORAGE_KEY)
     localStorage.setItem('ultimaRutaRegistro', '/formulario-antecedente')
     router.push('/formulario-antecedente')
   } catch (error) {

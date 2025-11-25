@@ -2,15 +2,12 @@
   <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="submitForm" class="q-gutter-md">
       <q-card flat bordered class="q-pa-md">
-        <!-- Título -->
         <q-card-section>
           <div class="form-title">Cobertura</div>
           <q-separator color="#691b31" spaced />
         </q-card-section>
 
-        <!-- Campos del formulario -->
         <q-card-section class="q-gutter-md">
-          <!-- 4.1 -->
           <q-input
             filled
             v-model="form.identificacionCaracterizacionPoblacionPotencial"
@@ -35,7 +32,6 @@
             </template>
           </q-input>
 
-          <!-- Unidad de medida -->
           <q-input
             filled
             v-model="form.unidadMedida"
@@ -48,7 +44,6 @@
             </template>
           </q-input>
 
-          <!-- 4.3 Cuantificación -->
           <div class="text-subtitle1 q-mt-md">4.3 Cuantificación de las poblaciones</div>
 
           <q-input
@@ -90,7 +85,6 @@
             </template>
           </q-input>
 
-          <!-- 4.4 Frecuencia de actualización -->
           <div class="text-subtitle1 q-mt-md">4.4 Frecuencia de actualización de la población</div>
           <q-select
             filled
@@ -108,7 +102,6 @@
             </template>
           </q-select>
 
-          <!-- 4.5 Procesos -->
           <q-input
             filled
             v-model="form.procesoIdentificacionPoblacionPotencial"
@@ -134,7 +127,6 @@
           </q-input>
         </q-card-section>
 
-        <!-- Botón -->
         <q-card-actions align="right">
           <q-btn
             color="primary"
@@ -181,7 +173,6 @@ const form = ref({
   procesoIdentificacionPoblacionObjetivo: '',
 })
 
-// 🧠 Cargar datos previos si existen
 onMounted(() => {
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved) {
@@ -190,7 +181,6 @@ onMounted(() => {
   }
 })
 
-// 💾 Guardar automáticamente al modificar cualquier campo
 watch(
   form,
   (newVal) => {
@@ -199,7 +189,6 @@ watch(
   { deep: true },
 )
 
-// 🚀 Enviar datos al backend
 async function submitForm() {
   loading.value = true
   try {
@@ -224,21 +213,18 @@ async function submitForm() {
   margin: auto;
 }
 
-/* Título más grande y destacado */
 .form-title {
   font-size: 2rem;
   font-weight: 700;
   color: #691b31;
 }
 
-/* Campos con fondo blanco y sombras suaves */
 .q-field__control {
   border-radius: 12px;
   background-color: #fff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Botón */
 .submit-btn {
   font-weight: 900;
   font-size: 0.8rem;

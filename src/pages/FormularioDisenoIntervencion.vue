@@ -2,17 +2,14 @@
   <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="submitForm" class="q-gutter-sm">
       <q-card flat bordered class="q-pa-md" style="max-width: 1000px; margin: auto">
-        <!-- Título -->
         <q-card-section>
           <div class="form-title">Diseño de la Intervención Pública</div>
           <q-separator color="#691b31" spaced />
         </q-card-section>
 
-        <!-- Botón para abrir modal -->
         <q-card-section class="q-gutter-md">
           <q-btn color="secondary" label="Agregar Componente" @click="showModal = true" rounded />
 
-          <!-- Lista de componentes -->
           <div v-if="form.componentes.length" class="q-mt-md">
             <div
               v-for="(comp, cIdx) in form.componentes"
@@ -21,7 +18,6 @@
             >
               <div class="text-subtitle2"><q-icon name="widgets" /> {{ comp.nombre }}</div>
 
-              <!-- Acciones -->
               <div
                 v-for="(accion, aIdx) in comp.acciones"
                 :key="aIdx"
@@ -30,7 +26,6 @@
                 <strong class="col"> <q-icon name="task_alt" /> {{ accion.descripcion }} </strong>
               </div>
 
-              <!-- Resultado -->
               <div class="q-ml-md q-mt-sm">
                 <em>
                   <q-icon name="flare" />
@@ -42,7 +37,6 @@
             </div>
           </div>
 
-          <!-- Textareas principales -->
           <q-input
             filled
             v-model="form.etapasIntervencion"
@@ -68,7 +62,6 @@
           </q-input>
         </q-card-section>
 
-        <!-- Botón guardar -->
         <q-card-actions align="right">
           <q-btn
             color="primary"
@@ -84,7 +77,6 @@
       </q-card>
     </q-form>
 
-    <!-- Modal de componentes -->
     <q-dialog v-model="showModal" persistent>
       <q-card style="min-width: 600px; max-width: 800px">
         <q-card-section>
@@ -92,7 +84,6 @@
         </q-card-section>
         <q-separator />
         <q-card-section>
-          <!-- Nombre del componente -->
           <q-input
             v-model="nuevoComponente.nombre"
             filled
@@ -106,7 +97,6 @@
             </template>
           </q-input>
 
-          <!-- Acciones -->
           <div
             v-for="(accion, aIdx) in nuevoComponente.acciones"
             :key="'accion-' + aIdx"
@@ -156,7 +146,6 @@
             @click="nuevoComponente.acciones.push({ nombre: '', cantidad: 0 })"
           />
 
-          <!-- Resultado -->
           <div class="q-mt-md">
             <div class="text-caption q-mb-xs">Efecto</div>
             <q-input
@@ -215,7 +204,6 @@ const nuevoComponente = ref({
 
 const proximoIndiceComp = computed(() => form.value.componentes.length + 1)
 
-// Guardar cambios en localStorage automáticamente
 watch(
   form,
   (nuevo) => {
@@ -224,7 +212,6 @@ watch(
   { deep: true },
 )
 
-// Recuperar datos al montar
 onMounted(() => {
   const guardado = localStorage.getItem(STORAGE_KEY)
   if (guardado) {

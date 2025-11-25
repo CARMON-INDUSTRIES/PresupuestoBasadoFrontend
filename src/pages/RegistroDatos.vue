@@ -10,7 +10,6 @@
       <q-separator />
 
       <q-tab-panels v-model="tab" animated>
-        <!-- 📑 Plan Estatal -->
         <q-tab-panel name="estatal">
           <h6>Plan Estatal</h6>
           <PlanEditor
@@ -22,7 +21,6 @@
           />
         </q-tab-panel>
 
-        <!-- 🏛️ Plan Municipal -->
         <q-tab-panel name="municipal">
           <h6>Plan Municipal</h6>
           <PlanEditor
@@ -34,7 +32,6 @@
           />
         </q-tab-panel>
 
-        <!-- 📊 Clasificación Funcional -->
         <q-tab-panel name="clasificacion">
           <h6>Clasificación Funcional</h6>
           <PlanEditor
@@ -84,7 +81,6 @@ async function guardar() {
   }
 }
 
-// ==== PLAN MUNICIPAL ====
 async function guardarPlanMunicipal(data) {
   for (const acuerdo of data) {
     const acuerdoResp = await api.post('Municipal/acuerdo', { Nombre: acuerdo.nombre })
@@ -112,8 +108,6 @@ async function guardarPlanMunicipal(data) {
   }
 }
 
-// ==== PLAN ESTATAL ====
-// Similar a Municipal, ajusta los nombres de propiedades según el modelo estatal
 async function guardarPlanEstatal(data) {
   for (const acuerdo of data) {
     const acuerdoResp = await api.post('Estatal/acuerdo', { Nombre: acuerdo.nombre })
@@ -141,7 +135,6 @@ async function guardarPlanEstatal(data) {
   }
 }
 
-// ==== CLASIFICACIÓN FUNCIONAL ====
 async function guardarClasificacion(data) {
   const baseUrl = 'Clasificacion'
 

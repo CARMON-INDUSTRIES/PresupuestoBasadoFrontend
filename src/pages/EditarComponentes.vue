@@ -1,7 +1,6 @@
 <template>
   <q-page padding style="background-color: #691b31">
     <q-card flat bordered class="q-pa-md" style="max-width: 1000px; margin: auto">
-      <!-- Título y botón regresar -->
       <q-card-section class="row items-center justify-between">
         <div class="form-title">Editar Componentes</div>
         <q-btn
@@ -13,7 +12,6 @@
       </q-card-section>
       <q-separator color="#691b31" spaced />
 
-      <!-- Lista de componentes -->
       <div v-if="componentes.length" class="q-mt-md">
         <div
           v-for="comp in componentes"
@@ -25,14 +23,12 @@
             <q-btn dense flat round icon="edit" color="primary" @click="editarComponente(comp)" />
           </div>
 
-          <!-- Acciones -->
           <div v-for="accion in comp.acciones" :key="accion.id" class="q-ml-md row items-center">
             <strong class="col">
               <q-icon name="task_alt" /> {{ accion.descripcion }} ({{ accion.cantidad }})
             </strong>
           </div>
 
-          <!-- Resultado -->
           <div class="q-ml-md q-mt-sm">
             <em>
               <q-icon name="flare" />
@@ -156,9 +152,8 @@ const componenteEdit = ref({
   resultado: { id: 0, descripcion: '' },
 })
 
-let idRegistroDiseno = ref(0) // id del registro principal de diseño
+let idRegistroDiseno = ref(0)
 
-// 🔹 Obtener los últimos componentes al cargar
 const obtenerComponentes = async () => {
   loading.value = true
   try {
@@ -184,13 +179,11 @@ const obtenerComponentes = async () => {
   }
 }
 
-// 🔹 Abrir modal para editar
 const editarComponente = (comp) => {
   componenteEdit.value = JSON.parse(JSON.stringify(comp)) // Clonar para no modificar directamente la lista
   showModal.value = true
 }
 
-// 🔹 Guardar cambios en el backend sin crear nuevos registros
 const guardarEdicionComponente = async () => {
   if (!componenteEdit.value.nombre.trim()) {
     Notify.create({ type: 'warning', message: 'El componente debe tener un nombre' })
@@ -199,23 +192,22 @@ const guardarEdicionComponente = async () => {
 
   loading.value = true
   try {
-    // Actualizar el componente editado en la lista completa
     const index = componentes.value.findIndex((c) => c.id === componenteEdit.value.id)
     if (index !== -1) {
       componentes.value[index] = JSON.parse(JSON.stringify(componenteEdit.value))
     }
 
     const payload = {
-      id: idRegistroDiseno.value, // id del registro principal
+      id: idRegistroDiseno.value,
       componentes: componentes.value,
-      etapasIntervencion: '', // no modificable desde aquí
-      escenariosFuturosEsperar: '', // no modificable desde aquí
+      etapasIntervencion: '',
+      escenariosFuturosEsperar: '',
     }
 
     await api.put(`/DisenoIntervencionPublica/${idRegistroDiseno.value}`, payload)
     Notify.create({ type: 'positive', message: 'Componente actualizado correctamente' })
     showModal.value = false
-    await obtenerComponentes() // refrescar lista
+    await obtenerComponentes()
   } catch (error) {
     Notify.create({
       type: 'negative',

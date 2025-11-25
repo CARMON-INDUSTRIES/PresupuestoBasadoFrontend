@@ -1,7 +1,6 @@
 <template>
   <q-page padding style="background-color: #691b31">
     <q-card flat bordered class="q-pa-md" style="max-width: 1400px; margin: auto">
-      <!-- Título -->
       <q-card-section>
         <div class="text-h5 text-center text-black">Árbol de Problemas</div>
       </q-card-section>
@@ -9,7 +8,6 @@
       <q-separator class="q-my-md" color="black" />
 
       <div class="arbol-container">
-        <!-- EFECTO SUPERIOR -->
         <div class="nivel efecto">
           <div class="label">Efecto superior o fin</div>
           <div class="nodo efecto-nodo ancho-central with-arrow-down rounded">
@@ -17,7 +15,6 @@
           </div>
         </div>
 
-        <!-- RESULTADOS -->
         <div class="nivel resultados" v-if="hayResultados">
           <div class="label">Efecto</div>
           <div class="fila">
@@ -37,7 +34,6 @@
           </div>
         </div>
 
-        <!-- PROBLEMA CENTRAL -->
         <div class="nivel problema">
           <div class="label">Problema central</div>
           <div class="nodo problema-nodo ancho-central with-arrow-down with-arrow-up rounded">
@@ -45,7 +41,6 @@
           </div>
         </div>
 
-        <!-- COMPONENTES Y ACCIONES -->
         <div class="nivel componentes" v-if="resumen.disenio?.componentes?.length">
           <div class="label">Componentes</div>
           <div class="fila">
@@ -54,14 +49,12 @@
               :key="'comp-' + idx"
               class="componente-columna"
             >
-              <!-- Componente -->
               <div class="nodo componente-nodo with-arrow-up with-arrow-down rounded">
                 {{ comp.nombre }}
               </div>
 
               <div class="label">Actividades</div>
 
-              <!-- Acciones (solo nombre) -->
               <div
                 v-for="(accion, aIdx) in comp.acciones"
                 :key="'accion-' + idx + '-' + aIdx"
@@ -74,7 +67,6 @@
         </div>
       </div>
 
-      <!-- Botón continuar -->
       <q-card-actions align="right" class="q-mt-lg">
         <q-btn
           color="primary"
@@ -103,7 +95,6 @@ const resumen = ref({
   efectoSuperior: null,
 })
 
-// computado para saber si hay resultados
 const hayResultados = computed(() => {
   return (
     Array.isArray(resumen.value?.disenio?.componentes) &&
@@ -113,7 +104,6 @@ const hayResultados = computed(() => {
   )
 })
 
-// helper: convierte cualquier item (string u objeto) a string representativo
 function itemToString(item) {
   if (item == null) return ''
   if (typeof item === 'string') return item
@@ -139,19 +129,16 @@ async function cargarDatos() {
       const accionesRaw =
         comp.acciones ?? comp.actividades ?? comp.Acciones ?? comp.Actividades ?? []
 
-      // 🔹 Normalizamos resultado único o múltiples
       const resultadosRaw = comp.resultado
         ? [comp.resultado]
         : (comp.resultados ?? comp.efectos ?? comp.Resultados ?? comp.Efectos ?? [])
 
-      // Normalizamos acciones: solo descripción
       const acciones = Array.isArray(accionesRaw)
         ? accionesRaw
             .map((a) => (typeof a === 'string' ? a : (a.descripcion ?? '')))
             .filter(Boolean)
         : []
 
-      // Normalizamos resultados: solo strings
       const resultados = Array.isArray(resultadosRaw)
         ? resultadosRaw.map(itemToString).filter(Boolean)
         : []
@@ -178,9 +165,9 @@ async function cargarDatos() {
       efectoSuperior: efectoRes.data ?? null,
     }
 
-    console.log('✅ Datos Anexo 4 (normalizados):', JSON.parse(JSON.stringify(resumen.value)))
+    console.log('Datos Anexo 4 (normalizados):', JSON.parse(JSON.stringify(resumen.value)))
   } catch (err) {
-    console.error('❌ Error al cargar Anexo 4:', err)
+    console.error('Error al cargar Anexo 4:', err)
     Notify.create({ type: 'negative', message: 'Error al cargar datos del Anexo 4' })
   }
 }

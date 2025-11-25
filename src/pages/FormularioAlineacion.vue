@@ -8,7 +8,6 @@
         </q-card-section>
 
         <q-card-section class="q-gutter-md">
-          <!-- Tipo -->
           <q-select
             filled
             v-model="form.tipo"
@@ -22,7 +21,6 @@
             </template>
           </q-select>
 
-          <!-- Acuerdo -->
           <q-select
             filled
             v-model="form.acuerdo"
@@ -38,7 +36,6 @@
             </template>
           </q-select>
 
-          <!-- Objetivo -->
           <q-select
             filled
             v-model="form.objetivo"
@@ -54,7 +51,6 @@
             </template>
           </q-select>
 
-          <!-- Estrategias -->
           <q-select
             filled
             v-model="form.estrategias"
@@ -71,7 +67,6 @@
             </template>
           </q-select>
 
-          <!-- Líneas de acción -->
           <q-select
             filled
             v-model="form.lineasAccion"
@@ -143,7 +138,6 @@ import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import Swal from 'sweetalert2'
 import api from 'src/boot/api'
-//import RegistroUsuarioDetalle from 'src/pages/RegistroUsuarioDetalle.vue'
 
 const mostrarModalUsuario = ref(false)
 const router = useRouter()
@@ -335,7 +329,6 @@ async function registrarAlineacion() {
     return
   }
 
-  // 🔹 Preparamos el objeto a guardar con labels legibles
   const alineacionConLabels = {
     ...form.value,
     acuerdoLabel: labelFromList(acuerdos.value, form.value.acuerdo),
@@ -350,7 +343,6 @@ async function registrarAlineacion() {
       .filter(Boolean),
   }
 
-  // 🔹 Guardamos según el tipo (pero ahora con nombres nuevos LineaMunicipal / LineaEstatal)
   if (form.value.tipo === 'Municipio') {
     localStorage.setItem('LineaMunicipal', JSON.stringify(alineacionConLabels))
     Notify.create({
@@ -362,14 +354,12 @@ async function registrarAlineacion() {
     Notify.create({ type: 'positive', message: 'Línea de acción estatal guardada en localStorage' })
   }
 
-  // 🔹 También mantenemos las claves antiguas por compatibilidad (opcional)
   if (form.value.tipo === 'Municipio') {
     localStorage.setItem('alineacionMunicipal', JSON.stringify(alineacionConLabels))
   } else {
     localStorage.setItem('alineacionEstatal', JSON.stringify(alineacionConLabels))
   }
 
-  // 🔹 Limpiamos formulario y actualizamos estado visual
   form.value = {
     tipo: '',
     ramo: '',
@@ -420,7 +410,6 @@ async function submitForm() {
       })
     }
 
-    // Limpiar todo al terminar
     localStorage.removeItem('alineacionMunicipal')
     localStorage.removeItem('alineacionEstatal')
     localStorage.removeItem(STORAGE_KEY)

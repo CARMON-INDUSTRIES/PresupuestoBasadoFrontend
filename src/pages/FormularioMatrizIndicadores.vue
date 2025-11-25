@@ -5,7 +5,6 @@
         <div class="text-h5 text-center">Matriz de Indicadores para Resultados</div>
       </q-card-section>
 
-      <!-- ===== Encabezado (datos del usuario) ===== -->
       <q-markup-table flat bordered class="q-mb-lg">
         <tbody>
           <tr>
@@ -28,7 +27,6 @@
         </tbody>
       </q-markup-table>
 
-      <!-- ===== Tabla MIR ===== -->
       <q-table
         flat
         bordered
@@ -40,12 +38,10 @@
       >
         <template v-slot:body-cell="props">
           <q-td :props="props">
-            <!-- Columna NIVEL -->
             <template v-if="props.col.name === 'nivel'">
               <span class="text-grey-7">{{ props.row.nivel }}</span>
             </template>
 
-            <!-- Columna Resumen Narrativo -->
             <template v-else-if="props.col.name === 'resumenNarrativo'">
               <div class="row items-center no-wrap">
                 <div class="col">
@@ -65,7 +61,6 @@
               </div>
             </template>
 
-            <!-- Columnas de texto libre -->
             <template v-else>
               {{ props.row[props.col.name] }}
             </template>
@@ -73,12 +68,10 @@
         </template>
       </q-table>
 
-      <!-- ===== Botón Guardar MIR ===== -->
       <div class="q-mt-md text-right">
         <q-btn color="primary" label="Siguiente" :loading="loading" @click="guardarMatriz" />
       </div>
 
-      <!-- ===== Modal Resumen Narrativo + Indicadores + Medios + Supuestos ===== -->
       <q-dialog v-model="modalVisible" persistent>
         <q-card style="min-width: 520px">
           <q-card-section class="q-pb-none">
@@ -89,7 +82,6 @@
           </q-card-section>
 
           <q-card-section>
-            <!-- Resumen narrativo -->
             <div class="q-mb-md" v-for="(campo, idx) in camposNarrativos" :key="idx">
               <q-input
                 v-model="camposNarrativos[idx]"
@@ -99,7 +91,6 @@
               />
             </div>
 
-            <!-- Indicadores -->
             <q-input
               v-model="indicadoresTemp"
               label="Indicadores (solo nombre)"
@@ -109,7 +100,6 @@
               class="q-mb-md"
             />
 
-            <!-- Medios de verificación -->
             <q-input
               v-model="mediosTemp"
               label="Medios de verificación"
@@ -119,7 +109,6 @@
               class="q-mb-md"
             />
 
-            <!-- Supuestos -->
             <q-input v-model="supuestosTemp" label="Supuestos" type="textarea" filled autogrow />
           </q-card-section>
 
@@ -162,7 +151,6 @@ const columns = [
   { name: 'supuestos', label: 'Supuestos' },
 ]
 
-// Cargar datos iniciales
 onMounted(async () => {
   try {
     const me = await api.get('/Cuentas/me')
@@ -184,11 +172,10 @@ onMounted(async () => {
 
     filas.value = f
 
-    // Cargar desde localStorage si existe
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       filas.value = JSON.parse(saved)
-      console.log('✅ MIR cargada desde localStorage')
+      console.log('MIR cargada desde localStorage')
     }
   } catch (error) {
     console.error('Error al cargar MIR:', error)
@@ -196,7 +183,6 @@ onMounted(async () => {
   }
 })
 
-// Guardar automáticamente en localStorage
 watch(
   filas,
   (newVal) => {

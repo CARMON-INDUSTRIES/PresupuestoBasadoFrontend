@@ -7,7 +7,6 @@
 
           <br /><br />
 
-          <!-- 1) Sujeto a reglas de operación -->
           <div class="text-subtitle1 q-mb-sm">
             Sujeto a reglas de operación
             <q-option-group
@@ -19,7 +18,6 @@
             />
           </div>
 
-          <!-- 2) Otros subsidios -->
           <div class="text-subtitle1 q-mb-sm">
             Otros subsidios (para otorgar otros subsidios no sujetos a reglas de operación, en su
             caso se otorgan mediante convenios)
@@ -32,7 +30,6 @@
             />
           </div>
 
-          <!-- 3) Prestación de servicios públicos -->
           <div class="text-subtitle1 q-mb-sm">
             Prestación de servicios públicos (Actividades del sector público que se realizan para
             satisfacer demandas de la sociedad)
@@ -45,7 +42,6 @@
             />
           </div>
 
-          <!-- 4) Provisión de bienes públicos -->
           <div class="text-subtitle1 q-mb-sm">
             Provisión de bienes públicos (Actividades que se realizan para crear o elaborar bienes
             de competencia del sector público)
@@ -80,7 +76,7 @@ import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
-const STORAGE_KEY = 'formularioProgramaSocial' // 🔹 clave para localStorage
+const STORAGE_KEY = 'formularioProgramaSocial'
 const router = useRouter()
 
 const opcionesSiNo = [
@@ -95,7 +91,6 @@ const form = ref({
   ProvisionBienesPublicos: null,
 })
 
-// 🧠 Cargar datos previos si existen
 onMounted(() => {
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved) {
@@ -104,7 +99,6 @@ onMounted(() => {
   }
 })
 
-// 💾 Guardar automáticamente al modificar cualquier campo
 watch(
   form,
   (newVal) => {
@@ -113,11 +107,10 @@ watch(
   { deep: true },
 )
 
-// 🚀 Enviar datos al backend
 async function guardarDetalle() {
   try {
     const payload = { ...form.value }
-    delete payload.Id // 🔹 por si acaso llega a existir
+    delete payload.Id
 
     await api.post('/ReglasOperacionDetalle', payload)
 

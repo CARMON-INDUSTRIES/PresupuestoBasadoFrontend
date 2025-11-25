@@ -105,7 +105,6 @@
       </q-card-section>
     </q-card>
 
-    <!-- Modal cambiar contraseña -->
     <q-dialog v-model="abrirModal">
       <q-card style="width: 400px">
         <q-card-section class="text-h6 text-center"> Cambiar contraseña </q-card-section>
@@ -151,7 +150,7 @@ const confirmarPassword = ref('')
 const loading = ref(false)
 
 const form = ref({
-  User: '', // 👈 ya no está hardcodeado
+  User: '',
   NuevoUserName: '',
   email: '',
   nombreCompleto: '',
@@ -168,21 +167,17 @@ const entidad = ref([])
 
 onMounted(async () => {
   try {
-    // ✅ 1. Intentar cargar datos del usuario del localStorage
     const datosBasicos = localStorage.getItem('usuarioBasico')
     if (datosBasicos) {
       const datos = JSON.parse(datosBasicos)
 
-      // Copiar datos al formulario
       Object.assign(form.value, datos)
 
-      // Asegurarse que el campo 'User' esté correcto
       if (datos.user && !form.value.User) {
         form.value.User = datos.user
       }
     }
 
-    // ✅ 2. Cargar catálogos
     const [resUnidades, resEntidades] = await Promise.all([
       api.get('/UnidadAdministrativa'),
       api.get('/Entidad'),
@@ -195,9 +190,6 @@ onMounted(async () => {
   }
 })
 
-// =============================================================
-// ACTUALIZAR PERFIL
-// =============================================================
 async function registrarUsuario() {
   if (!form.value.User) {
     Notify.create({ type: 'negative', message: 'No se encontró el usuario actual' })
@@ -206,16 +198,15 @@ async function registrarUsuario() {
 
   loading.value = true
   try {
-    await api.put('/Cuentas/ActualizarPerfil', form.value) // 👈 ya no guardamos en 'res'
+    await api.put('/Cuentas/ActualizarPerfil', form.value)
 
     Notify.create({ type: 'positive', message: 'Usuario actualizado exitosamente' })
 
-    // ✅ Guardar nueva información del usuario en localStorage
     localStorage.setItem(
       'usuarioBasico',
       JSON.stringify({
         ...form.value,
-        User: form.value.NuevoUserName || form.value.User, // si cambió el nombre, guardar el nuevo
+        User: form.value.NuevoUserName || form.value.User,
       }),
     )
   } catch (err) {
@@ -226,9 +217,6 @@ async function registrarUsuario() {
   }
 }
 
-// =============================================================
-// CAMBIAR CONTRASEÑA
-// =============================================================
 async function cambiarPassword() {
   if (!form.value.User) {
     Notify.create({ type: 'negative', message: 'No se encontró el usuario actual' })

@@ -28,7 +28,6 @@
         </q-table>
       </q-card-section>
 
-      <!-- 🔹 Botón continuar -->
       <q-card-actions align="right" class="q-mt-md">
         <q-btn color="primary" label="Continuar" rounded @click="irAMatrizIndicadores" />
       </q-card-actions>
@@ -60,7 +59,6 @@ const columns = [
   },
 ]
 
-// helper: obtener texto seguro de un objeto
 function texto(obj) {
   if (!obj) return '—'
   if (typeof obj === 'string') return obj
@@ -77,11 +75,9 @@ onMounted(async () => {
       api.get('/Cobertura/ultimo'),
     ])
 
-    // Problema central y fin
     const problemaCentral = problemaRes.data?.problemaCentral || '—'
     const fin = objetivoRes.data?.fin || efectoRes.data?.descripcion || '—'
 
-    // Componentes y resultados
     const componentesProblema = Array.isArray(disenoRes.data?.componentes)
       ? disenoRes.data.componentes
       : Array.isArray(disenoRes.data)
@@ -137,8 +133,8 @@ onMounted(async () => {
       },
     ]
   } catch (error) {
-    console.error('❌ Error al cargar Anexo 7:', error)
-    Notify.create({ type: 'negative', message: 'Error al cargar datos del Anexo 7' })
+    console.error('Error al cargar Anexo 7:', error)
+    Notify.create({ type: 'negative', message: 'Error al cargar datos del Anexo 7.' })
   }
 })
 

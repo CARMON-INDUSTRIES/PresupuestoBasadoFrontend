@@ -53,7 +53,6 @@
         </template>
       </q-table>
 
-      <!-- Botones -->
       <div class="q-mt-md text-center flex flex-center q-gutter-md">
         <q-btn color="primary" label="Confirmar" @click="validarConfirmar" />
         <q-btn color="secondary" label="Continuar" @click="continuarFlujo" />
@@ -75,7 +74,6 @@ const confirmado = ref(false)
 
 const STORAGE_KEY = 'anexo6AnalisisAlternativas'
 
-// Columnas y opciones
 const columns = [
   { name: 'nombre', label: 'Alternativas (Componentes y Actividades)', align: 'left' },
   { name: 'facultad', label: 'a) Facultad Jurídica', editable: true },
@@ -96,7 +94,6 @@ const opciones = [
   { label: 'N/A', value: 0 },
 ]
 
-// Cargar componentes y actividades
 onMounted(async () => {
   try {
     const res = await api.get('/DisenoIntervencionPublica/ultimo')
@@ -139,12 +136,11 @@ onMounted(async () => {
       console.log('✅ Anexo 6 cargado desde localStorage')
     }
   } catch (error) {
-    console.error('❌ Error al cargar alternativas:', error)
+    console.error(' Error al cargar alternativas:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar alternativas' })
   }
 })
 
-// 💾 Guardar tabla automáticamente en localStorage
 watch(
   tabla,
   (newVal) => {
@@ -153,7 +149,6 @@ watch(
   { deep: true },
 )
 
-// Calcular total y probabilidad
 function calcularTotal(row) {
   const valores = [
     row.facultad,
@@ -189,7 +184,6 @@ function getColor(valor) {
   return 'green'
 }
 
-// Guardar en backend
 async function guardarAnalisis() {
   try {
     const payload = {
@@ -213,7 +207,6 @@ async function guardarAnalisis() {
   }
 }
 
-// Confirmar con validaciones
 function validarConfirmar() {
   const porcentajes = tabla.value
     .map((row) => {
@@ -284,7 +277,6 @@ function validarConfirmar() {
   }
 }
 
-// Continuar
 function continuarFlujo() {
   if (!confirmado.value) {
     Swal.fire({

@@ -54,7 +54,7 @@ async function submitForm() {
   loading.value = true
   try {
     await api.post('/JustificacionPrograma', form.value)
-    router.push('/formulario-poblacion') // Cambiar según la siguiente ruta
+    router.push('/formulario-poblacion')
     localStorage.setItem('ultimaRutaRegistro', '/formulario-poblacion')
   } catch (error) {
     Notify.create({

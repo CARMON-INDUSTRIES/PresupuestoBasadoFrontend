@@ -8,7 +8,6 @@
 
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <!-- Primera fila -->
             <div class="col-6">
               <q-input v-model="form.user" label="Usuario" filled stack-label required>
                 <template #prepend><q-icon name="person" /></template>
@@ -131,7 +130,7 @@ async function registrarUsuario() {
     await api.post('/Cuentas/Registro', form.value)
     Notify.create({ type: 'positive', message: 'Usuario registrado exitosamente' })
   } catch (error) {
-    console.error('❌ Error al registrar usuario:', error)
+    console.error('Error al registrar usuario:', error)
     Notify.create({
       type: 'negative',
       message: error.response?.data?.message || 'Error al registrar',

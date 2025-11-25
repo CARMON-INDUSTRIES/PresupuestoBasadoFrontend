@@ -6,7 +6,6 @@
       </q-card-section>
 
       <q-card-section class="q-gutter-md">
-        <!-- FILA: Fin -->
         <div class="row justify-center q-mt-lg">
           <div class="col-12 col-md-8">
             <q-card flat bordered class="q-pa-md text-center">
@@ -20,7 +19,6 @@
           </div>
         </div>
 
-        <!-- FILA: Efectos -->
         <div class="row justify-around q-col-gutter-lg q-mt-md">
           <div
             v-for="(comp, cIndex) in arbolObjetivos.componentes"
@@ -49,7 +47,6 @@
           </div>
         </div>
 
-        <!-- FILA: Objetivo Central -->
         <div class="row justify-center q-mt-lg">
           <div class="col-12 col-md-8">
             <q-card flat bordered class="q-pa-md text-center relative-position">
@@ -63,7 +60,6 @@
           </div>
         </div>
 
-        <!-- FILA: Componentes -->
         <div class="row justify-around q-col-gutter-lg q-mt-lg">
           <div
             v-for="(comp, cIndex) in arbolObjetivos.componentes"
@@ -86,7 +82,6 @@
           </div>
         </div>
 
-        <!-- FILA: Medios -->
         <div class="row justify-around q-col-gutter-lg q-mt-md">
           <div
             v-for="(comp, cIndex) in arbolObjetivos.componentes"
@@ -151,7 +146,6 @@ function itemToString(item) {
   return typeof item === 'string' ? item : (item.descripcion ?? '')
 }
 
-// 🧠 Cargar datos previos si existen
 onMounted(async () => {
   try {
     const [efectoRes, problemaRes, disenoRes] = await Promise.all([
@@ -178,11 +172,10 @@ onMounted(async () => {
       componentes: componentesProblema,
     }
 
-    // Cargar desde localStorage si existe
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       arbolObjetivos.value = JSON.parse(saved)
-      console.log('✅ Árbol de objetivos cargado desde localStorage')
+      console.log('Árbol de objetivos cargado desde localStorage')
     } else {
       arbolObjetivos.value = {
         fin: '',
@@ -195,12 +188,11 @@ onMounted(async () => {
       }
     }
   } catch (error) {
-    console.error('❌ Error al cargar árbol de problemas:', error)
+    console.error('Error al cargar árbol de problemas:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar árbol de problemas' })
   }
 })
 
-// 💾 Guardar automáticamente al modificar cualquier campo
 watch(
   arbolObjetivos,
   (newVal) => {
@@ -209,7 +201,6 @@ watch(
   { deep: true },
 )
 
-// Guardar árbol de objetivos
 async function guardar() {
   loading.value = true
   try {

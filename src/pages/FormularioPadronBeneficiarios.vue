@@ -1,12 +1,10 @@
 <template>
   <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="guardarPadron" class="q-gutter-md">
-      <!-- Card principal -->
       <q-card flat bordered class="q-pa-md bg-white">
         <q-card-section>
           <div class="form-title">¿Cuenta con padrón de beneficiarios?</div>
 
-          <!-- Campo radio para Sí/No -->
           <q-option-group
             v-model="form.tienePadron"
             :options="[
@@ -18,7 +16,6 @@
             color="primary"
           />
 
-          <!-- Archivo solo si tiene padrón -->
           <div v-if="form.tienePadron" class="q-mt-md">
             <q-file
               filled
@@ -33,13 +30,11 @@
               </template>
             </q-file>
 
-            <!-- Previsualización del archivo -->
             <div v-if="archivoSeleccionado" class="q-mt-sm text-caption text-grey-8">
               Archivo seleccionado:
               {{ archivoSeleccionado.name || archivoSeleccionado.file?.name }}
             </div>
 
-            <!-- Liga de internet -->
             <q-input
               filled
               v-model="form.ligaInternet"
@@ -55,7 +50,6 @@
         </q-card-section>
       </q-card>
 
-      <!-- Botón Guardar -->
       <q-card-actions align="right">
         <q-btn
           :loading="subiendo"
@@ -78,29 +72,26 @@ import { Notify } from 'quasar'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
-const STORAGE_KEY = 'formularioPadronBeneficiarios' // 🔹 clave localStorage
+const STORAGE_KEY = 'formularioPadronBeneficiarios'
 const router = useRouter()
 
-// Formulario
 const form = ref({
   tienePadron: null,
   ligaInternet: '',
 })
 const archivoSeleccionado = ref(null)
-const subiendo = ref(false) // estado de loading
+const subiendo = ref(false)
 
-// 🧠 Cargar datos previos si existen
 onMounted(() => {
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved) {
     const parsed = JSON.parse(saved)
     form.value = parsed.form ?? form.value
     archivoSeleccionado.value = parsed.archivo ?? archivoSeleccionado.value
-    console.log('✅ Datos cargados desde localStorage:', parsed)
+    console.log('Datos cargados desde localStorage:', parsed)
   }
 })
 
-// 💾 Guardar automáticamente al modificar cualquier campo
 watch(
   [form, archivoSeleccionado],
   () => {
@@ -112,7 +103,6 @@ watch(
   { deep: true },
 )
 
-// Guardar padrón usando FormData
 async function guardarPadron() {
   subiendo.value = true
   try {

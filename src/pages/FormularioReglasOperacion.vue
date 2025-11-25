@@ -1,12 +1,10 @@
 <template>
   <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="guardarReglasOperacion" class="q-gutter-md">
-      <!-- Card principal -->
       <q-card flat bordered class="q-pa-md bg-white">
         <q-card-section>
           <div class="form-title">¿Tiene reglas de operación?</div>
 
-          <!-- Sí / No -->
           <q-option-group
             v-model="form.tieneReglasOperacion"
             :options="[
@@ -18,7 +16,6 @@
             color="primary"
           />
 
-          <!-- Campos solo si tiene reglas de operación -->
           <div v-if="form.tieneReglasOperacion" class="q-mt-md">
             <q-file
               filled
@@ -47,7 +44,6 @@
         </q-card-section>
       </q-card>
 
-      <!-- Botón Guardar -->
       <q-card-actions align="right">
         <q-btn
           label="Guardar"
@@ -69,7 +65,7 @@ import { Notify } from 'quasar'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
-const STORAGE_KEY = 'formularioReglasOperacion' // 🔹 clave localStorage
+const STORAGE_KEY = 'formularioReglasOperacion'
 const router = useRouter()
 
 const form = ref({
@@ -79,7 +75,6 @@ const form = ref({
 
 const archivoSeleccionado = ref(null)
 
-// 🧠 Cargar datos previos si existen
 onMounted(() => {
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved) {
@@ -90,7 +85,6 @@ onMounted(() => {
   }
 })
 
-// 💾 Guardar automáticamente al modificar cualquier campo
 watch(
   [form, archivoSeleccionado],
   () => {
@@ -102,7 +96,6 @@ watch(
   { deep: true },
 )
 
-// Guardar reglas de operación usando FormData
 async function guardarReglasOperacion() {
   try {
     const fd = new FormData()

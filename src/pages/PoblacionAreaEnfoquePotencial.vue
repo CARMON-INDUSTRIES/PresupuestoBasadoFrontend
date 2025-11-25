@@ -5,7 +5,6 @@
         <div class="form-title text-center">Definición del Problema</div>
       </q-card-section>
 
-      <!-- ================= DATOS MOSTRADOS ================= -->
       <q-card-section>
         <div class="row q-col-gutter-md q-mb-md">
           <q-input
@@ -38,7 +37,6 @@
         </div>
 
         <div class="text-subtitle1 q-mb-sm">Magnitud del Problema</div>
-        <!-- NUEVO CAMPO: Unidad de Medida -->
         <div class="row q-col-gutter-md q-mt-md">
           <q-input
             class="col-12"
@@ -81,7 +79,6 @@
 
       <q-separator />
 
-      <!-- ================= NUEVO CAMPO (EDITABLE) ================= -->
       <q-card-section>
         <div class="text-subtitle1 q-mb-md">Efecto Superior o Fin</div>
         <q-input
@@ -135,7 +132,7 @@ onMounted(async () => {
     if (cobertura.status === 'fulfilled') resumen.value.cobertura = cobertura.value.data
     if (alineacion.status === 'fulfilled') {
       objetivoMunicipal.value = alineacion.value.data?.objetivo || ''
-      efectoSuperior.value = objetivoMunicipal.value // se precarga aquí
+      efectoSuperior.value = objetivoMunicipal.value
     }
   } catch (error) {
     console.error(error)

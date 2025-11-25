@@ -2,13 +2,11 @@
   <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="submitForm" class="q-gutter-md">
       <q-card flat bordered class="q-pa-md">
-        <!-- Título -->
         <q-card-section>
           <div class="form-title">3. Determinación y Justificación de los Objetivos</div>
           <q-separator color="#691b31" spaced />
         </q-card-section>
 
-        <!-- Campos del formulario -->
         <q-card-section class="q-gutter-md">
           <q-input
             filled
@@ -35,7 +33,6 @@
           </q-input>
         </q-card-section>
 
-        <!-- Botón -->
         <q-card-actions align="right">
           <q-btn
             color="primary"
@@ -68,7 +65,6 @@ const form = ref({
   relacionOtrosProgramas: '',
 })
 
-// 🧠 Cargar datos guardados si existen
 onMounted(() => {
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved) {
@@ -77,7 +73,6 @@ onMounted(() => {
   }
 })
 
-// 💾 Guardar automáticamente cada vez que cambie algo
 watch(
   form,
   (newVal) => {
@@ -86,7 +81,6 @@ watch(
   { deep: true },
 )
 
-// 🚀 Enviar datos al backend
 async function submitForm() {
   loading.value = true
   try {
@@ -116,19 +110,16 @@ async function submitForm() {
   margin: auto;
 }
 
-/* Título más grande y destacado */
 .form-title {
   font-size: 2rem;
   font-weight: 700;
   color: #691b31;
 }
 
-/* Mayor redondez de bordes en todos los campos */
 .q-field__control {
   border-radius: 12px;
 }
 
-/* Botón con tus valores y texto blanco */
 .submit-btn {
   font-weight: 900;
   font-size: 0.8rem;

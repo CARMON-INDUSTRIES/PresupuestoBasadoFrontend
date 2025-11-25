@@ -6,7 +6,6 @@
       </q-card-section>
 
       <q-card-section class="q-gutter-md">
-        <!-- Problema Central -->
         <div class="row q-col-gutter-md">
           <div class="col-12">
             <div class="text-subtitle1 q-mb-sm">Problema Central (2.1)</div>
@@ -23,7 +22,6 @@
 
         <q-separator class="q-my-md" />
 
-        <!-- Grid 2 columnas para el resto -->
         <div class="row q-col-gutter-md">
           <div class="col-6">
             <div class="text-subtitle1 q-mb-sm">Beneficiarios (5.1)</div>
@@ -116,9 +114,9 @@ async function cargarDatos() {
       causaEjecutores: res.data.causaEjecutores,
       causaIndiferentes: res.data.causaIndiferentes,
     }
-    console.log('✅ Datos Anexo 3:', resumen.value)
+    console.log('Datos Anexo 3:', resumen.value)
   } catch (err) {
-    console.error('❌ Error al cargar datos del Anexo 3:', err)
+    console.error('Error al cargar datos del Anexo 3:', err)
     Notify.create({ type: 'negative', message: 'Error al cargar datos del Anexo 3' })
   }
 }

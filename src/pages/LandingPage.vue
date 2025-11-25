@@ -1,6 +1,5 @@
 <template>
   <q-page class="bg-grey-2 text-dark q-pa-none">
-    <!-- Hero Section -->
     <div
       class="q-pa-lg row items-center justify-between text-white"
       style="background-color: #691b31"
@@ -24,7 +23,6 @@
       </div>
     </div>
 
-    <!-- Beneficios Section -->
     <div class="q-py-xl q-px-xl bg-white">
       <div class="text-center q-mb-xl fade-in">
         <h2 class="text-h5 text-weight-bold">¿Por qué usar este sistema?</h2>
@@ -49,7 +47,6 @@
       </div>
     </div>
 
-    <!-- Seguridad/Confiabilidad Section -->
     <div class="q-px-xl q-py-xl row items-center bg-secondary">
       <div class="col-12 col-md-6 bg-secondary from-left text-white">
         <h3 class="text-h6 text-weight-bold q-mb-sm">Acceso seguro y confiable</h3>
@@ -63,7 +60,6 @@
       </div>
     </div>
 
-    <!-- Contáctanos Section -->
     <div class="q-py-xl q-px-xl bg-white fade-in">
       <div class="text-center q-mb-lg">
         <h2 class="text-h5 text-weight-bold">Contáctanos</h2>
@@ -121,7 +117,6 @@ onMounted(() => {
 })
 
 function openContactForm() {
-  // Puedes redirigir a un formulario, mostrar un modal, o abrir un chat
   window.location.href = 'mailto:soporte@pbr.mx'
 }
 </script>

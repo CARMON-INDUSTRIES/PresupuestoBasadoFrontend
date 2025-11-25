@@ -1,21 +1,17 @@
 <template>
   <q-page class="q-pa-none flex items-center justify-center login-page">
     <q-card flat class="row no-wrap login-card">
-      <!-- Columna izquierda (formulario) -->
       <div class="col-5 flex flex-center form-side q-pa-xl">
         <q-form @submit.prevent="handleLogin" style="width: 100%; max-width: 320px">
-          <!-- Logo -->
           <div class="flex flex-center q-mb-md">
             <q-img src="/images/smg.png" position="50% 50%" style="width: 100%; height: 100%" />
           </div>
 
-          <!-- Título -->
           <div class="text-h5 text-dark text-bold text-center q-mb-sm">Iniciar Sesión</div>
           <div class="text-caption text-grey-7 text-center q-mb-lg">
             Bienvenido, ingresa tus credenciales para continuar
           </div>
 
-          <!-- Inputs -->
           <q-input
             v-model="login.user"
             label="Usuario"
@@ -50,7 +46,6 @@
             </template>
           </q-input>
 
-          <!-- Botón login -->
           <q-btn
             label="Ingresar"
             unelevated
@@ -61,7 +56,6 @@
         </q-form>
       </div>
 
-      <!-- Columna derecha (imagen decorativa) -->
       <div class="col-7 img-side">
         <q-img
           src="/images/persona.jpg"
@@ -130,7 +124,6 @@ const handleLogin = async () => {
 
   loading.value = true
   try {
-    // 1️⃣ Inicia sesión
     const res = await api.post('/Cuentas/Login', {
       user: login.value.user,
       password: login.value.password,
@@ -139,14 +132,11 @@ const handleLogin = async () => {
     const token = res.data.token
     localStorage.setItem('token', token)
 
-    // 2️⃣ Configura el token en el header
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
-    // 3️⃣ Obtén los datos del usuario
     const perfilRes = await api.get('/Cuentas/me')
     const user = perfilRes.data
 
-    // 4️⃣ Verifica si tiene datos incompletos
     const faltanDatos =
       !user.nombreCompleto ||
       !user.cargo ||
@@ -158,7 +148,6 @@ const handleLogin = async () => {
       !user.entidadId
 
     if (faltanDatos) {
-      // Usuario nuevo ➜ Completar su registro
       localStorage.setItem('usuarioBasico', JSON.stringify({ user: user.userName }))
       await Swal.fire({
         title: 'Bienvenido',
@@ -171,7 +160,6 @@ const handleLogin = async () => {
       return
     }
 
-    // 5️⃣ Si ya tiene su información ➜ continuar con el flujo normal
     const ultimaRuta = localStorage.getItem('ultimaRutaRegistro')
     const indiceUltimaRuta = rutasRegistro.indexOf(ultimaRuta)
     const indiceAlineacion = rutasRegistro.indexOf('/formulario-alineacion')
@@ -207,7 +195,6 @@ const handleLogin = async () => {
   }
 }
 
-// 🧭 Traduce rutas a textos amigables
 function obtenerTextoRuta(ruta) {
   const mapa = {
     '/formulario-alineacion': 'la sección de Alineación',

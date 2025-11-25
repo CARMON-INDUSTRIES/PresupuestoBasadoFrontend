@@ -66,7 +66,6 @@ import { Notify } from 'quasar'
 
 const programacionMetas = ref([])
 
-// Cargar desde LocalStorage
 onMounted(() => {
   const local = localStorage.getItem('fichaIndicador')
   if (local) {
@@ -75,7 +74,6 @@ onMounted(() => {
   }
 })
 
-// Guardar cambios en LocalStorage
 function guardarLocalStorage() {
   const local = localStorage.getItem('fichaIndicador')
   if (!local) return
@@ -86,7 +84,6 @@ function guardarLocalStorage() {
   Notify.create({ type: 'positive', message: 'Metas guardadas correctamente' })
 }
 
-// Función para subir evidencia (simulada)
 function subirEvidencia(index) {
   const input = document.createElement('input')
   input.type = 'file'
@@ -94,7 +91,6 @@ function subirEvidencia(index) {
   input.onchange = (e) => {
     const file = e.target.files[0]
     if (!file) return
-    // Aquí podrías subirlo a un backend o guardar base64/localStorage
     Notify.create({
       type: 'positive',
       message: `Evidencia "${file.name}" para ${programacionMetas.value[index].mes} cargada.`,

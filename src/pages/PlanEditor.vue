@@ -3,11 +3,9 @@
     <div v-for="(nivel1, i1) in modelValue" :key="i1" class="q-mb-md">
       <q-input v-model="nivel1.nombre" :label="`${nivel1Label} ${i1 + 1}`" filled class="q-mb-sm" />
 
-      <!-- Nivel 2 -->
       <div v-for="(nivel2, i2) in nivel1.hijos" :key="i2" class="q-ml-md q-mb-sm">
         <q-input v-model="nivel2.nombre" :label="`${nivel2Label} ${i1 + 1}.${i2 + 1}`" filled />
 
-        <!-- Nivel 3 -->
         <div v-for="(nivel3, i3) in nivel2.hijos" :key="i3" class="q-ml-md q-mb-sm">
           <q-input
             v-model="nivel3.nombre"
@@ -15,7 +13,6 @@
             filled
           />
 
-          <!-- Nivel 4 (opcional) -->
           <div v-if="nivel4Label">
             <div v-for="(nivel4, i4) in nivel3.hijos" :key="i4" class="q-ml-md q-mb-sm">
               <q-input
@@ -73,15 +70,12 @@ const nivel2Label = props.nivel2
 const nivel3Label = props.nivel3
 const nivel4Label = props.nivel4
 
-// Agregar un nivel raíz
 function agregarRaiz() {
   const nuevo = [...props.modelValue, { nombre: '', hijos: [] }]
   emit('update:modelValue', nuevo)
 }
 
-// Agregar hijo a cualquier nivel
 function agregarHijo(padre) {
-  // clon profundo para evitar mutación directa
   const nuevoModel = JSON.parse(JSON.stringify(props.modelValue))
   const padreClon = buscarPadre(nuevoModel, padre)
   if (padreClon) {
@@ -91,7 +85,6 @@ function agregarHijo(padre) {
   }
 }
 
-// buscar padre en clon (recursivo)
 function buscarPadre(array, target) {
   for (let item of array) {
     if (item.nombre === target.nombre && item.hijos.length === target.hijos.length) return item

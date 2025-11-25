@@ -8,7 +8,6 @@
       <q-separator spaced />
 
       <q-list class="rounded-borders shadow-2 q-pa-sm">
-        <!-- Formato Alineación -->
         <q-expansion-item
           icon="person_outline"
           label="Formato Alineación de la Matriz de Indicadores "
@@ -35,7 +34,6 @@
           </q-card>
         </q-expansion-item>
 
-        <!-- Formato Análisis de Involucrados -->
         <q-expansion-item
           icon="groups"
           label="Formato Ficha de Informacion Básica"
@@ -59,7 +57,6 @@
           </q-card>
         </q-expansion-item>
 
-        <!-- Formato Análisis De Involucrados -->
         <q-expansion-item
           icon="group_work"
           label="Formato Definicion Del Problema"
@@ -83,7 +80,6 @@
           </q-card>
         </q-expansion-item>
 
-        <!-- Formato Definición del Problema -->
         <q-expansion-item
           icon="analytics"
           label="Formato Analisis de Involucrados"
@@ -107,7 +103,6 @@
           </q-card>
         </q-expansion-item>
 
-        <!-- Formato Ficha de Información Básica -->
         <q-expansion-item
           icon="description"
           label="Formato Arbol de Problemas y Objetivos"
@@ -155,7 +150,6 @@
           </q-card>
         </q-expansion-item> -->
 
-        <!-- Formato Árbol de Objetivos -->
         <q-expansion-item
           icon="account_tree"
           label="Formato Analisis de Alternativas"
@@ -179,7 +173,6 @@
           </q-card>
         </q-expansion-item>
 
-        <!-- Formato Estructura Analitica -->
         <q-expansion-item
           icon="description"
           label="Formato Estructura Analitica"
@@ -252,7 +245,6 @@
 
       <q-separator spaced class="q-my-lg" />
 
-      <!-- Botón general -->
       <q-card-actions align="center">
         <q-btn
           color="deep-orange"
@@ -279,7 +271,6 @@ function getToken() {
   return localStorage.getItem('token') || sessionStorage.getItem('token')
 }
 
-// Descarga un solo PDF como ArrayBuffer (no hace la descarga del archivo)
 async function fetchPdfArrayBuffer(formato) {
   const token = getToken()
   if (!token) throw new Error('NoAuth')
@@ -309,7 +300,6 @@ async function fetchPdfArrayBuffer(formato) {
   return await res.arrayBuffer()
 }
 
-// Función para descargar un único PDF (igual a la que ya tenías, la dejamos por separado)
 async function descargarPdf(formato) {
   const token = getToken()
   if (!token) {
@@ -346,7 +336,6 @@ async function descargarPdf(formato) {
   }
 }
 
-// Descarga TODOS los PDFs, los une y genera un único PDF
 async function descargarTodos() {
   const token = getToken()
   if (!token) {
@@ -354,23 +343,21 @@ async function descargarTodos() {
     return
   }
 
-  // Lista completa de endpoints (usa los nombres que usas en el backend)
   const formatos = [
     'FormatoAlineacion',
     'FormatoFichaDeInformacionBasica1',
     'FormatoDefinicionDelProblema',
-    'FormatoAnalisisDeInvolucrados', // revisa duplicados en tu backend vs template
+    'FormatoAnalisisDeInvolucrados',
     'FormatoArbolDeProblemas',
     'FormatoArbolDeObjetivos',
-    'FormatoAnalisisInvolucrados', // si corresponde
+    'FormatoAnalisisInvolucrados',
     'FormatoEstructuraAnalitica',
     'FormatoMatriz',
-    'FormatoFichaFinal', // o FormatoFichaTecnica según tu ruta real
+    'FormatoFichaFinal',
   ]
 
   Notify.create({ type: 'info', message: 'Preparando descarga general...' })
 
-  // Descargar todos en paralelo, pero manejar errores por formato
   const resultados = await Promise.allSettled(
     formatos.map(async (f) => {
       try {
@@ -383,7 +370,6 @@ async function descargarTodos() {
     }),
   )
 
-  // Filtrar los PDFs válidos
   const pdfValidos = resultados
     .map((r) => (r.status === 'fulfilled' ? r.value : null))
     .filter(Boolean)
@@ -397,7 +383,6 @@ async function descargarTodos() {
   try {
     const mergedPdf = await PDFDocument.create()
 
-    // Mantener orden original y añadir solo los válidos en ese orden
     for (const f of formatos) {
       const encontrado = pdfValidos.find((p) => p.formato === f)
       if (!encontrado) continue
