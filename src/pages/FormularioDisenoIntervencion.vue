@@ -16,19 +16,7 @@
               :key="cIdx"
               class="q-pa-sm bg-grey-2 q-mb-sm rounded-borders"
             >
-              <div class="row items-center justify-between">
-                <div class="text-subtitle2"><q-icon name="widgets" /> {{ comp.nombre }}</div>
-
-                <!-- 🔥 Botón editar -->
-                <q-btn
-                  dense
-                  flat
-                  round
-                  icon="edit"
-                  color="primary"
-                  @click="editarComponente(cIdx)"
-                />
-              </div>
+              <div class="text-subtitle2"><q-icon name="widgets" /> {{ comp.nombre }}</div>
 
               <div
                 v-for="(accion, aIdx) in comp.acciones"
@@ -89,14 +77,12 @@
       </q-card>
     </q-form>
 
-    <!-- MODAL NUEVO COMPONENTE -->
     <q-dialog v-model="showModal" persistent>
       <q-card style="min-width: 600px; max-width: 800px">
         <q-card-section>
           <div class="form-title">Nuevo Componente</div>
         </q-card-section>
         <q-separator />
-
         <q-card-section>
           <q-input
             v-model="nuevoComponente.nombre"
@@ -120,7 +106,6 @@
               <div class="text-subtitle2">
                 <q-icon name="task_alt" /> Actividad {{ proximoIndiceComp }}.{{ aIdx + 1 }}
               </div>
-
               <q-btn
                 v-if="nuevoComponente.acciones.length > 1"
                 dense
@@ -151,7 +136,6 @@
                 placeholder="Cantidad"
               />
             </div>
-
             <q-separator class="q-my-sm" />
           </div>
 
@@ -159,12 +143,7 @@
             flat
             icon="add"
             label="Agregar actividad"
-            @click="
-              nuevoComponente.acciones.push({
-                nombre: '',
-                cantidad: 0,
-              })
-            "
+            @click="nuevoComponente.acciones.push({ nombre: '', cantidad: 0 })"
           />
 
           <div class="q-mt-md">
@@ -196,89 +175,8 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-
-    <!-- 🔥 MODAL EDITAR COMPONENTE -->
-    <q-dialog v-model="showEditModal" persistent>
-      <q-card style="min-width: 600px; max-width: 800px">
-        <q-card-section>
-          <div class="form-title">Editar Componente</div>
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-section>
-          <q-input
-            v-model="componenteEdit.nombre"
-            filled
-            rounded
-            label="Nombre del componente"
-            class="q-mb-md"
-          />
-
-          <div
-            v-for="(accion, aIdx) in componenteEdit.acciones"
-            :key="'edit-accion-' + aIdx"
-            class="q-mb-md"
-          >
-            <div class="row items-center justify-between q-mb-sm">
-              <div class="text-subtitle2">Actividad {{ aIdx + 1 }}</div>
-
-              <q-btn
-                v-if="componenteEdit.acciones.length > 1"
-                dense
-                flat
-                round
-                icon="delete"
-                color="negative"
-                @click="componenteEdit.acciones.splice(aIdx, 1)"
-              />
-            </div>
-
-            <div class="row q-col-gutter-md">
-              <q-input
-                class="col-8"
-                v-model="accion.descripcion"
-                filled
-                rounded
-                dense
-                placeholder="Descripción"
-              />
-              <q-input
-                class="col-4"
-                v-model.number="accion.cantidad"
-                type="number"
-                filled
-                rounded
-                dense
-                placeholder="Cantidad"
-              />
-            </div>
-
-            <q-separator class="q-my-sm" />
-          </div>
-
-          <q-btn
-            flat
-            icon="add"
-            label="Agregar actividad"
-            @click="componenteEdit.acciones.push({ descripcion: '', cantidad: 0 })"
-          />
-
-          <div class="q-mt-md">
-            <div class="text-caption q-mb-xs">Efecto</div>
-            <q-input v-model="componenteEdit.resultado.descripcion" filled rounded dense />
-          </div>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat color="negative" label="Cancelar" v-close-popup />
-          <q-btn flat color="primary" label="Guardar cambios" @click="guardarEdicionComponente" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </q-page>
 </template>
-
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -307,36 +205,6 @@ const nuevoComponente = ref({
 const proximoIndiceComp = computed(() => form.value.componentes.length + 1)
 
 // ------------------------------
-//     EDICIÓN DE COMPONENTES
-// ------------------------------
-
-const showEditModal = ref(false)
-const componenteEdit = ref({})
-const editIndex = ref(-1)
-
-function editarComponente(index) {
-  editIndex.value = index
-  componenteEdit.value = JSON.parse(JSON.stringify(form.value.componentes[index]))
-  showEditModal.value = true
-}
-
-function guardarEdicionComponente() {
-  if (!componenteEdit.value.nombre.trim()) {
-    Notify.create({ type: 'warning', message: 'El componente debe tener un nombre' })
-    return
-  }
-
-  // Actualizar en el array principal
-  form.value.componentes[editIndex.value] = JSON.parse(JSON.stringify(componenteEdit.value))
-
-  // Guardar en localStorage
-  localStorage.setItem(storageKey, JSON.stringify(form.value))
-
-  Notify.create({ type: 'positive', message: 'Componente actualizado' })
-  showEditModal.value = false
-}
-
-// ------------------------------
 //     Multiusuario
 // ------------------------------
 
@@ -359,6 +227,7 @@ async function resolveUserName() {
 
 onMounted(async () => {
   userName = await resolveUserName()
+
   storageKey = userName ? `${BASE_STORAGE_KEY}_${userName}` : BASE_STORAGE_KEY
 
   const saved = localStorage.getItem(storageKey)
@@ -372,8 +241,38 @@ onMounted(async () => {
   }
 })
 
-// Guardado automático
+// Guardado automático por usuario
 watch(form, (val) => localStorage.setItem(storageKey, JSON.stringify(val)), { deep: true })
+
+// ------------------------------------------
+//         LÓGICA DE COMPONENTES
+// ------------------------------------------
+
+function guardarComponente(continuar = false) {
+  if (!nuevoComponente.value.nombre?.trim()) {
+    Notify.create({ type: 'warning', message: 'El componente debe tener un nombre' })
+    return
+  }
+
+  const compIndex = proximoIndiceComp.value
+
+  const componenteFinal = {
+    nombre: `${compIndex}. ${nuevoComponente.value.nombre.trim()}`,
+    acciones: nuevoComponente.value.acciones.map((accion, aIdx) => ({
+      descripcion: `${compIndex}.${aIdx + 1} ${accion.nombre.trim()}`,
+      cantidad: accion.cantidad ?? 0,
+    })),
+    resultado: {
+      descripcion: `${compIndex}.1.1 ${nuevoComponente.value.resultado.trim()}`,
+    },
+  }
+
+  form.value.componentes.push(componenteFinal)
+
+  nuevoComponente.value = { nombre: '', acciones: [{ nombre: '', cantidad: 0 }], resultado: '' }
+
+  if (!continuar) showModal.value = false
+}
 
 // ------------------------------------------
 //               GUARDADO API
@@ -393,6 +292,7 @@ async function submitForm() {
 
     const res = await api.post('/DisenoIntervencionPublica', payload)
 
+    // Guardar última ruta por usuario
     if (userName) {
       localStorage.setItem(`ultimaRutaRegistro_${userName}`, ROUTE_AFTER_SAVE)
     } else {
