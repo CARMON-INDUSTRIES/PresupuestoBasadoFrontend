@@ -316,6 +316,23 @@ const rutasRegistro = [
   '/Formulario-ficha-tecnica-1',
 ]
 
+const RUTA_TO_STORAGE = {
+  '/formulario-alineacion': 'formAlineacion',
+  '/formulario-analisis-alternativas': 'anexo6AnalisisAlternativas',
+  '/formulario-antecedente': 'antecedentesForm_v1',
+  '/formulario-arbol-objetivos': 'formularioArbolObjetivos',
+  '/formulario-clasificacion': 'clasificacionFuncionalForm_v1',
+  '/formulario-cobertura': 'formularioCobertura',
+  '/formulario-determinacion-justificacion': 'formularioDeterminacionJustificacion',
+  '/formulario-diseno-intervencion': 'disenoIntervencionPublica',
+  '/formulario-identificacion-problema': 'formularioIdentificacionProblema',
+  '/Formulario-matriz-indicadores': 'mirMatrizIndicadores',
+  '/Formulario-reglas-operacion-detalle': 'formularioPadronBeneficiarios',
+  '/formulario-programa-social': 'formularioProgramaSocialCompleto',
+  '/formulario-reglas-operacion': 'formularioReglasOperacion',
+  '/formulario-poblacion': 'formularioProgramaSocial',
+}
+
 // Guardar última ruta visitada
 router.afterEach((to) => {
   if (rutasRegistro.includes(to.path)) {
@@ -364,7 +381,35 @@ async function cambiarPassword() {
 async function cerrarSesion() {
   try {
     await api.post('/Cuentas/logout')
-    localStorage.removeItem('token')
+
+    // 1️⃣ Obtener la última ruta registrada
+    const ultimaRuta = localStorage.getItem('ultimaRutaRegistro')
+
+    // 2️⃣ Obtener la key de almacenamiento que corresponde a esa ruta
+    let storageKeyToKeep = null
+    if (ultimaRuta && RUTA_TO_STORAGE[ultimaRuta]) {
+      storageKeyToKeep = RUTA_TO_STORAGE[ultimaRuta]
+    }
+
+    // 3️⃣ Si la key existe, guardamos temporalmente su valor
+    let tempValue = null
+    if (storageKeyToKeep) {
+      tempValue = localStorage.getItem(storageKeyToKeep)
+    }
+
+    // 4️⃣ Limpiamos TODO el localStorage
+    localStorage.clear()
+
+    // 5️⃣ Restauramos última ruta y su data (solo si existía)
+    if (ultimaRuta) {
+      localStorage.setItem('ultimaRutaRegistro', ultimaRuta)
+    }
+
+    if (storageKeyToKeep && tempValue) {
+      localStorage.setItem(storageKeyToKeep, tempValue)
+    }
+
+    // 6️⃣ Quitar token e ir a login
     router.push('/login')
   } catch (err) {
     console.error('Error al cerrar sesión:', err)
