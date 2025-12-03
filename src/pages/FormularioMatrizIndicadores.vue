@@ -280,6 +280,20 @@ async function guardarMatriz() {
       localStorage.setItem('ultimaRutaRegistro', '/formulario-matriz-indicadores')
     }
 
+    const clavesPermitidas = [
+      'token',
+      'userNameActual',
+      'usuarioBasico',
+      `ultimaRutaRegistro_${userName}`,
+      'ultimaRutaRegistro',
+    ]
+
+    Object.keys(localStorage).forEach((key) => {
+      if (!clavesPermitidas.includes(key)) {
+        localStorage.removeItem(key)
+      }
+    })
+
     Notify.create({ type: 'positive', message: 'Matriz guardada correctamente' })
     router.push('/formulario-ficha-tecnica-1')
   } catch (error) {
