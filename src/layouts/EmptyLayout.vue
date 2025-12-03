@@ -364,7 +364,7 @@ async function cambiarPassword() {
 async function cerrarSesion() {
   try {
     await api.post('/Cuentas/logout')
-    localStorage.clear()
+    localStorage.removeItem('token')
     router.push('/login')
   } catch (err) {
     console.error('Error al cerrar sesión:', err)
