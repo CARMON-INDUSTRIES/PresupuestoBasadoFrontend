@@ -130,13 +130,32 @@ const handleLogin = async () => {
     })
 
     const token = res.data.token
+    // Guardar token primero
     localStorage.setItem('token', token)
 
+    // Determinar userName (login puede devolver `username` o `userName`)
+    const userNameFromLogin = res.data.username || res.data.userName || res.data.UserName || null
+
+    // Si vino en el login, guardarlo YA en localStorage
+    if (userNameFromLogin) {
+      localStorage.setItem('userNameActual', userNameFromLogin)
+    }
+
+    // Setear header de Authorization antes de pedir /me
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
+    // Obtener perfil (asegura que tenemos userName y demás datos)
     const perfilRes = await api.get('/Cuentas/me')
     const user = perfilRes.data
 
+    // Si no vino userName en el login, guardarlo ahora desde /me
+    const finalUserName =
+      localStorage.getItem('userNameActual') || user.userName || user.user_name || null
+    if (finalUserName) {
+      localStorage.setItem('userNameActual', finalUserName)
+    }
+
+    // Validar datos obligatorios del perfil
     const faltanDatos =
       !user.nombreCompleto ||
       !user.cargo ||
@@ -160,35 +179,42 @@ const handleLogin = async () => {
       return
     }
 
-    const ultimaRuta = localStorage.getItem('ultimaRutaRegistro')
+    // -- RESTAURAR RUTA POR USUARIO --
+    // buscamos la última ruta específica del usuario actual
+    const userKey = finalUserName
+    const ultimaRutaKey = userKey ? `ultimaRutaRegistro_${userKey}` : null
+    const ultimaRuta = ultimaRutaKey ? localStorage.getItem(ultimaRutaKey) : null
+
     const indiceUltimaRuta = rutasRegistro.indexOf(ultimaRuta)
     const indiceAlineacion = rutasRegistro.indexOf('/formulario-alineacion')
 
     if (ultimaRuta && indiceUltimaRuta > indiceAlineacion && ultimaRuta !== rutaFicha) {
-      await Swal.fire({
+      // mostrar alerta para continuar desde donde quedó
+      const { isConfirmed } = await Swal.fire({
         title: 'Registro incompleto',
         text: `Te quedaste en: ${obtenerTextoRuta(ultimaRuta)}`,
         icon: 'info',
         confirmButtonText: 'Continuar desde ahí',
+        showCancelButton: true,
         cancelButtonText: 'Empezar de nuevo',
-        showCancelButton: false,
         confirmButtonColor: '#691B31',
         cancelButtonColor: '#aaa',
-      }).then((result) => {
-        if (result.isConfirmed) {
-          router.push(ultimaRuta)
-        } else {
-          localStorage.removeItem('ultimaRutaRegistro')
-          router.push('/formulario-alineacion')
-        }
       })
+
+      if (isConfirmed) {
+        router.push(ultimaRuta)
+      } else {
+        // borrar solo la clave del usuario
+        if (ultimaRutaKey) localStorage.removeItem(ultimaRutaKey)
+        router.push('/formulario-alineacion')
+      }
     } else {
       router.push('/formulario-alineacion')
     }
   } catch (error) {
     Notify.create({
       type: 'negative',
-      message: error.response?.data?.message || 'Credenciales inválidas',
+      message: error.res?.data?.message || 'Credenciales inválidas',
     })
   } finally {
     loading.value = false

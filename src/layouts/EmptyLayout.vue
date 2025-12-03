@@ -294,14 +294,14 @@ const rutasRegistro = [
   '/formulario-clasificacion',
   '/formulario-actividad',
   '/formulario-ficha-tecnica-1',
-  '/Formulario-matriz-indicadores',
+  '/formulario-matriz-indicadores',
   '/formulario-antecedente',
   '/formulario-identificacion-problema',
   '/formulario-determinacion-justificacion',
   '/formulario-cobertura',
   '/formulario-justificacion',
   '/formulario-diseno-intervencion',
-  '/Formulario-reglas-operacion-detalle',
+  '/formulario-reglas-operacion-detalle',
   '/formulario-programa-social',
   '/formulario-padron-beneficiarios',
   '/formulario-reglas-operacion',
@@ -312,8 +312,8 @@ const rutasRegistro = [
   '/formulario-cobertura',
   '/formulario-arbol-objetivos',
   '/formulario-analisis-alternativas',
-  '/Formulario-estructura-analitica',
-  '/Formulario-ficha-tecnica-1',
+  '/formulario-estructura-analitica',
+  '/formulario-ficha-tecnica-1',
 ]
 
 const RUTA_TO_STORAGE = {
@@ -326,8 +326,8 @@ const RUTA_TO_STORAGE = {
   '/formulario-determinacion-justificacion': 'formularioDeterminacionJustificacion',
   '/formulario-diseno-intervencion': 'disenoIntervencionPublica',
   '/formulario-identificacion-problema': 'formularioIdentificacionProblema',
-  '/Formulario-matriz-indicadores': 'mirMatrizIndicadores',
-  '/Formulario-reglas-operacion-detalle': 'formularioPadronBeneficiarios',
+  '/formulario-matriz-indicadores': 'mirMatrizIndicadores',
+  '/formulario-reglas-operacion-detalle': 'formularioPadronBeneficiarios',
   '/formulario-programa-social': 'formularioProgramaSocialCompleto',
   '/formulario-reglas-operacion': 'formularioReglasOperacion',
   '/formulario-poblacion': 'formularioProgramaSocial',
@@ -336,7 +336,10 @@ const RUTA_TO_STORAGE = {
 // Guardar última ruta visitada
 router.afterEach((to) => {
   if (rutasRegistro.includes(to.path)) {
-    localStorage.setItem('ultimaRutaRegistro', to.path)
+    const user = localStorage.getItem('userNameActual')
+    if (user && rutasRegistro.includes(to.path)) {
+      localStorage.setItem(`ultimaRutaRegistro_${user}`, to.path)
+    }
   }
 })
 
@@ -382,34 +385,38 @@ async function cerrarSesion() {
   try {
     await api.post('/Cuentas/logout')
 
-    // 1️⃣ Obtener la última ruta registrada
-    const ultimaRuta = localStorage.getItem('ultimaRutaRegistro')
+    const user = localStorage.getItem('userNameActual')
 
-    // 2️⃣ Obtener la key de almacenamiento que corresponde a esa ruta
+    // Obtener la última ruta de ese usuario
+    const ultimaRuta = user ? localStorage.getItem(`ultimaRutaRegistro_${user}`) : null
+
+    // Obtener el storageKey correspondiente
     let storageKeyToKeep = null
     if (ultimaRuta && RUTA_TO_STORAGE[ultimaRuta]) {
       storageKeyToKeep = RUTA_TO_STORAGE[ultimaRuta]
     }
 
-    // 3️⃣ Si la key existe, guardamos temporalmente su valor
+    // Guardar temporalmente SI existe
     let tempValue = null
     if (storageKeyToKeep) {
       tempValue = localStorage.getItem(storageKeyToKeep)
     }
 
-    // 4️⃣ Limpiamos TODO el localStorage
-    localStorage.clear()
+    // Limpiar TODO
 
-    // 5️⃣ Restauramos última ruta y su data (solo si existía)
+    // Restaurar SOLO las claves del usuario actual
+    if (user) {
+      localStorage.setItem('userNameActual', user)
+    }
+
     if (ultimaRuta) {
-      localStorage.setItem('ultimaRutaRegistro', ultimaRuta)
+      localStorage.setItem(`ultimaRutaRegistro_${user}`, ultimaRuta)
     }
 
     if (storageKeyToKeep && tempValue) {
       localStorage.setItem(storageKeyToKeep, tempValue)
     }
 
-    // 6️⃣ Quitar token e ir a login
     router.push('/login')
   } catch (err) {
     console.error('Error al cerrar sesión:', err)
