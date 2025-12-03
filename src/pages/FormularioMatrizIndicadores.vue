@@ -202,14 +202,14 @@ onMounted(async () => {
     const objetivo = objetivoRes.data || { componentes: [] }
 
     const f = []
-    f.push(crearFila(`Fin: ${objetivo.fin || ''}`))
-    f.push(crearFila(`Propósito: ${objetivo.objetivoCentral || ''}`))
+    f.push(crearFila('Fin'))
+    f.push(crearFila('Propósito'))
 
-    objetivo.componentes?.forEach((c, ci) => {
-      f.push(crearFila(`Componente: ${c?.nombre || `Componente ${ci + 1}`}`))
+    objetivo.componentes?.forEach((c) => {
+      f.push(crearFila('Componente'))
 
-      c.medios?.forEach((m, mi) => {
-        f.push(crearFila(`Actividad: ${m || `Actividad ${mi + 1}`}`))
+      c.medios?.forEach(() => {
+        f.push(crearFila('Actividad'))
       })
     })
 
@@ -218,8 +218,25 @@ onMounted(async () => {
     // Cargar versión específica del usuario si existe
     const saved = localStorage.getItem(storageKey)
     if (saved) {
-      filas.value = JSON.parse(saved)
-      console.log('✔ MIR cargada desde:', storageKey)
+      try {
+        const parsed = JSON.parse(saved)
+
+        // Validar que NO contenga datos viejos como “Fin: ...”
+        const contieneDatosAntiguos = parsed.some(
+          (r) => r.nivel.includes(':'), // <-- si tiene “Fin: algo”, “Componente: X”, etc
+        )
+
+        if (!contieneDatosAntiguos) {
+          filas.value = parsed
+          console.log('✔ MIR cargada desde:', storageKey)
+        } else {
+          console.warn('❌ Ignorando MIR antigua por formato incompatible')
+          localStorage.removeItem(storageKey)
+        }
+      } catch {
+        console.warn('LocalStorage MIR no válido, eliminando...')
+        localStorage.removeItem(storageKey)
+      }
     }
   } catch (error) {
     console.error('Error al cargar MIR:', error)
