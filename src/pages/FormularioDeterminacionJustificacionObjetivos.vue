@@ -49,14 +49,15 @@
     </q-form>
   </q-page>
 </template>
-
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
-const STORAGE_KEY = 'formularioDeterminacionJustificacion'
+const BASE_STORAGE_KEY = 'formularioDeterminacionJustificacion'
+const ROUTE_AFTER_SAVE = '/formulario-cobertura'
+
 const router = useRouter()
 const loading = ref(false)
 
@@ -65,39 +66,97 @@ const form = ref({
   relacionOtrosProgramas: '',
 })
 
-onMounted(() => {
-  const saved = localStorage.getItem(STORAGE_KEY)
+// Resolver userName del usuario actual
+async function resolveUserName() {
+  let user = localStorage.getItem('userNameActual')
+  if (user) return user
+
+  try {
+    const { data } = await api.get('/Cuentas/me')
+    user = data?.userName || data?.username || null
+    if (user) localStorage.setItem('userNameActual', user)
+    return user
+  } catch {
+    return null
+  }
+}
+
+let userName = null
+let storageKey = BASE_STORAGE_KEY
+
+// Cargar datos según usuario
+onMounted(async () => {
+  userName = await resolveUserName()
+
+  storageKey = userName ? `${BASE_STORAGE_KEY}_${userName}` : BASE_STORAGE_KEY
+
+  const saved = localStorage.getItem(storageKey)
   if (saved) {
-    form.value = JSON.parse(saved)
-    console.log('✅ Datos cargados desde localStorage:', form.value)
+    try {
+      form.value = JSON.parse(saved)
+      console.log('✅ Datos cargados desde localStorage (key):', storageKey)
+    } catch (err) {
+      console.warn('No se pudo parsear localStorage:', err)
+    }
   }
 })
 
+// Guardar automáticamente por usuario
 watch(
   form,
   (newVal) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+    localStorage.setItem(storageKey, JSON.stringify(newVal))
   },
   { deep: true },
 )
 
+// Validación mínima
+function validarFormulario() {
+  if (!form.value.objetivosEspecificos?.trim()) {
+    return 'Debes capturar los objetivos específicos'
+  }
+  return null
+}
+
 async function submitForm() {
+  const error = validarFormulario()
+  if (error) {
+    Notify.create({ type: 'warning', message: error })
+    return
+  }
+
   loading.value = true
   try {
-    await api.post('/DeterminacionJustificacionObjetivos', form.value)
-    localStorage.setItem('ultimaRutaRegistro', '/formulario-cobertura')
+    const res = await api.post('/DeterminacionJustificacionObjetivos', form.value)
+
+    // Guardar última ruta por usuario
+    if (!userName) userName = await resolveUserName()
+
+    if (userName) {
+      localStorage.setItem(`ultimaRutaRegistro_${userName}`, ROUTE_AFTER_SAVE)
+    } else {
+      localStorage.setItem('ultimaRutaRegistro', ROUTE_AFTER_SAVE)
+    }
+
     Notify.create({
       type: 'positive',
-      message: 'Determinación y Justificación guardada correctamente',
+      message: res.data?.message || 'Determinación y Justificación guardada correctamente',
     })
-    router.push('/formulario-cobertura')
+
+    router.push(ROUTE_AFTER_SAVE)
   } catch (error) {
-    Notify.create({
-      type: 'negative',
-      message:
-        error.response?.data?.message ||
-        'Error al guardar Determinación y Justificación de Objetivos',
-    })
+    let mensaje = 'Error al guardar Determinación y Justificación de Objetivos'
+
+    if (error?.response) {
+      const status = error.response.status
+      if (status === 400) mensaje = 'Datos inválidos. Revisa los campos.'
+      else if (status === 401) mensaje = 'Sesión expirada. Inicia sesión nuevamente.'
+      else if (status === 403) mensaje = 'No tienes permisos para realizar esta acción.'
+      else if (status === 500) mensaje = 'Error interno del servidor.'
+      else mensaje = error.response.data?.message || mensaje
+    }
+
+    Notify.create({ type: 'negative', message: mensaje })
   } finally {
     loading.value = false
   }

@@ -121,7 +121,6 @@
     </q-card>
   </q-page>
 </template>
-
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { Notify } from 'quasar'
@@ -130,7 +129,10 @@ import api from 'src/boot/api'
 
 const router = useRouter()
 const loading = ref(false)
-const STORAGE_KEY = 'mirMatrizIndicadores'
+
+const BASE_STORAGE_KEY = 'mirMatrizIndicadores'
+let userName = null
+let storageKey = BASE_STORAGE_KEY
 
 const usuario = ref({})
 const filas = ref([])
@@ -151,7 +153,47 @@ const columns = [
   { name: 'supuestos', label: 'Supuestos' },
 ]
 
+// ------------------------------
+//       MULTIUSUARIO
+// ------------------------------
+async function resolveUserName() {
+  let user = localStorage.getItem('userNameActual')
+
+  if (user) return user
+
+  try {
+    const { data } = await api.get('/Cuentas/me')
+    user = data?.userName || data?.username || null
+    if (user) localStorage.setItem('userNameActual', user)
+    return user
+  } catch {
+    return null
+  }
+}
+
+// ------------------------------
+//  Crear estructura de la MIR
+// ------------------------------
+function crearFila(nivel) {
+  return {
+    nivel,
+    resumenNarrativo: '',
+    indicadores: '',
+    medios: '',
+    supuestos: '',
+  }
+}
+
+// ------------------------------
+//       ON MOUNTED
+// ------------------------------
 onMounted(async () => {
+  userName = await resolveUserName()
+  storageKey = userName ? `${BASE_STORAGE_KEY}_${userName}` : BASE_STORAGE_KEY
+
+  console.log('✔ Usuario detectado:', userName)
+  console.log('✔ Usando storage key:', storageKey)
+
   try {
     const me = await api.get('/Cuentas/me')
     usuario.value = me.data || {}
@@ -165,6 +207,7 @@ onMounted(async () => {
 
     objetivo.componentes?.forEach((c, ci) => {
       f.push(crearFila(`Componente: ${c?.nombre || `Componente ${ci + 1}`}`))
+
       c.medios?.forEach((m, mi) => {
         f.push(crearFila(`Actividad: ${m || `Actividad ${mi + 1}`}`))
       })
@@ -172,10 +215,11 @@ onMounted(async () => {
 
     filas.value = f
 
-    const saved = localStorage.getItem(STORAGE_KEY)
+    // Cargar versión específica del usuario si existe
+    const saved = localStorage.getItem(storageKey)
     if (saved) {
       filas.value = JSON.parse(saved)
-      console.log('MIR cargada desde localStorage')
+      console.log('✔ MIR cargada desde:', storageKey)
     }
   } catch (error) {
     console.error('Error al cargar MIR:', error)
@@ -183,24 +227,20 @@ onMounted(async () => {
   }
 })
 
+// ------------------------------
+// Guardado automático por usuario
+// ------------------------------
 watch(
   filas,
   (newVal) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+    localStorage.setItem(storageKey, JSON.stringify(newVal))
   },
   { deep: true },
 )
 
-function crearFila(nivel) {
-  return {
-    nivel,
-    resumenNarrativo: '',
-    indicadores: '',
-    medios: '',
-    supuestos: '',
-  }
-}
-
+// ------------------------------
+//         GUARDAR API
+// ------------------------------
 async function guardarMatriz() {
   loading.value = true
   try {
@@ -215,9 +255,16 @@ async function guardarMatriz() {
     }
 
     await api.post('/MatrizIndicadores', payload)
+
+    // Registrar última ruta por usuario
+    if (userName) {
+      localStorage.setItem(`ultimaRutaRegistro_${userName}`, '/formulario-matriz-indicadores')
+    } else {
+      localStorage.setItem('ultimaRutaRegistro', '/formulario-matriz-indicadores')
+    }
+
     Notify.create({ type: 'positive', message: 'Matriz guardada correctamente' })
     router.push('/formulario-ficha-tecnica-1')
-    localStorage.setItem('ultimaRutaRegistro', '/formulario-matriz-indicadores')
   } catch (error) {
     console.error('❌ Error al guardar MIR:', error)
     Notify.create({ type: 'negative', message: 'Error al guardar la MIR' })
@@ -226,26 +273,18 @@ async function guardarMatriz() {
   }
 }
 
-// Modal
+// ------------------------------
+// Modal para narrativos
+// ------------------------------
 function obtenerLabelsParaNivel(nivel) {
   if (nivel.startsWith('Fin'))
     return ['Contribuir a un objetivo superior (ej: mejorar calidad de vida)']
   if (nivel.startsWith('Propósito'))
-    return [
-      'Sujeto beneficiario (ej: población infantil)',
-      'Verbo en presente (ej: aumenta, mejora)',
-      'Resultado logrado (ej: acceso a servicios básicos)',
-    ]
+    return ['Sujeto beneficiario', 'Verbo en presente', 'Resultado logrado']
   if (nivel.startsWith('Componente'))
-    return [
-      'Producto terminado o servicio proporcionado',
-      'Verbo en pasado participio (ej: capacitado, construido)',
-    ]
+    return ['Producto o servicio proporcionado', 'Verbo en pasado participio']
   if (nivel.startsWith('Actividad'))
-    return [
-      'Sustantivo derivado de un verbo (ej: creación, sentimiento)',
-      'Complemento (acciones y procesos)',
-    ]
+    return ['Sustantivo derivado de verbo', 'Complemento (acciones o procesos)']
   return ['Texto general']
 }
 

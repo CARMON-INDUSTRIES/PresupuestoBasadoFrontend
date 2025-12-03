@@ -117,17 +117,15 @@
     </q-card>
   </q-page>
 </template>
-
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { Notify } from 'quasar'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
+const BASE_STORAGE_KEY = 'formularioArbolObjetivos'
 const router = useRouter()
 const loading = ref(false)
-
-const STORAGE_KEY = 'formularioArbolObjetivos'
 
 const arbolProblemas = ref({
   efectoSuperior: null,
@@ -141,12 +139,44 @@ const arbolObjetivos = ref({
   componentes: [],
 })
 
+// ------------------------------
+//     Multiusuario
+// ------------------------------
+let userName = null
+let storageKey = BASE_STORAGE_KEY
+
+async function resolveUserName() {
+  let user = localStorage.getItem('userNameActual')
+  if (user) return user
+
+  try {
+    const { data } = await api.get('/Cuentas/me')
+    user = data?.userName || data?.username || null
+    if (user) localStorage.setItem('userNameActual', user)
+    return user
+  } catch {
+    return null
+  }
+}
+
+// ------------------------------
+// Helper
+// ------------------------------
 function itemToString(item) {
   if (!item) return ''
   return typeof item === 'string' ? item : (item.descripcion ?? '')
 }
 
+// ------------------------------
+//     onMounted
+// ------------------------------
 onMounted(async () => {
+  userName = await resolveUserName()
+  storageKey = userName ? `${BASE_STORAGE_KEY}_${userName}` : BASE_STORAGE_KEY
+
+  console.log('✔ Usuario detectado:', userName)
+  console.log('✔ Usando storage key:', storageKey)
+
   try {
     const [efectoRes, problemaRes, disenoRes] = await Promise.all([
       api.get('/EfectoSuperior/ultimo'),
@@ -172,10 +202,11 @@ onMounted(async () => {
       componentes: componentesProblema,
     }
 
-    const saved = localStorage.getItem(STORAGE_KEY)
+    const saved = localStorage.getItem(storageKey)
+
     if (saved) {
       arbolObjetivos.value = JSON.parse(saved)
-      console.log('Árbol de objetivos cargado desde localStorage')
+      console.log('✔ Árbol de objetivos cargado desde:', storageKey)
     } else {
       arbolObjetivos.value = {
         fin: '',
@@ -188,19 +219,25 @@ onMounted(async () => {
       }
     }
   } catch (error) {
-    console.error('Error al cargar árbol de problemas:', error)
+    console.error('Error al cargar árbol:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar árbol de problemas' })
   }
 })
 
+// ------------------------------
+// Guardado automático MULTIUSER
+// ------------------------------
 watch(
   arbolObjetivos,
-  (newVal) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+  (val) => {
+    localStorage.setItem(storageKey, JSON.stringify(val))
   },
   { deep: true },
 )
 
+// ------------------------------
+//       GUARDAR API
+// ------------------------------
 async function guardar() {
   loading.value = true
   try {
@@ -215,13 +252,17 @@ async function guardar() {
     }
 
     await api.post('/ArbolObjetivos', payload)
-    Notify.create({ type: 'positive', message: 'Árbol de Objetivos guardado' })
 
-    localStorage.setItem('ultimaRutaRegistro', '/formulario-analisis-alternativas')
+    if (userName) {
+      localStorage.setItem(`ultimaRutaRegistro_${userName}`, '/formulario-analisis-alternativas')
+    } else {
+      localStorage.setItem('ultimaRutaRegistro', '/formulario-analisis-alternativas')
+    }
+
+    Notify.create({ type: 'positive', message: 'Árbol de Objetivos guardado' })
     router.push('/formulario-analisis-alternativas')
   } catch (error) {
-    console.error('Error al guardar:', error)
-    Notify.create({ type: 'negative', message: 'Error al guardar el árbol de objetivos' })
+    console.warn('No se pudo parsear localStorage:', error)
   } finally {
     loading.value = false
   }

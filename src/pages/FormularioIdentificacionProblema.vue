@@ -115,14 +115,14 @@
     </q-form>
   </q-page>
 </template>
-
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
-const STORAGE_KEY = 'formularioIdentificacionProblema'
+const BASE_STORAGE_KEY = 'formularioIdentificacionProblema'
+const ROUTE_AFTER_SAVE = '/formulario-determinacion-justificacion'
 const router = useRouter()
 const loading = ref(false)
 
@@ -137,34 +137,111 @@ const form = ref({
   evolucion: '',
 })
 
-onMounted(() => {
-  const saved = localStorage.getItem(STORAGE_KEY)
+// Resuelve userName actual: primero desde localStorage, si no pide /Cuentas/me
+async function resolveUserName() {
+  let user = localStorage.getItem('userNameActual')
+  if (user) return user
+  try {
+    const { data } = await api.get('/Cuentas/me')
+    user = data?.userName || data?.username || null
+    if (user) localStorage.setItem('userNameActual', user)
+    return user
+  } catch (err) {
+    console.warn('No se pudo parsear localStorage:', err)
+    return null
+  }
+}
+
+let userName = null
+let storageKey = BASE_STORAGE_KEY // se actualizará con sufijo de usuario si existe
+
+// Cargar datos guardados (por usuario)
+onMounted(async () => {
+  userName = await resolveUserName()
+  if (userName) {
+    storageKey = `${BASE_STORAGE_KEY}_${userName}`
+  } else {
+    storageKey = BASE_STORAGE_KEY
+  }
+
+  const saved = localStorage.getItem(storageKey)
   if (saved) {
-    form.value = JSON.parse(saved)
-    console.log('✅ Datos cargados desde localStorage:', form.value)
+    try {
+      form.value = JSON.parse(saved)
+      console.log('✅ Datos cargados desde localStorage (key):', storageKey)
+    } catch (err) {
+      console.warn('No se pudo parsear localStorage:', err)
+    }
   }
 })
 
+// Guardar cambios en localStorage en la key del usuario (o global si no hay usuario)
 watch(
   form,
   (newVal) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(newVal))
+    } catch (err) {
+      console.warn('No se pudo guardar en localStorage:', err)
+    }
   },
   { deep: true },
 )
 
+// Validación mínima
+function validarFormulario() {
+  if (!form.value.problemaCentral || !form.value.problemaCentral.toString().trim()) {
+    return 'Debes escribir el problema central'
+  }
+  if (!form.value.involucrados || !form.value.involucrados.toString().trim()) {
+    return 'Debes capturar a los involucrados'
+  }
+  return null
+}
+
 async function submitForm() {
+  const errorValidacion = validarFormulario()
+  if (errorValidacion) {
+    Notify.create({ type: 'warning', message: errorValidacion })
+    return
+  }
+
   loading.value = true
   try {
-    await api.post('/IdentificacionDescripcionProblema', form.value)
-    localStorage.setItem('ultimaRutaRegistro', '/formulario-determinacion-justificacion')
-    Notify.create({ type: 'positive', message: 'Identificación guardada correctamente' })
-    router.push('/formulario-determinacion-justificacion')
-  } catch (error) {
+    const res = await api.post('/IdentificacionDescripcionProblema', form.value)
+
+    // Guardar última ruta PARA ESTE USUARIO
+    // si no tenemos userName todavía, intentamos resolver de nuevo
+    if (!userName) {
+      userName = await resolveUserName()
+    }
+    if (userName) {
+      localStorage.setItem(`ultimaRutaRegistro_${userName}`, ROUTE_AFTER_SAVE)
+    } else {
+      // fallback global (si no hay usuario)
+      localStorage.setItem('ultimaRutaRegistro', ROUTE_AFTER_SAVE)
+    }
+
     Notify.create({
-      type: 'negative',
-      message: error.response?.data?.message || 'Error al guardar la identificación del problema',
+      type: 'positive',
+      message: res.data?.message || 'Identificación guardada correctamente',
     })
+
+    router.push(ROUTE_AFTER_SAVE)
+  } catch (error) {
+    console.error('Error al guardar identificación:', error)
+
+    let mensaje = 'Error al guardar la identificación del problema'
+    if (error?.response) {
+      const status = error.response.status
+      if (status === 400) mensaje = 'Datos inválidos. Revisa los campos.'
+      else if (status === 401) mensaje = 'Sesión expirada. Inicia sesión de nuevo.'
+      else if (status === 403) mensaje = 'No tienes permisos para realizar esta acción.'
+      else if (status === 500) mensaje = 'Error interno del servidor.'
+      else mensaje = error.response.data?.message || mensaje
+    }
+
+    Notify.create({ type: 'negative', message: mensaje })
   } finally {
     loading.value = false
   }

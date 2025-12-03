@@ -184,7 +184,8 @@ import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
-const STORAGE_KEY = 'disenoIntervencionPublica'
+const BASE_STORAGE_KEY = 'disenoIntervencionPublica'
+const ROUTE_AFTER_SAVE = '/formulario-reglas-operacion-detalle'
 
 const router = useRouter()
 const loading = ref(false)
@@ -204,24 +205,49 @@ const nuevoComponente = ref({
 
 const proximoIndiceComp = computed(() => form.value.componentes.length + 1)
 
-watch(
-  form,
-  (nuevo) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nuevo))
-  },
-  { deep: true },
-)
+// ------------------------------
+//     Multiusuario
+// ------------------------------
 
-onMounted(() => {
-  const guardado = localStorage.getItem(STORAGE_KEY)
-  if (guardado) {
+let userName = null
+let storageKey = BASE_STORAGE_KEY
+
+async function resolveUserName() {
+  let user = localStorage.getItem('userNameActual')
+  if (user) return user
+
+  try {
+    const { data } = await api.get('/Cuentas/me')
+    user = data?.userName || data?.username || null
+    if (user) localStorage.setItem('userNameActual', user)
+    return user
+  } catch {
+    return null
+  }
+}
+
+onMounted(async () => {
+  userName = await resolveUserName()
+
+  storageKey = userName ? `${BASE_STORAGE_KEY}_${userName}` : BASE_STORAGE_KEY
+
+  const saved = localStorage.getItem(storageKey)
+  if (saved) {
     try {
-      form.value = JSON.parse(guardado)
+      form.value = JSON.parse(saved)
+      console.log('✔ Datos cargados desde:', storageKey)
     } catch {
-      console.error('Error al parsear datos guardados')
+      console.warn('No se pudo parsear localStorage')
     }
   }
 })
+
+// Guardado automático por usuario
+watch(form, (val) => localStorage.setItem(storageKey, JSON.stringify(val)), { deep: true })
+
+// ------------------------------------------
+//         LÓGICA DE COMPONENTES
+// ------------------------------------------
 
 function guardarComponente(continuar = false) {
   if (!nuevoComponente.value.nombre?.trim()) {
@@ -249,8 +275,13 @@ function guardarComponente(continuar = false) {
   if (!continuar) showModal.value = false
 }
 
+// ------------------------------------------
+//               GUARDADO API
+// ------------------------------------------
+
 async function submitForm() {
   loading.value = true
+
   try {
     const payload = {
       ...form.value,
@@ -260,16 +291,34 @@ async function submitForm() {
       })),
     }
 
-    await api.post('/DisenoIntervencionPublica', payload)
+    const res = await api.post('/DisenoIntervencionPublica', payload)
 
-    localStorage.setItem('ultimaRutaRegistro', '/formulario-reglas-operacion-detalle')
-    router.push('/Formulario-reglas-operacion-detalle')
-  } catch (error) {
+    // Guardar última ruta por usuario
+    if (userName) {
+      localStorage.setItem(`ultimaRutaRegistro_${userName}`, ROUTE_AFTER_SAVE)
+    } else {
+      localStorage.setItem('ultimaRutaRegistro', ROUTE_AFTER_SAVE)
+    }
+
     Notify.create({
-      type: 'negative',
-      message:
-        error.response?.data?.message || 'Error al guardar Diseño de la Intervención Pública',
+      type: 'positive',
+      message: res.data?.message || 'Diseño de intervención guardado correctamente',
     })
+
+    router.push(ROUTE_AFTER_SAVE)
+  } catch (error) {
+    let mensaje = 'Error al guardar Diseño de la Intervención Pública'
+
+    if (error?.response) {
+      const status = error.response.status
+      if (status === 400) mensaje = 'Datos inválidos'
+      else if (status === 401) mensaje = 'Sesión expirada, inicia sesión nuevamente'
+      else if (status === 403) mensaje = 'No tienes permisos'
+      else if (status === 500) mensaje = 'Error interno del servidor'
+      else mensaje = error.response.data?.message || mensaje
+    }
+
+    Notify.create({ type: 'negative', message: mensaje })
   } finally {
     loading.value = false
   }

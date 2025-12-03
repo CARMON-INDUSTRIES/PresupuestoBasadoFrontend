@@ -72,7 +72,6 @@
     </q-form>
   </q-page>
 </template>
-
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -82,7 +81,9 @@ import api from 'src/boot/api'
 const router = useRouter()
 const loading = ref(false)
 
-const STORAGE_KEY = 'antecedentesForm_v1'
+// 🔥 MULTIUSUARIO – clave personalizada
+const user = localStorage.getItem('userNameActual') || 'anon'
+const STORAGE_KEY = `antecedentesForm_v1_${user}`
 
 const form = ref({
   descripcionPrograma: '',
@@ -119,7 +120,10 @@ async function submitForm() {
     Notify.create({
       type: 'positive',
       message: 'Antecedentes guardados correctamente',
-    }) / localStorage.setItem('ultimaRutaRegistro', '/formulario-identificacion-problema')
+    })
+
+    // 🔥 ruta personalizada por usuario NO afecta, así que no se toca
+    localStorage.setItem('ultimaRutaRegistro', '/formulario-identificacion-problema')
 
     router.push('/formulario-identificacion-problema')
   } catch (error) {
