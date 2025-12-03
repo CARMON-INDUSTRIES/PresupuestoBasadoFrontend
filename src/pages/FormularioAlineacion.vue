@@ -30,9 +30,18 @@
             emit-value
             map-options
             @update:model-value="onAcuerdoChange"
+            :loading="loadingAcuerdos"
+            :disable="!form.tipo"
           >
             <template v-slot:prepend>
               <q-icon name="article" />
+            </template>
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  {{ form.tipo ? 'No hay acuerdos disponibles' : 'Selecciona un tipo primero' }}
+                </q-item-section>
+              </q-item>
             </template>
           </q-select>
 
@@ -45,9 +54,20 @@
             emit-value
             map-options
             @update:model-value="onObjetivoChange"
+            :loading="loadingObjetivos"
+            :disable="!form.acuerdo"
           >
             <template v-slot:prepend>
               <q-icon name="flag" />
+            </template>
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  {{
+                    form.acuerdo ? 'No hay objetivos disponibles' : 'Selecciona un acuerdo primero'
+                  }}
+                </q-item-section>
+              </q-item>
             </template>
           </q-select>
 
@@ -61,9 +81,22 @@
             emit-value
             map-options
             @update:model-value="onEstrategiasChange"
+            :loading="loadingEstrategias"
+            :disable="!form.objetivo"
           >
             <template v-slot:prepend>
               <q-icon name="lightbulb" />
+            </template>
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  {{
+                    form.objetivo
+                      ? 'No hay estrategias disponibles'
+                      : 'Selecciona un objetivo primero'
+                  }}
+                </q-item-section>
+              </q-item>
             </template>
           </q-select>
 
@@ -76,9 +109,22 @@
             multiple
             emit-value
             map-options
+            :loading="loadingLineas"
+            :disable="!form.estrategias.length"
           >
             <template v-slot:prepend>
               <q-icon name="track_changes" />
+            </template>
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  {{
+                    form.estrategias.length
+                      ? 'No hay líneas de acción disponibles'
+                      : 'Selecciona estrategias primero'
+                  }}
+                </q-item-section>
+              </q-item>
             </template>
           </q-select>
 
@@ -105,7 +151,7 @@
             rounded
             unelevated
             @click="registrarAlineacion"
-            :disable="loading"
+            :disable="loading || !puedeRegistrar"
           />
 
           <q-btn
@@ -124,24 +170,33 @@
         <q-card-section v-if="ambasCompletas" class="text-positive text-center q-mt-sm">
           Ambas alineaciones (Municipal y Estatal) registradas. Ya puedes continuar.
         </q-card-section>
+
+        <q-card-section v-else class="text-grey-7 text-center q-mt-sm text-caption">
+          <div v-if="alineacionMunicipalCompleta">Alineación Municipal registrada</div>
+          <div v-if="alineacionEstatalCompleta">Alineación Estatal registrada</div>
+          <div v-if="!alineacionMunicipalCompleta && !alineacionEstatalCompleta">
+            Debes registrar ambas alineaciones (Municipal y Estatal)
+          </div>
+        </q-card-section>
       </q-card>
     </q-form>
   </q-page>
-  <!-- <q-dialog v-model="mostrarModalUsuario" persistent maximized>
-    <RegistroUsuarioDetalle @close="mostrarModalUsuario = false" />
-  </q-dialog> -->
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import Swal from 'sweetalert2'
 import api from 'src/boot/api'
 
-const mostrarModalUsuario = ref(false)
 const router = useRouter()
 const loading = ref(false)
+const loadingAcuerdos = ref(false)
+const loadingObjetivos = ref(false)
+const loadingEstrategias = ref(false)
+const loadingLineas = ref(false)
+
 const STORAGE_KEY = 'formAlineacion'
 const ramos = ['Recurso Propio', 'Recurso Estatal', 'Recurso Federal']
 
@@ -159,11 +214,28 @@ const objetivos = ref([])
 const estrategias = ref([])
 const lineasAccion = ref([])
 
-const ambasCompletas = ref(false)
+const alineacionMunicipalCompleta = ref(false)
+const alineacionEstatalCompleta = ref(false)
+
+const ambasCompletas = computed(() => {
+  return alineacionMunicipalCompleta.value && alineacionEstatalCompleta.value
+})
+
+const puedeRegistrar = computed(() => {
+  return (
+    form.value.tipo &&
+    form.value.acuerdo &&
+    form.value.objetivo &&
+    form.value.estrategias.length > 0 &&
+    form.value.lineasAccion.length > 0
+  )
+})
+
 function verificarAlineaciones() {
   const m = localStorage.getItem('alineacionMunicipal')
   const e = localStorage.getItem('alineacionEstatal')
-  ambasCompletas.value = !!(m && e)
+  alineacionMunicipalCompleta.value = !!m
+  alineacionEstatalCompleta.value = !!e
 }
 
 function labelFromList(list, id) {
@@ -188,11 +260,49 @@ const onTipoChange = async (tipo) => {
   if (!tipo) return
 
   const endpoint = tipo === 'Estado' ? '/PlanEstatal/acuerdos' : '/PlanMunicipal/acuerdos'
+
+  loadingAcuerdos.value = true
   try {
     const { data } = await api.get(endpoint)
-    acuerdos.value = data.map((a) => ({ label: a.nombre ?? a.Nombre, value: a.id ?? a.Id }))
-  } catch {
-    Notify.create({ type: 'negative', message: 'Error cargando acuerdos' })
+
+    if (!data || data.length === 0) {
+      Notify.create({
+        type: 'warning',
+        message: `No hay acuerdos disponibles para ${tipo}. Contacta al administrador.`,
+        timeout: 3000,
+      })
+      acuerdos.value = []
+      return
+    }
+
+    acuerdos.value = data.map((a) => ({
+      label: a.nombre ?? a.Nombre,
+      value: a.id ?? a.Id,
+    }))
+  } catch (error) {
+    console.error('Error al cargar acuerdos:', error)
+
+    const mensaje =
+      error.response?.status === 401
+        ? 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.'
+        : error.response?.status === 403
+          ? 'No tienes permisos para acceder a estos datos.'
+          : `Error al cargar acuerdos de ${tipo}`
+
+    Notify.create({
+      type: 'negative',
+      message: mensaje,
+      timeout: 3000,
+    })
+
+    acuerdos.value = []
+
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      setTimeout(() => router.push('/login'), 1500)
+    }
+  } finally {
+    loadingAcuerdos.value = false
   }
 }
 
@@ -211,11 +321,34 @@ const onAcuerdoChange = async (acuerdoId) => {
       ? `/PlanEstatal/acuerdo/${acuerdoId}/objetivos`
       : `/PlanMunicipal/acuerdo/${acuerdoId}/objetivos`
 
+  loadingObjetivos.value = true
   try {
     const { data } = await api.get(endpoint)
-    objetivos.value = data.map((o) => ({ label: o.nombre ?? o.Nombre, value: o.id ?? o.Id }))
-  } catch {
-    Notify.create({ type: 'negative', message: 'Error cargando objetivos' })
+
+    if (!data || data.length === 0) {
+      Notify.create({
+        type: 'warning',
+        message: 'No hay objetivos disponibles para este acuerdo.',
+        timeout: 3000,
+      })
+      objetivos.value = []
+      return
+    }
+
+    objetivos.value = data.map((o) => ({
+      label: o.nombre ?? o.Nombre,
+      value: o.id ?? o.Id,
+    }))
+  } catch (error) {
+    console.error('Error al cargar objetivos:', error)
+    Notify.create({
+      type: 'negative',
+      message: 'Error al cargar objetivos',
+      timeout: 3000,
+    })
+    objetivos.value = []
+  } finally {
+    loadingObjetivos.value = false
   }
 }
 
@@ -232,11 +365,34 @@ const onObjetivoChange = async (objetivoId) => {
       ? `/PlanEstatal/objetivo/${objetivoId}/estrategias`
       : `/PlanMunicipal/objetivo/${objetivoId}/estrategias`
 
+  loadingEstrategias.value = true
   try {
     const { data } = await api.get(endpoint)
-    estrategias.value = data.map((e) => ({ label: e.nombre ?? e.Nombre, value: e.id ?? e.Id }))
-  } catch {
-    Notify.create({ type: 'negative', message: 'Error cargando estrategias' })
+
+    if (!data || data.length === 0) {
+      Notify.create({
+        type: 'warning',
+        message: 'No hay estrategias disponibles para este objetivo.',
+        timeout: 3000,
+      })
+      estrategias.value = []
+      return
+    }
+
+    estrategias.value = data.map((e) => ({
+      label: e.nombre ?? e.Nombre,
+      value: e.id ?? e.Id,
+    }))
+  } catch (error) {
+    console.error('Error al cargar estrategias:', error)
+    Notify.create({
+      type: 'negative',
+      message: 'Error al cargar estrategias',
+      timeout: 3000,
+    })
+    estrategias.value = []
+  } finally {
+    loadingEstrategias.value = false
   }
 }
 
@@ -254,9 +410,21 @@ const onEstrategiasChange = async (selectedIds) => {
     return api.get(endpoint)
   })
 
+  loadingLineas.value = true
   try {
     const results = await Promise.all(promises)
     const allLineas = results.flatMap((r) => r.data)
+
+    if (allLineas.length === 0) {
+      Notify.create({
+        type: 'warning',
+        message: 'No hay líneas de acción disponibles para estas estrategias.',
+        timeout: 3000,
+      })
+      lineasAccion.value = []
+      return
+    }
+
     const unique = []
     const idsSet = new Set()
     allLineas.forEach((l) => {
@@ -267,8 +435,16 @@ const onEstrategiasChange = async (selectedIds) => {
       }
     })
     lineasAccion.value = unique
-  } catch {
-    Notify.create({ type: 'negative', message: 'Error cargando líneas de acción' })
+  } catch (error) {
+    console.error('Error al cargar líneas de acción:', error)
+    Notify.create({
+      type: 'negative',
+      message: 'Error al cargar líneas de acción',
+      timeout: 3000,
+    })
+    lineasAccion.value = []
+  } finally {
+    loadingLineas.value = false
   }
 }
 
@@ -282,34 +458,6 @@ onMounted(async () => {
     if (form.value.estrategias.length) await onEstrategiasChange(form.value.estrategias)
   }
   verificarAlineaciones()
-
-  const usuarioGuardado = localStorage.getItem('usuarioBasico')
-  if (usuarioGuardado) {
-    mostrarModalUsuario.value = true
-  } else {
-    try {
-      const { data } = await api.get('/Cuentas/me')
-      if (data) {
-        localStorage.setItem(
-          'usuarioBasico',
-          JSON.stringify({
-            user: data.userName,
-            email: data.email,
-            nombreCompleto: data.nombreCompleto,
-            cargo: data.cargo,
-            coordinador: data.coordinador,
-            unidadesPresupuestales: data.unidadesPresupuestales,
-            programaPresupuestario: data.programaPresupuestario,
-            nombreMatriz: data.nombreMatriz,
-            unidadAdministrativaId: data.unidadAdministrativaId,
-          }),
-        )
-        mostrarModalUsuario.value = true
-      }
-    } catch (error) {
-      console.error('No se pudo cargar el usuario actual', error)
-    }
-  }
 })
 
 watch(
@@ -321,10 +469,10 @@ watch(
 )
 
 async function registrarAlineacion() {
-  if (!form.value.tipo) {
+  if (!puedeRegistrar.value) {
     Notify.create({
       type: 'warning',
-      message: 'Selecciona un tipo de alineación antes de registrar',
+      message: 'Por favor completa todos los campos antes de registrar',
     })
     return
   }
@@ -345,21 +493,21 @@ async function registrarAlineacion() {
 
   if (form.value.tipo === 'Municipio') {
     localStorage.setItem('LineaMunicipal', JSON.stringify(alineacionConLabels))
+    localStorage.setItem('alineacionMunicipal', JSON.stringify(alineacionConLabels))
     Notify.create({
       type: 'positive',
-      message: 'Línea de acción municipal guardada en localStorage',
+      message: 'Alineación Municipal registrada correctamente',
     })
   } else if (form.value.tipo === 'Estado') {
     localStorage.setItem('LineaEstatal', JSON.stringify(alineacionConLabels))
-    Notify.create({ type: 'positive', message: 'Línea de acción estatal guardada en localStorage' })
-  }
-
-  if (form.value.tipo === 'Municipio') {
-    localStorage.setItem('alineacionMunicipal', JSON.stringify(alineacionConLabels))
-  } else {
     localStorage.setItem('alineacionEstatal', JSON.stringify(alineacionConLabels))
+    Notify.create({
+      type: 'positive',
+      message: ' Alineación Estatal registrada correctamente',
+    })
   }
 
+  // Limpiar formulario
   form.value = {
     tipo: '',
     ramo: '',
@@ -412,12 +560,18 @@ async function submitForm() {
 
     localStorage.removeItem('alineacionMunicipal')
     localStorage.removeItem('alineacionEstatal')
+    localStorage.removeItem('LineaMunicipal')
+    localStorage.removeItem('LineaEstatal')
     localStorage.removeItem(STORAGE_KEY)
 
-    Notify.create({ type: 'positive', message: 'Alineaciones registradas correctamente' })
+    Notify.create({
+      type: 'positive',
+      message: 'Alineaciones guardadas correctamente en el sistema',
+    })
+
     router.push('/formulario-clasificacion')
   } catch (error) {
-    console.error(error)
+    console.error('Error al guardar alineaciones:', error)
     Notify.create({
       type: 'negative',
       message: error.response?.data?.message || 'Error al guardar las alineaciones',
@@ -428,10 +582,10 @@ async function submitForm() {
 }
 </script>
 
-<style>
-.q-dialog__backdrop,
-.q-dialog__inner {
-  z-index: 99999 !important;
-  pointer-events: all !important;
+<style scoped>
+.form-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #691b31;
 }
 </style>
