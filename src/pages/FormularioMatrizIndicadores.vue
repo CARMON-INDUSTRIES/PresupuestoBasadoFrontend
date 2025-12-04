@@ -144,7 +144,12 @@ const indicadoresTemp = ref('')
 const mediosTemp = ref('')
 const supuestosTemp = ref('')
 
-localStorage.removeItem('mirMatrizIndicadores')
+// Eliminar TODAS las versiones mirMatrizIndicadores (para todos los usuarios)
+Object.keys(localStorage).forEach((k) => {
+  if (k.startsWith('mirMatrizIndicadores')) {
+    localStorage.removeItem(k)
+  }
+})
 
 const columns = [
   { name: 'nivel', label: 'Nivel', align: 'left' },
