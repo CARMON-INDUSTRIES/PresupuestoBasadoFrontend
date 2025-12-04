@@ -39,7 +39,7 @@
         <template v-slot:body-cell="props">
           <q-td :props="props">
             <template v-if="props.col.name === 'nivel'">
-              <span class="text-grey-7">{{ props.row.nivel }}</span>
+              <span class="text-grey-7">{{ textoBaseNivel(props.row.nivel) }}</span>
             </template>
 
             <template v-else-if="props.col.name === 'resumenNarrativo'">
@@ -152,6 +152,15 @@ const columns = [
   { name: 'medios', label: 'Medios de verificación' },
   { name: 'supuestos', label: 'Supuestos' },
 ]
+
+function textoBaseNivel(nivel) {
+  if (!nivel) return ''
+  if (nivel.startsWith('Fin')) return 'Fin'
+  if (nivel.startsWith('Propósito')) return 'Propósito'
+  if (nivel.startsWith('Componente')) return 'Componente'
+  if (nivel.startsWith('Actividad')) return 'Actividad'
+  return nivel
+}
 
 // ------------------------------
 //       MULTIUSUARIO
