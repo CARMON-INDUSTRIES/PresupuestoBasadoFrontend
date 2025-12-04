@@ -144,6 +144,8 @@ const indicadoresTemp = ref('')
 const mediosTemp = ref('')
 const supuestosTemp = ref('')
 
+localStorage.removeItem('mirMatrizIndicadores')
+
 const columns = [
   { name: 'nivel', label: 'Nivel', align: 'left' },
   { name: 'resumenNarrativo', label: 'Resumen Narrativo' },
@@ -245,7 +247,6 @@ onMounted(async () => {
     }
 
     // Siempre eliminar versión global vieja
-    localStorage.removeItem('mirMatrizIndicadores')
   } catch (error) {
     console.error('Error al cargar MIR:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar la MIR desde Árbol de Objetivos' })
