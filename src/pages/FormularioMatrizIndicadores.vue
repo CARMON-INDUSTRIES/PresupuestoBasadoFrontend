@@ -130,9 +130,8 @@ import api from 'src/boot/api'
 const router = useRouter()
 const loading = ref(false)
 
-const BASE_STORAGE_KEY = 'mirMatrizIndicadores'
 let userName = null
-let storageKey = BASE_STORAGE_KEY
+let storageKey = ''
 
 const usuario = ref({})
 const filas = ref([])
@@ -198,7 +197,7 @@ function crearFila(nivel) {
 // ------------------------------
 onMounted(async () => {
   userName = await resolveUserName()
-  storageKey = userName ? `${BASE_STORAGE_KEY}_${userName}` : BASE_STORAGE_KEY
+  storageKey = `mirMatrizIndicadores_${userName}`
 
   console.log('✔ Usuario detectado:', userName)
   console.log('✔ Usando storage key:', storageKey)
@@ -210,26 +209,43 @@ onMounted(async () => {
     const objetivoRes = await api.get('/ArbolObjetivos/ultimo')
     const objetivo = objetivoRes.data || { componentes: [] }
 
-    const f = []
-    f.push(crearFila(`Fin: ${objetivo.fin || ''}`))
-    f.push(crearFila(`Propósito: ${objetivo.objetivoCentral || ''}`))
+    // -------------------------
+    //  GENERAR MATRIZ NUEVA
+    // -------------------------
+    const nuevasFilas = []
+    nuevasFilas.push(crearFila(`Fin: ${objetivo.fin || ''}`))
+    nuevasFilas.push(crearFila(`Propósito: ${objetivo.objetivoCentral || ''}`))
 
     objetivo.componentes?.forEach((c, ci) => {
-      f.push(crearFila(`Componente: ${c?.nombre || `Componente ${ci + 1}`}`))
+      nuevasFilas.push(crearFila(`Componente: ${c?.nombre || `Componente ${ci + 1}`}`))
 
       c.medios?.forEach((m, mi) => {
-        f.push(crearFila(`Actividad: ${m || `Actividad ${mi + 1}`}`))
+        nuevasFilas.push(crearFila(`Actividad: ${m || `Actividad ${mi + 1}`}`))
       })
     })
 
-    filas.value = f
-
-    // Cargar versión específica del usuario si existe
+    // -------------------------
+    //  VERIFICAR STORAGE
+    // -------------------------
     const saved = localStorage.getItem(storageKey)
+
     if (saved) {
-      filas.value = JSON.parse(saved)
-      console.log('✔ MIR cargada desde:', storageKey)
+      const guardado = JSON.parse(saved)
+
+      if (guardado.length === nuevasFilas.length) {
+        filas.value = guardado
+        console.log('✔ MIR CARGADA desde storage válido')
+      } else {
+        console.warn('⚠ Storage MIR desincronizado, se eliminará')
+        localStorage.removeItem(storageKey)
+        filas.value = nuevasFilas
+      }
+    } else {
+      filas.value = nuevasFilas
     }
+
+    // Siempre eliminar versión global vieja
+    localStorage.removeItem('mirMatrizIndicadores')
   } catch (error) {
     console.error('Error al cargar MIR:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar la MIR desde Árbol de Objetivos' })
