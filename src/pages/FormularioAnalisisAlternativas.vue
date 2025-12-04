@@ -62,7 +62,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Notify } from 'quasar'
 import Swal from 'sweetalert2'
 import api from 'src/boot/api'
@@ -71,8 +71,6 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const tabla = ref([])
 const confirmado = ref(false)
-
-const STORAGE_KEY = 'anexo6AnalisisAlternativas'
 
 const columns = [
   { name: 'nombre', label: 'Alternativas (Componentes y Actividades)', align: 'left' },
@@ -130,24 +128,11 @@ onMounted(async () => {
     })
 
     // Cargar desde localStorage si existe
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      tabla.value = JSON.parse(saved)
-      console.log('✅ Anexo 6 cargado desde localStorage')
-    }
   } catch (error) {
     console.error(' Error al cargar alternativas:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar alternativas' })
   }
 })
-
-watch(
-  tabla,
-  (newVal) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
-  },
-  { deep: true },
-)
 
 function calcularTotal(row) {
   const valores = [
