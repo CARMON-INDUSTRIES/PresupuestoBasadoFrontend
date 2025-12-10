@@ -72,6 +72,7 @@
     </q-form>
   </q-page>
 </template>
+
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -80,10 +81,10 @@ import api from 'src/boot/api'
 
 const router = useRouter()
 const loading = ref(false)
+const autosaveLoading = ref(false)
 
-// 🔥 MULTIUSUARIO – clave personalizada
-const user = localStorage.getItem('userNameActual') || 'anon'
-const STORAGE_KEY = `antecedentesForm_v1_${user}`
+// ID del registro asignado desde backend
+const registroId = ref(null)
 
 const form = ref({
   descripcionPrograma: '',
@@ -92,38 +93,71 @@ const form = ref({
   experienciasPrevias: '',
 })
 
-function restaurarFormulario() {
-  const raw = localStorage.getItem(STORAGE_KEY)
-  if (!raw) return
+// ====== CARGAR BORRADOR DESDE BACKEND ======
 
+async function cargarBorrador() {
   try {
-    const data = JSON.parse(raw)
-    Object.assign(form.value, data)
+    const { data } = await api.get('/Antecedente/borrador')
+
+    registroId.value = data.id
+
+    // llenar el formulario
+    form.value.descripcionPrograma = data.descripcionPrograma
+    form.value.contextoHistoricoNormativo = data.contextoHistoricoNormativo
+    form.value.problematicaOrigen = data.problematicaOrigen
+    form.value.experienciasPrevias = data.experienciasPrevias
   } catch (err) {
-    console.warn('No se pudo restaurar el formulario:', err)
+    console.error('Error al cargar borrador', err)
   }
 }
 
+// ====== AUTOSAVE (DEBOUNCE) ======
+
+let autosaveTimer = null
+
 watch(
   form,
-  (newVal) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+  () => {
+    clearTimeout(autosaveTimer)
+
+    autosaveTimer = setTimeout(() => {
+      guardarAuto()
+    }, 1200)
   },
   { deep: true },
 )
 
+async function guardarAuto() {
+  if (!registroId.value) return
+
+  autosaveLoading.value = true
+
+  try {
+    await api.put('/Antecedente/autosave', {
+      id: registroId.value,
+      ...form.value,
+    })
+  } catch (err) {
+    console.warn('Autosave falló:', err)
+  } finally {
+    autosaveLoading.value = false
+  }
+}
+
+// ====== ENVÍO FINAL (Continuar) ======
+
 async function submitForm() {
   loading.value = true
   try {
-    await api.post('/Antecedente', form.value)
+    await api.put(`/Antecedente/${registroId.value}`, {
+      id: registroId.value,
+      ...form.value,
+    })
 
     Notify.create({
       type: 'positive',
       message: 'Antecedentes guardados correctamente',
     })
-
-    // 🔥 ruta personalizada por usuario NO afecta, así que no se toca
-    localStorage.setItem('ultimaRutaRegistro', '/formulario-identificacion-problema')
 
     router.push('/formulario-identificacion-problema')
   } catch (error) {
@@ -136,7 +170,7 @@ async function submitForm() {
   }
 }
 
-onMounted(restaurarFormulario)
+onMounted(cargarBorrador)
 </script>
 
 <style scoped>
