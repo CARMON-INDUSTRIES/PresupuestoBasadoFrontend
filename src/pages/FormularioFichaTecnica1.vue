@@ -264,6 +264,14 @@ async function guardar() {
       programacionMetas: programacionMetas.value,
     }
 
+    fichaPayload.indicadores = fichaPayload.indicadores.map((ind) => ({
+      ...ind,
+      lineaBaseAnio:
+        ind.lineaBaseAnio !== null && ind.lineaBaseAnio !== undefined
+          ? String(ind.lineaBaseAnio)
+          : '',
+    }))
+
     await api.post('/FichaIndicador', fichaPayload)
     localStorage.setItem('fichaIndicador', JSON.stringify(fichaPayload))
     Notify.create({ type: 'positive', message: 'Ficha técnica guardada correctamente' })
