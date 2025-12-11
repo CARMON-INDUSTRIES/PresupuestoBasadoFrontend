@@ -143,13 +143,13 @@
     </q-form>
   </q-page>
 </template>
+
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
-const BASE_STORAGE_KEY = 'formularioCobertura'
 const ROUTE_AFTER_SAVE = '/formulario-diseno-intervencion'
 
 const router = useRouter()
@@ -174,51 +174,41 @@ const form = ref({
   procesoIdentificacionPoblacionObjetivo: '',
 })
 
-// Obtener el usuario actual
-async function resolveUserName() {
-  let user = localStorage.getItem('userNameActual')
-  if (user) return user
-
-  try {
-    const { data } = await api.get('/Cuentas/me')
-    user = data?.userName || data?.username || null
-    if (user) localStorage.setItem('userNameActual', user)
-    return user
-  } catch {
-    return null
-  }
-}
-
-let userName = null
-let storageKey = BASE_STORAGE_KEY
-
-// Cargar datos guardados por usuario
 onMounted(async () => {
-  userName = await resolveUserName()
+  try {
+    const { data } = await api.get('/Cobertura/borrador')
 
-  storageKey = userName ? `${BASE_STORAGE_KEY}_${userName}` : BASE_STORAGE_KEY
-
-  const saved = localStorage.getItem(storageKey)
-  if (saved) {
-    try {
-      form.value = JSON.parse(saved)
-      console.log('✅ Datos cargados desde localStorage (key):', storageKey)
-    } catch (err) {
-      console.warn('No se pudo parsear localStorage:', err)
+    if (data) {
+      form.value = { ...form.value, ...data }
+      console.log('📥 Borrador cargado:', data)
     }
+  } catch (error) {
+    console.warn('⚠ No se pudo cargar el borrador:', error)
+    Notify.create({
+      type: 'warning',
+      message: 'No se pudo cargar el borrador guardado.',
+    })
   }
 })
 
-// Guardado automático por usuario
+let autosaveTimeout = null
+
 watch(
   form,
-  (newVal) => {
-    localStorage.setItem(storageKey, JSON.stringify(newVal))
+  () => {
+    clearTimeout(autosaveTimeout)
+    autosaveTimeout = setTimeout(async () => {
+      try {
+        console.log('💾 Autosave ejecutado')
+        await api.put('/Cobertura/autosave', form.value)
+      } catch (err) {
+        console.warn('❌ Error en autosave:', err)
+      }
+    }, 1000)
   },
   { deep: true },
 )
 
-// Validación básica opcional
 function validarFormulario() {
   if (!form.value.unidadMedida?.trim()) {
     return 'La unidad de medida es obligatoria'
@@ -235,35 +225,17 @@ async function submitForm() {
 
   loading.value = true
   try {
-    const res = await api.post('/Cobertura', form.value)
-
-    if (!userName) userName = await resolveUserName()
-
-    if (userName) {
-      localStorage.setItem(`ultimaRutaRegistro_${userName}`, ROUTE_AFTER_SAVE)
-    } else {
-      localStorage.setItem('ultimaRutaRegistro', ROUTE_AFTER_SAVE)
-    }
-
     Notify.create({
       type: 'positive',
-      message: res.data?.message || 'Cobertura guardada correctamente',
+      message: 'Datos guardados automáticamente.',
     })
 
     router.push(ROUTE_AFTER_SAVE)
-  } catch (error) {
-    let mensaje = 'Error al guardar Cobertura'
-
-    if (error?.response) {
-      const status = error.response.status
-      if (status === 400) mensaje = 'Datos inválidos'
-      else if (status === 401) mensaje = 'Sesión expirada, inicia sesión nuevamente'
-      else if (status === 403) mensaje = 'No tienes permisos para guardar esta información'
-      else if (status === 500) mensaje = 'Error interno del servidor'
-      else mensaje = error.response.data?.message || mensaje
-    }
-
-    Notify.create({ type: 'negative', message: mensaje })
+  } catch {
+    Notify.create({
+      type: 'negative',
+      message: 'Error al continuar.',
+    })
   } finally {
     loading.value = false
   }

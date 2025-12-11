@@ -176,7 +176,10 @@ onMounted(async () => {
         denominador: f.fuentes?.denominador || '',
       },
       metas: f.metas || [],
-      lineaBase: f.lineaBase || { valor: null, unidad: '', anio: '', periodo: '' },
+      lineaBaseValor: f.lineaBase?.valor ?? null,
+      lineaBaseUnidad: f.lineaBase?.unidad ?? '',
+      lineaBaseAnio: f.lineaBase?.anio ?? '',
+      lineaBasePeriodo: f.lineaBase?.periodo ?? '',
       lineasAccion: f.lineasAccion || [],
       lineaAccionSeleccionada: null,
       crema: {

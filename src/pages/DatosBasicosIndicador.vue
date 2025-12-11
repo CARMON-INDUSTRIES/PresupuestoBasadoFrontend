@@ -88,8 +88,8 @@
       <div class="row q-col-gutter-md">
         <div class="col-3">
           <q-input
-            :model-value="modelValue.lineaBase.valor"
-            @update:model-value="updateLineaBase('valor', $event)"
+            :model-value="modelValue.lineaBaseValor"
+            @update:model-value="updateField('lineaBaseValor', $event)"
             type="number"
             label="Valor (num)"
             filled
@@ -97,16 +97,16 @@
         </div>
         <div class="col-3">
           <q-input
-            :model-value="modelValue.lineaBase.unidad"
-            @update:model-value="updateLineaBase('unidad', $event)"
+            :model-value="modelValue.lineaBaseUnidad"
+            @update:model-value="updateField('lineaBaseUnidad', $event)"
             label="Unidad de medida (texto)"
             filled
           />
         </div>
         <div class="col-3">
           <q-select
-            :model-value="modelValue.lineaBase.anio"
-            @update:model-value="updateLineaBase('anio', $event)"
+            :model-value="modelValue.lineaBaseAnio"
+            @update:model-value="updateField('lineaBaseAnio', $event)"
             :options="anios"
             label="Año"
             filled
@@ -114,8 +114,8 @@
         </div>
         <div class="col-3">
           <q-select
-            :model-value="modelValue.lineaBase.periodo"
-            @update:model-value="updateLineaBase('periodo', $event)"
+            :model-value="modelValue.lineaBasePeriodo"
+            @update:model-value="updateField('lineaBasePeriodo', $event)"
             :options="periodos"
             label="Periodo"
             filled
@@ -180,13 +180,6 @@ const anios = [currentYear, currentYear - 1, currentYear - 2]
 
 function updateField(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
-}
-
-function updateLineaBase(field, value) {
-  emit('update:modelValue', {
-    ...props.modelValue,
-    lineaBase: { ...props.modelValue.lineaBase, [field]: value },
-  })
 }
 </script>
 
