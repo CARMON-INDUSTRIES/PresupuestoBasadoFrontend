@@ -123,7 +123,7 @@
       </div>
     </q-card-section>
 
-    <!-- CREMA -->
+    <!-- CREMA
     <q-card-section>
       <div class="text-h6 q-mb-md">CREMA</div>
 
@@ -184,7 +184,7 @@
           </tr>
         </tbody>
       </q-markup-table>
-    </q-card-section>
+    </q-card-section> -->
   </div>
 </template>
 
@@ -215,12 +215,12 @@ function updateFuente(field, value) {
   })
 }
 
-function updateCrema(field, value) {
-  emit('update:modelValue', {
-    ...props.modelValue,
-    crema: { ...props.modelValue.crema, [field]: value },
-  })
-}
+// function updateCrema(field, value) {
+//   emit('update:modelValue', {
+//     ...props.modelValue,
+//     crema: { ...props.modelValue.crema, [field]: value },
+//   })
+// }
 </script>
 
 <style scoped>

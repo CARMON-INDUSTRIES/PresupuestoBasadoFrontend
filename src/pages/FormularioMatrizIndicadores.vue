@@ -121,6 +121,7 @@
     </q-card>
   </q-page>
 </template>
+
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { Notify } from 'quasar'
@@ -144,7 +145,6 @@ const indicadoresTemp = ref('')
 const mediosTemp = ref('')
 const supuestosTemp = ref('')
 
-// Eliminar TODAS las versiones mirMatrizIndicadores (para todos los usuarios)
 Object.keys(localStorage).forEach((k) => {
   if (k.startsWith('mirMatrizIndicadores')) {
     localStorage.removeItem(k)
@@ -168,9 +168,6 @@ function textoBaseNivel(nivel) {
   return nivel
 }
 
-// ------------------------------
-//       MULTIUSUARIO
-// ------------------------------
 async function resolveUserName() {
   let user = localStorage.getItem('userNameActual')
 
@@ -186,9 +183,6 @@ async function resolveUserName() {
   }
 }
 
-// ------------------------------
-//  Crear estructura de la MIR
-// ------------------------------
 function crearFila(nivel) {
   return {
     nivel,
@@ -199,9 +193,6 @@ function crearFila(nivel) {
   }
 }
 
-// ------------------------------
-//       ON MOUNTED
-// ------------------------------
 onMounted(async () => {
   userName = await resolveUserName()
   storageKey = `mirMatrizIndicadores_${userName}`
@@ -216,9 +207,6 @@ onMounted(async () => {
     const objetivoRes = await api.get('/ArbolObjetivos/ultimo')
     const objetivo = objetivoRes.data || { componentes: [] }
 
-    // -------------------------
-    //  GENERAR MATRIZ NUEVA
-    // -------------------------
     const nuevasFilas = []
     nuevasFilas.push(crearFila(`Fin: ${objetivo.fin || ''}`))
     nuevasFilas.push(crearFila(`Propósito: ${objetivo.objetivoCentral || ''}`))
@@ -231,9 +219,6 @@ onMounted(async () => {
       })
     })
 
-    // -------------------------
-    //  VERIFICAR STORAGE
-    // -------------------------
     const saved = localStorage.getItem(storageKey)
 
     if (saved) {
@@ -250,17 +235,12 @@ onMounted(async () => {
     } else {
       filas.value = nuevasFilas
     }
-
-    // Siempre eliminar versión global vieja
   } catch (error) {
     console.error('Error al cargar MIR:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar la MIR desde Árbol de Objetivos' })
   }
 })
 
-// ------------------------------
-// Guardado automático por usuario
-// ------------------------------
 watch(
   filas,
   (newVal) => {
@@ -269,9 +249,6 @@ watch(
   { deep: true },
 )
 
-// ------------------------------
-//         GUARDAR API
-// ------------------------------
 async function guardarMatriz() {
   loading.value = true
   try {
@@ -287,7 +264,6 @@ async function guardarMatriz() {
 
     await api.post('/MatrizIndicadores', payload)
 
-    // Registrar última ruta por usuario
     if (userName) {
       localStorage.setItem(`ultimaRutaRegistro_${userName}`, '/formulario-matriz-indicadores')
     } else {
