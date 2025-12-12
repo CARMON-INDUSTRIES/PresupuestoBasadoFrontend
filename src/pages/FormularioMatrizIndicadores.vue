@@ -131,12 +131,11 @@ import api from 'src/boot/api'
 const router = useRouter()
 const loading = ref(false)
 
-let userName = null
-let storageKey = ''
-
 const usuario = ref({})
 const filas = ref([])
+const matrizId = ref(null) // id del borrador/registro existente (si aplica)
 
+// Modal narrativos
 const modalVisible = ref(false)
 const filaSeleccionada = ref(null)
 const camposNarrativos = ref([])
@@ -145,12 +144,7 @@ const indicadoresTemp = ref('')
 const mediosTemp = ref('')
 const supuestosTemp = ref('')
 
-Object.keys(localStorage).forEach((k) => {
-  if (k.startsWith('mirMatrizIndicadores')) {
-    localStorage.removeItem(k)
-  }
-})
-
+// Columnas para la tabla
 const columns = [
   { name: 'nivel', label: 'Nivel', align: 'left' },
   { name: 'resumenNarrativo', label: 'Resumen Narrativo' },
@@ -159,6 +153,7 @@ const columns = [
   { name: 'supuestos', label: 'Supuestos' },
 ]
 
+// UTIL
 function textoBaseNivel(nivel) {
   if (!nivel) return ''
   if (nivel.startsWith('Fin')) return 'Fin'
@@ -166,21 +161,6 @@ function textoBaseNivel(nivel) {
   if (nivel.startsWith('Componente')) return 'Componente'
   if (nivel.startsWith('Actividad')) return 'Actividad'
   return nivel
-}
-
-async function resolveUserName() {
-  let user = localStorage.getItem('userNameActual')
-
-  if (user) return user
-
-  try {
-    const { data } = await api.get('/Cuentas/me')
-    user = data?.userName || data?.username || null
-    if (user) localStorage.setItem('userNameActual', user)
-    return user
-  } catch {
-    return null
-  }
 }
 
 function crearFila(nivel) {
@@ -193,84 +173,125 @@ function crearFila(nivel) {
   }
 }
 
+// AUTOSAVE
+let autosaveTimer = null
+async function autosave() {
+  clearTimeout(autosaveTimer)
+  // debounce corto para no spamear peticiones
+  autosaveTimer = setTimeout(async () => {
+    try {
+      const matrizPayload = {
+        // estructura tal como espera tu endpoint borrador (MatrizIndicadores)
+        Id: matrizId.value ?? 0,
+        UnidadResponsable: usuario.value.nombreMatriz || usuario.value.cargo || '',
+        UnidadPresupuestal: usuario.value.unidadesPresupuestales || '',
+        ProgramaSectorial: usuario.value.programaSectorial || '',
+        ProgramaPresupuestario: usuario.value.programaPresupuestario || '',
+        ResponsableMIR: usuario.value.nombreCompleto || '',
+        Filas: filas.value,
+      }
+
+      // el endpoint de borrador maneja crear/actualizar según exista registro
+      const res = await api.post('/MatrizIndicadores/borrador', matrizPayload)
+
+      // si la API devuelve el objeto con id, lo guardamos
+      if (res?.data?.id) matrizId.value = res.data.id
+
+      console.log('💾 Autosave (borrador) guardado en servidor', matrizId.value)
+    } catch (err) {
+      console.warn('⚠ Autosave falló:', err)
+    }
+  }, 700)
+}
+
+// CARGA INICIAL: usuario, árbol y borrador (si lo hay)
 onMounted(async () => {
-  userName = await resolveUserName()
-  storageKey = `mirMatrizIndicadores_${userName}`
-
-  console.log('✔ Usuario detectado:', userName)
-  console.log('✔ Usando storage key:', storageKey)
-
   try {
+    // usuario
     const me = await api.get('/Cuentas/me')
     usuario.value = me.data || {}
 
+    // objetivo para estructura base
     const objetivoRes = await api.get('/ArbolObjetivos/ultimo')
     const objetivo = objetivoRes.data || { componentes: [] }
 
+    // estructura base según árbol
     const nuevasFilas = []
     nuevasFilas.push(crearFila(`Fin: ${objetivo.fin || ''}`))
     nuevasFilas.push(crearFila(`Propósito: ${objetivo.objetivoCentral || ''}`))
 
     objetivo.componentes?.forEach((c, ci) => {
       nuevasFilas.push(crearFila(`Componente: ${c?.nombre || `Componente ${ci + 1}`}`))
-
       c.medios?.forEach((m, mi) => {
         nuevasFilas.push(crearFila(`Actividad: ${m || `Actividad ${mi + 1}`}`))
       })
     })
 
-    const saved = localStorage.getItem(storageKey)
+    // intentar cargar borrador/último guardado desde el servidor
+    try {
+      const borradorRes = await api.get('/MatrizIndicadores/ultimo')
+      const borrador = borradorRes.data
 
-    if (saved) {
-      const guardado = JSON.parse(saved)
-
-      if (guardado.length === nuevasFilas.length) {
-        filas.value = guardado
-        console.log('✔ MIR CARGADA desde storage válido')
+      if (borrador) {
+        matrizId.value = borrador.id
+        // si la cantidad de filas coincide, usamos las filas guardadas; si no, preferimos la estructura generada (evita desalineamientos)
+        if (Array.isArray(borrador.filas) && borrador.filas.length === nuevasFilas.length) {
+          filas.value = borrador.filas
+        } else {
+          filas.value = nuevasFilas
+        }
       } else {
-        console.warn('⚠ Storage MIR desincronizado, se eliminará')
-        localStorage.removeItem(storageKey)
         filas.value = nuevasFilas
       }
-    } else {
+    } catch (err) {
+      // si no hay borrador, usar la estructura nueva
       filas.value = nuevasFilas
+      console.error('Error al iniciar componente MIR:', err)
     }
   } catch (error) {
-    console.error('Error al cargar MIR:', error)
-    Notify.create({ type: 'negative', message: 'Error al cargar la MIR desde Árbol de Objetivos' })
+    console.error('Error al iniciar componente MIR:', error)
+    Notify.create({ type: 'negative', message: 'Error al cargar datos iniciales de la MIR' })
   }
 })
 
+// WATCH para autosave: se dispara cuando cambia filas (deep)
 watch(
   filas,
-  (newVal) => {
-    localStorage.setItem(storageKey, JSON.stringify(newVal))
+  () => {
+    autosave()
   },
   { deep: true },
 )
 
+// GUARDO FINAL: usa POST para crear o PUT para actualizar si existe matrizId
 async function guardarMatriz() {
   loading.value = true
   try {
-    const payload = {
-      matriz: {
-        unidadResponsable: usuario.value.nombreMatriz || usuario.value.cargo,
-        unidadPresupuestal: usuario.value.unidadesPresupuestales,
-        programaSectorial: usuario.value.programaSectorial,
-        programaPresupuestario: usuario.value.programaPresupuestario,
-      },
-      filas: filas.value,
+    const matrizPayload = {
+      // para el modelo MatrizIndicadores en el backend las propiedades comienzan con mayúscula
+      UnidadResponsable: usuario.value.nombreMatriz || usuario.value.cargo || '',
+      UnidadPresupuestal: usuario.value.unidadesPresupuestales || '',
+      ProgramaSectorial: usuario.value.programaSectorial || '',
+      ProgramaPresupuestario: usuario.value.programaPresupuestario || '',
+      ResponsableMIR: usuario.value.nombreCompleto || '',
+      Filas: filas.value,
     }
 
-    await api.post('/MatrizIndicadores', payload)
-
-    if (userName) {
-      localStorage.setItem(`ultimaRutaRegistro_${userName}`, '/formulario-matriz-indicadores')
+    if (matrizId.value) {
+      // actualizar registro existente (PUT /MatrizIndicadores/{id})
+      await api.put(`/MatrizIndicadores/${matrizId.value}`, {
+        id: matrizId.value,
+        ...matrizPayload,
+      })
+      Notify.create({ type: 'positive', message: 'Matriz actualizada correctamente' })
     } else {
-      localStorage.setItem('ultimaRutaRegistro', '/formulario-matriz-indicadores')
+      // crear nuevo registro (POST /MatrizIndicadores)
+      const res = await api.post('/MatrizIndicadores', matrizPayload)
+      if (res?.data?.id) matrizId.value = res.data.id
+      Notify.create({ type: 'positive', message: 'Matriz creada correctamente' })
     }
 
-    Notify.create({ type: 'positive', message: 'Matriz guardada correctamente' })
+    // redirigir a la siguiente pantalla
     router.push('/formulario-ficha-tecnica-1')
   } catch (error) {
     console.error('❌ Error al guardar MIR:', error)
@@ -281,7 +302,7 @@ async function guardarMatriz() {
 }
 
 // ------------------------------
-// Modal para narrativos
+// MODAL PARA NARRATIVOS
 // ------------------------------
 function obtenerLabelsParaNivel(nivel) {
   if (nivel.startsWith('Fin'))
@@ -312,6 +333,9 @@ function guardarNarrativo() {
   filaSeleccionada.value.indicadores = indicadoresTemp.value
   filaSeleccionada.value.medios = mediosTemp.value
   filaSeleccionada.value.supuestos = supuestosTemp.value
+
+  // guardar cambios parciales inmediatamente (autosave)
+  autosave()
 }
 </script>
 
