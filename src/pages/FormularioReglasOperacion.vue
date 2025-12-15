@@ -81,7 +81,7 @@ onMounted(() => {
     const parsed = JSON.parse(saved)
     form.value = parsed.form ?? form.value
     archivoSeleccionado.value = parsed.archivo ?? archivoSeleccionado.value
-    console.log('✅ Datos cargados desde localStorage:', parsed)
+    console.log('Datos cargados desde localStorage:', parsed)
   }
 })
 

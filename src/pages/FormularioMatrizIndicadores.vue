@@ -133,9 +133,8 @@ const loading = ref(false)
 
 const usuario = ref({})
 const filas = ref([])
-const matrizId = ref(null) // id del borrador/registro existente (si aplica)
+const matrizId = ref(null)
 
-// Modal narrativos
 const modalVisible = ref(false)
 const filaSeleccionada = ref(null)
 const camposNarrativos = ref([])
@@ -144,7 +143,6 @@ const indicadoresTemp = ref('')
 const mediosTemp = ref('')
 const supuestosTemp = ref('')
 
-// Columnas para la tabla
 const columns = [
   { name: 'nivel', label: 'Nivel', align: 'left' },
   { name: 'resumenNarrativo', label: 'Resumen Narrativo' },
@@ -153,7 +151,6 @@ const columns = [
   { name: 'supuestos', label: 'Supuestos' },
 ]
 
-// UTIL
 function textoBaseNivel(nivel) {
   if (!nivel) return ''
   if (nivel.startsWith('Fin')) return 'Fin'
@@ -173,15 +170,13 @@ function crearFila(nivel) {
   }
 }
 
-// AUTOSAVE
 let autosaveTimer = null
 async function autosave() {
   clearTimeout(autosaveTimer)
-  // debounce corto para no spamear peticiones
+
   autosaveTimer = setTimeout(async () => {
     try {
       const matrizPayload = {
-        // estructura tal como espera tu endpoint borrador (MatrizIndicadores)
         Id: matrizId.value ?? 0,
         UnidadResponsable: usuario.value.nombreMatriz || usuario.value.cargo || '',
         UnidadPresupuestal: usuario.value.unidadesPresupuestales || '',
@@ -191,10 +186,8 @@ async function autosave() {
         Filas: filas.value,
       }
 
-      // el endpoint de borrador maneja crear/actualizar según exista registro
       const res = await api.post('/MatrizIndicadores/borrador', matrizPayload)
 
-      // si la API devuelve el objeto con id, lo guardamos
       if (res?.data?.id) matrizId.value = res.data.id
 
       console.log('💾 Autosave (borrador) guardado en servidor', matrizId.value)
@@ -204,18 +197,14 @@ async function autosave() {
   }, 700)
 }
 
-// CARGA INICIAL: usuario, árbol y borrador (si lo hay)
 onMounted(async () => {
   try {
-    // usuario
     const me = await api.get('/Cuentas/me')
     usuario.value = me.data || {}
 
-    // objetivo para estructura base
     const objetivoRes = await api.get('/ArbolObjetivos/ultimo')
     const objetivo = objetivoRes.data || { componentes: [] }
 
-    // estructura base según árbol
     const nuevasFilas = []
     nuevasFilas.push(crearFila(`Fin: ${objetivo.fin || ''}`))
     nuevasFilas.push(crearFila(`Propósito: ${objetivo.objetivoCentral || ''}`))
@@ -227,14 +216,12 @@ onMounted(async () => {
       })
     })
 
-    // intentar cargar borrador/último guardado desde el servidor
     try {
       const borradorRes = await api.get('/MatrizIndicadores/ultimo')
       const borrador = borradorRes.data
 
       if (borrador) {
         matrizId.value = borrador.id
-        // si la cantidad de filas coincide, usamos las filas guardadas; si no, preferimos la estructura generada (evita desalineamientos)
         if (Array.isArray(borrador.filas) && borrador.filas.length === nuevasFilas.length) {
           filas.value = borrador.filas
         } else {
@@ -244,7 +231,6 @@ onMounted(async () => {
         filas.value = nuevasFilas
       }
     } catch (err) {
-      // si no hay borrador, usar la estructura nueva
       filas.value = nuevasFilas
       console.error('Error al iniciar componente MIR:', err)
     }
@@ -254,7 +240,6 @@ onMounted(async () => {
   }
 })
 
-// WATCH para autosave: se dispara cuando cambia filas (deep)
 watch(
   filas,
   () => {
@@ -263,12 +248,10 @@ watch(
   { deep: true },
 )
 
-// GUARDO FINAL: usa POST para crear o PUT para actualizar si existe matrizId
 async function guardarMatriz() {
   loading.value = true
   try {
     const matrizPayload = {
-      // para el modelo MatrizIndicadores en el backend las propiedades comienzan con mayúscula
       UnidadResponsable: usuario.value.nombreMatriz || usuario.value.cargo || '',
       UnidadPresupuestal: usuario.value.unidadesPresupuestales || '',
       ProgramaSectorial: usuario.value.programaSectorial || '',
@@ -278,32 +261,26 @@ async function guardarMatriz() {
     }
 
     if (matrizId.value) {
-      // actualizar registro existente (PUT /MatrizIndicadores/{id})
       await api.put(`/MatrizIndicadores/${matrizId.value}`, {
         id: matrizId.value,
         ...matrizPayload,
       })
       Notify.create({ type: 'positive', message: 'Matriz actualizada correctamente' })
     } else {
-      // crear nuevo registro (POST /MatrizIndicadores)
       const res = await api.post('/MatrizIndicadores', matrizPayload)
       if (res?.data?.id) matrizId.value = res.data.id
       Notify.create({ type: 'positive', message: 'Matriz creada correctamente' })
     }
 
-    // redirigir a la siguiente pantalla
     router.push('/formulario-ficha-tecnica-1')
   } catch (error) {
-    console.error('❌ Error al guardar MIR:', error)
+    console.error('Error al guardar MIR:', error)
     Notify.create({ type: 'negative', message: 'Error al guardar la MIR' })
   } finally {
     loading.value = false
   }
 }
 
-// ------------------------------
-// MODAL PARA NARRATIVOS
-// ------------------------------
 function obtenerLabelsParaNivel(nivel) {
   if (nivel.startsWith('Fin'))
     return ['Contribuir a un objetivo superior (ej: mejorar calidad de vida)']
@@ -334,7 +311,6 @@ function guardarNarrativo() {
   filaSeleccionada.value.medios = mediosTemp.value
   filaSeleccionada.value.supuestos = supuestosTemp.value
 
-  // guardar cambios parciales inmediatamente (autosave)
   autosave()
 }
 </script>

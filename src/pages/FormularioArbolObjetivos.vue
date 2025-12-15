@@ -172,7 +172,6 @@ function itemToString(item) {
   return typeof item === 'string' ? item : (item.descripcion ?? '')
 }
 
-// ⭐ NUEVO → Detectar si el árbol sigue vacío
 function estaVacioArbolObjetivos(arbol) {
   if (arbol.fin) return false
   if (arbol.objetivoCentral) return false
@@ -182,13 +181,10 @@ function estaVacioArbolObjetivos(arbol) {
   )
 }
 
-// ------------------------------
-//     IA - Conversión automática
-// ------------------------------
 async function convertirConIA(textoBase, nivel) {
   if (!textoBase) return ''
 
-  console.log('➡️ IA llamada:', nivel, textoBase) // ⭐ LOG útil
+  console.log('IA llamada:', nivel, textoBase)
 
   try {
     const { data } = await api.post('/ArbolObjetivos/convertir-positivo', {
@@ -197,17 +193,16 @@ async function convertirConIA(textoBase, nivel) {
     })
     return data?.textoPositivo || ''
   } catch (error) {
-    console.error('❌ Error IA:', error)
+    console.error('Error IA:', error)
     return ''
   }
 }
 
 async function generarObjetivosAutomaticamente() {
   generandoIA.value = true
-  console.log('🤖 Generando árbol de objetivos con IA...')
+  console.log('Generando árbol de objetivos con IA...')
 
   try {
-    // FIN
     if (!arbolObjetivos.value.fin && arbolProblemas.value.efectoSuperior?.descripcion) {
       arbolObjetivos.value.fin = await convertirConIA(
         arbolProblemas.value.efectoSuperior.descripcion,
@@ -215,7 +210,6 @@ async function generarObjetivosAutomaticamente() {
       )
     }
 
-    // OBJETIVO CENTRAL
     if (
       !arbolObjetivos.value.objetivoCentral &&
       arbolProblemas.value.problemaCentral?.problemaCentral
@@ -226,24 +220,20 @@ async function generarObjetivosAutomaticamente() {
       )
     }
 
-    // COMPONENTES
     for (let i = 0; i < arbolObjetivos.value.componentes.length; i++) {
       const compObj = arbolObjetivos.value.componentes[i]
       const compProb = arbolProblemas.value.componentes[i]
 
-      // Nombre del componente
       if (!compObj.nombre && compProb?.nombre) {
         compObj.nombre = await convertirConIA(compProb.nombre, 'COMPONENTE')
       }
 
-      // RESULTADOS
       for (let r = 0; r < compObj.resultados.length; r++) {
         if (!compObj.resultados[r] && compProb?.resultados?.[r]) {
           compObj.resultados[r] = await convertirConIA(compProb.resultados[r], 'RESULTADO')
         }
       }
 
-      // MEDIOS
       for (let m = 0; m < compObj.medios.length; m++) {
         if (!compObj.medios[m] && compProb?.acciones?.[m]?.descripcion) {
           compObj.medios[m] = await convertirConIA(compProb.acciones[m].descripcion, 'MEDIO')
@@ -307,12 +297,11 @@ onMounted(async () => {
       }
     }
 
-    // ⭐ AQUÍ ESTÁ LA CLAVE
     if (estaVacioArbolObjetivos(arbolObjetivos.value)) {
       await generarObjetivosAutomaticamente()
     }
   } catch (error) {
-    console.error('❌ Error al cargar árbol:', error)
+    console.error('Error al cargar árbol:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar árbol de problemas' })
   }
 })
@@ -355,7 +344,7 @@ async function guardar() {
     Notify.create({ type: 'positive', message: 'Árbol de Objetivos guardado' })
     router.push('/formulario-analisis-alternativas')
   } catch (error) {
-    console.warn('❌ No se pudo guardar el árbol:', error)
+    console.warn(' No se pudo guardar el árbol:', error)
   } finally {
     loading.value = false
   }

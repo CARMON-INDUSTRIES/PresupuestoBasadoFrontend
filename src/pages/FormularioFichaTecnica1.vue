@@ -5,7 +5,6 @@
         <div class="text-h5 text-center text-black">Ficha Técnica del Indicador</div>
       </q-card-section>
 
-      <!-- Datos de Identificación -->
       <q-card-section class="q-pa-md bg-grey-2">
         <div class="text-h6 q-mb-md">Datos de Identificación del Programa</div>
         <q-markup-table flat bordered>
@@ -34,7 +33,6 @@
         </q-markup-table>
       </q-card-section>
 
-      <!-- Selector de Indicadores -->
       <q-card-section v-if="indicadores.length">
         <div class="text-h6 q-mb-md">Seleccionar Indicador</div>
         <div class="row q-col-gutter-sm no-wrap scroll-x">
@@ -51,7 +49,6 @@
         </div>
       </q-card-section>
 
-      <!-- Componentes hijos -->
       <template v-if="indicadorActivo">
         <DatosBasicosIndicador v-model="indicadorActivo" :lineas-accion="filtradas" />
 

@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Ficha Técnica Básica -->
     <q-card-section>
       <div class="text-h6 q-mb-md">Ficha Técnica del Indicador</div>
       <q-card flat bordered class="q-pa-md">
@@ -82,7 +81,6 @@
       </q-card>
     </q-card-section>
 
-    <!-- Línea Base -->
     <q-card-section>
       <div class="text-h6 q-mb-md">Línea Base</div>
       <div class="row q-col-gutter-md">
@@ -124,7 +122,6 @@
       </div>
     </q-card-section>
 
-    <!-- Líneas de Acción -->
     <q-card-section v-if="lineasAccion.length">
       <div class="text-h6 q-mb-md">Líneas de Acción</div>
 

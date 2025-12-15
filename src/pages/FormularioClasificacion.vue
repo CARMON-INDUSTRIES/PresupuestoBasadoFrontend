@@ -155,7 +155,6 @@ const onSubfuncionChange = async (subfuncionId) => {
   try {
     const { data } = await api.get(`/ClasificadorFuncional/subfuncion/${subfuncionId}/jerarquia`)
 
-    // data debe traer: subfuncionId/subfuncionNombre/funcionId/funcionNombre/finalidadId/finalidadNombre
     form.value.subfuncionId = subfuncionId
     form.value.subfuncion = data.subfuncionNombre ?? data.subfuncionNombre ?? form.value.subfuncion
     form.value.funcionId = data.funcionId

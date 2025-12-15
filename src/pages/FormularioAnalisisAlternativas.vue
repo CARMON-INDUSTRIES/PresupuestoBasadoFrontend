@@ -16,12 +16,10 @@
       >
         <template v-slot:body-cell="props">
           <q-td :props="props">
-            <!-- Nombre del componente -->
             <template v-if="props.col.name === 'nombre'">
               {{ props.row.nombre }}
             </template>
 
-            <!-- Dropdowns -->
             <template v-else-if="props.col.editable">
               <q-select
                 v-model="props.row[props.col.name]"
@@ -34,12 +32,10 @@
               />
             </template>
 
-            <!-- Total -->
             <template v-else-if="props.col.name === 'total'">
               <strong>{{ calcularTotal(props.row) }}</strong>
             </template>
 
-            <!-- Probabilidad -->
             <template v-else-if="props.col.name === 'probabilidad'">
               <q-badge
                 :color="getColor(calcularProbabilidad(props.row))"
@@ -126,8 +122,6 @@ onMounted(async () => {
 
       return [filaComponente, ...filasActividades]
     })
-
-    // Cargar desde localStorage si existe
   } catch (error) {
     console.error(' Error al cargar alternativas:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar alternativas' })
@@ -187,7 +181,7 @@ async function guardarAnalisis() {
     await api.post('/AnalisisAlternativas', payload)
     Notify.create({ type: 'positive', message: 'Análisis guardado correctamente' })
   } catch (e) {
-    console.error('❌ Error al guardar Anexo 6:', e)
+    console.error('Error al guardar Anexo 6:', e)
     Notify.create({ type: 'negative', message: 'Error al guardar Anexo 6' })
   }
 }

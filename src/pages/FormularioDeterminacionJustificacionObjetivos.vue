@@ -70,7 +70,7 @@ onMounted(async () => {
   try {
     const { data } = await api.get('/DeterminacionJustificacionObjetivos/borrador')
     form.value = data
-    console.log('📥 Borrador cargado:', data)
+    console.log('Borrador cargado:', data)
   } catch (error) {
     console.warn('No se pudo cargar el borrador:', error)
     Notify.create({
@@ -88,10 +88,10 @@ watch(
     clearTimeout(autosaveTimeout)
     autosaveTimeout = setTimeout(async () => {
       try {
-        console.log('💾 Autosave ejecutado')
+        console.log('Autosave ejecutado')
         await api.put('/DeterminacionJustificacionObjetivos/autosave', form.value)
       } catch (err) {
-        console.warn('❌ Error en autosave:', err)
+        console.warn('Error en autosave:', err)
       }
     }, 1000)
   },

@@ -189,12 +189,8 @@ const loading = ref(false)
 const autosaveLoading = ref(false)
 const showModal = ref(false)
 
-// ID del registro (backend)
 const registroId = ref(null)
 
-// =====================
-//        FORM
-// =====================
 const form = ref({
   componentes: [],
   etapasIntervencion: '',
@@ -209,9 +205,6 @@ const nuevoComponente = ref({
 
 const proximoIndiceComp = computed(() => form.value.componentes.length + 1)
 
-// =====================
-//     BORRADOR
-// =====================
 async function cargarBorrador() {
   try {
     const { data } = await api.get('/DisenoIntervencionPublica/borrador')
@@ -225,9 +218,6 @@ async function cargarBorrador() {
   }
 }
 
-// =====================
-//     AUTOSAVE
-// =====================
 let autosaveTimer = null
 
 watch(
@@ -262,9 +252,6 @@ async function guardarAuto() {
   }
 }
 
-// =====================
-//  COMPONENTES
-// =====================
 function guardarComponente(continuar = false) {
   if (!nuevoComponente.value.nombre?.trim()) {
     Notify.create({ type: 'warning', message: 'El componente debe tener un nombre' })
@@ -295,9 +282,6 @@ function guardarComponente(continuar = false) {
   if (!continuar) showModal.value = false
 }
 
-// =====================
-//   GUARDADO FINAL
-// =====================
 async function submitForm() {
   loading.value = true
 

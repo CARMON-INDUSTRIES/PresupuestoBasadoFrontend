@@ -130,32 +130,25 @@ const handleLogin = async () => {
     })
 
     const token = res.data.token
-    // Guardar token primero
     localStorage.setItem('token', token)
 
-    // Determinar userName (login puede devolver `username` o `userName`)
     const userNameFromLogin = res.data.username || res.data.userName || res.data.UserName || null
 
-    // Si vino en el login, guardarlo YA en localStorage
     if (userNameFromLogin) {
       localStorage.setItem('userNameActual', userNameFromLogin)
     }
 
-    // Setear header de Authorization antes de pedir /me
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
-    // Obtener perfil (asegura que tenemos userName y demás datos)
     const perfilRes = await api.get('/Cuentas/me')
     const user = perfilRes.data
 
-    // Si no vino userName en el login, guardarlo ahora desde /me
     const finalUserName =
       localStorage.getItem('userNameActual') || user.userName || user.user_name || null
     if (finalUserName) {
       localStorage.setItem('userNameActual', finalUserName)
     }
 
-    // Validar datos obligatorios del perfil
     const faltanDatos =
       !user.nombreCompleto ||
       !user.cargo ||
@@ -179,8 +172,6 @@ const handleLogin = async () => {
       return
     }
 
-    // -- RESTAURAR RUTA POR USUARIO --
-    // buscamos la última ruta específica del usuario actual
     const userKey = finalUserName
     const ultimaRutaKey = userKey ? `ultimaRutaRegistro_${userKey}` : null
     const ultimaRuta = ultimaRutaKey ? localStorage.getItem(ultimaRutaKey) : null
@@ -189,7 +180,6 @@ const handleLogin = async () => {
     const indiceAlineacion = rutasRegistro.indexOf('/formulario-alineacion')
 
     if (ultimaRuta && indiceUltimaRuta > indiceAlineacion && ultimaRuta !== rutaFicha) {
-      // mostrar alerta para continuar desde donde quedó
       const { isConfirmed } = await Swal.fire({
         title: 'Registro incompleto',
         text: `Te quedaste en: ${obtenerTextoRuta(ultimaRuta)}`,
@@ -204,7 +194,6 @@ const handleLogin = async () => {
       if (isConfirmed) {
         router.push(ultimaRuta)
       } else {
-        // borrar solo la clave del usuario
         if (ultimaRutaKey) localStorage.removeItem(ultimaRutaKey)
         router.push('/formulario-alineacion')
       }

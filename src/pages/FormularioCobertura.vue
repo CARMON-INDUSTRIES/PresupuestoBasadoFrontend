@@ -199,10 +199,10 @@ watch(
     clearTimeout(autosaveTimeout)
     autosaveTimeout = setTimeout(async () => {
       try {
-        console.log('💾 Autosave ejecutado')
+        console.log('Autosave ejecutado')
         await api.put('/Cobertura/autosave', form.value)
       } catch (err) {
-        console.warn('❌ Error en autosave:', err)
+        console.warn(' Error en autosave:', err)
       }
     }, 1000)
   },

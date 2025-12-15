@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Datos del Indicador y Fórmula -->
     <q-card-section>
       <div class="text-h6 q-mb-md">Datos del Indicador y Fórmula</div>
       <div class="row q-col-gutter-md">

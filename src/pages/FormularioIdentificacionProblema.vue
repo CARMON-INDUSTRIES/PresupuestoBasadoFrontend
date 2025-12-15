@@ -158,7 +158,7 @@ async function autoSave() {
   saving.value = true
   try {
     const { data } = await api.put('/IdentificacionDescripcionProblema/autosave', form.value)
-    form.value = data // sincroniza con backend
+    form.value = data
   } catch (err) {
     console.error('Error en autosave:', err)
   } finally {
@@ -170,7 +170,7 @@ watch(
   form,
   () => {
     clearTimeout(autosaveTimer)
-    autosaveTimer = setTimeout(autoSave, 1500) // autosave cada 1.5s
+    autosaveTimer = setTimeout(autoSave, 1500)
   },
   { deep: true },
 )

@@ -41,7 +41,6 @@
       <q-skeleton v-else animated width="100%" height="150px" class="q-mt-md" />
     </q-card>
 
-    <!-- Modal de edición de componente -->
     <q-dialog v-model="showModal" persistent>
       <q-card style="min-width: 600px; max-width: 800px">
         <q-card-section>
@@ -49,7 +48,6 @@
         </q-card-section>
         <q-separator />
         <q-card-section>
-          <!-- Nombre -->
           <q-input
             v-model="componenteEdit.nombre"
             filled
@@ -62,7 +60,6 @@
             </template>
           </q-input>
 
-          <!-- Acciones -->
           <div
             v-for="(accion, aIdx) in componenteEdit.acciones"
             :key="'accion-' + aIdx"
@@ -110,7 +107,6 @@
             @click="componenteEdit.acciones.push({ descripcion: '', cantidad: 0 })"
           />
 
-          <!-- Resultado -->
           <div class="q-mt-md">
             <div class="text-caption q-mb-xs">Efecto</div>
             <q-input
@@ -180,7 +176,7 @@ const obtenerComponentes = async () => {
 }
 
 const editarComponente = (comp) => {
-  componenteEdit.value = JSON.parse(JSON.stringify(comp)) // Clonar para no modificar directamente la lista
+  componenteEdit.value = JSON.parse(JSON.stringify(comp))
   showModal.value = true
 }
 
@@ -218,7 +214,6 @@ const guardarEdicionComponente = async () => {
   }
 }
 
-// Cargar componentes al iniciar
 obtenerComponentes()
 </script>
 

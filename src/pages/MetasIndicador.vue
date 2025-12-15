@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Determinación de Metas Anual -->
     <q-card-section>
       <div class="text-h6 q-mb-md">Determinación de Metas Anual</div>
 
@@ -61,7 +60,6 @@
       </q-markup-table>
     </q-card-section>
 
-    <!-- Programación de Metas -->
     <q-card-section>
       <div class="text-h6 q-mb-md">Programación de Metas</div>
 

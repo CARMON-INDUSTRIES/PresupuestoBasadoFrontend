@@ -83,7 +83,6 @@ const router = useRouter()
 const loading = ref(false)
 const autosaveLoading = ref(false)
 
-// ID del registro asignado desde backend
 const registroId = ref(null)
 
 const form = ref({
@@ -93,15 +92,12 @@ const form = ref({
   experienciasPrevias: '',
 })
 
-// ====== CARGAR BORRADOR DESDE BACKEND ======
-
 async function cargarBorrador() {
   try {
     const { data } = await api.get('/Antecedente/borrador')
 
     registroId.value = data.id
 
-    // llenar el formulario
     form.value.descripcionPrograma = data.descripcionPrograma
     form.value.contextoHistoricoNormativo = data.contextoHistoricoNormativo
     form.value.problematicaOrigen = data.problematicaOrigen
@@ -110,8 +106,6 @@ async function cargarBorrador() {
     console.error('Error al cargar borrador', err)
   }
 }
-
-// ====== AUTOSAVE (DEBOUNCE) ======
 
 let autosaveTimer = null
 
@@ -143,8 +137,6 @@ async function guardarAuto() {
     autosaveLoading.value = false
   }
 }
-
-// ====== ENVÍO FINAL (Continuar) ======
 
 async function submitForm() {
   loading.value = true

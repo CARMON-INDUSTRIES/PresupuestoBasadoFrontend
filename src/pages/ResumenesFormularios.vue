@@ -126,30 +126,6 @@
           </q-card>
         </q-expansion-item>
 
-        <!-- Formato Árbol de Problemas -->
-        <!--<q-expansion-item
-          icon="account_tree"
-          label="Formato Árbol de Objetivos"
-          expand-separator
-          class="expansion-card"
-        >
-           <q-card flat bordered class="q-ma-sm formato-card">
-            <q-card-section>
-              <q-item-label>Anexo 5 Árbol de Objetivos </q-item-label>
-            </q-card-section>
-            <q-card-actions align="right">
-              <q-btn
-                color="primary"
-                rounded
-                dense
-                icon="picture_as_pdf"
-                label="Descargar PDF"
-                @click="descargarPdf('FormatoArbolDeObjetivos')"
-              />
-            </q-card-actions>
-          </q-card>
-        </q-expansion-item> -->
-
         <q-expansion-item
           icon="account_tree"
           label="Formato Analisis de Alternativas"
@@ -181,7 +157,7 @@
         >
           <q-card flat bordered class="q-ma-sm formato-card">
             <q-card-section>
-              <q-item-label>Descargar PDF directamente desde el backend</q-item-label>
+              <q-item-label>Anexo 7 Estructura Analitica</q-item-label>
             </q-card-section>
             <q-card-actions align="right">
               <q-btn
@@ -204,7 +180,7 @@
         >
           <q-card flat bordered class="q-ma-sm formato-card">
             <q-card-section>
-              <q-item-label>Descargar PDF directamente desde el backend</q-item-label>
+              <q-item-label>Matriz Indicadores</q-item-label>
             </q-card-section>
             <q-card-actions align="right">
               <q-btn
@@ -227,7 +203,7 @@
         >
           <q-card flat bordered class="q-ma-sm formato-card">
             <q-card-section>
-              <q-item-label>Descargar PDF directamente desde el backend</q-item-label>
+              <q-item-label>Ficha del Indicador</q-item-label>
             </q-card-section>
             <q-card-actions align="right">
               <q-btn

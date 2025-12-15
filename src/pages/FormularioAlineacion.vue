@@ -128,7 +128,6 @@
             </template>
           </q-select>
 
-          <!-- Tipo de ramo -->
           <q-select
             v-if="form.tipo === 'Municipio'"
             filled
@@ -507,7 +506,6 @@ async function registrarAlineacion() {
     })
   }
 
-  // Limpiar formulario
   form.value = {
     tipo: '',
     ramo: '',
