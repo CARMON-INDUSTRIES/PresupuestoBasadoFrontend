@@ -177,19 +177,24 @@
     </q-dialog>
   </q-page>
 </template>
+
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
-const BASE_STORAGE_KEY = 'disenoIntervencionPublica'
-const ROUTE_AFTER_SAVE = '/formulario-reglas-operacion-detalle'
-
 const router = useRouter()
 const loading = ref(false)
+const autosaveLoading = ref(false)
 const showModal = ref(false)
 
+// ID del registro (backend)
+const registroId = ref(null)
+
+// =====================
+//        FORM
+// =====================
 const form = ref({
   componentes: [],
   etapasIntervencion: '',
@@ -204,50 +209,62 @@ const nuevoComponente = ref({
 
 const proximoIndiceComp = computed(() => form.value.componentes.length + 1)
 
-// ------------------------------
-//     Multiusuario
-// ------------------------------
-
-let userName = null
-let storageKey = BASE_STORAGE_KEY
-
-async function resolveUserName() {
-  let user = localStorage.getItem('userNameActual')
-  if (user) return user
-
+// =====================
+//     BORRADOR
+// =====================
+async function cargarBorrador() {
   try {
-    const { data } = await api.get('/Cuentas/me')
-    user = data?.userName || data?.username || null
-    if (user) localStorage.setItem('userNameActual', user)
-    return user
-  } catch {
-    return null
+    const { data } = await api.get('/DisenoIntervencionPublica/borrador')
+
+    registroId.value = data.id
+    form.value.componentes = data.componentes || []
+    form.value.etapasIntervencion = data.etapasIntervencion || ''
+    form.value.escenariosFuturosEsperar = data.escenariosFuturosEsperar || ''
+  } catch (err) {
+    console.error('Error al cargar borrador', err)
   }
 }
 
-onMounted(async () => {
-  userName = await resolveUserName()
+// =====================
+//     AUTOSAVE
+// =====================
+let autosaveTimer = null
 
-  storageKey = userName ? `${BASE_STORAGE_KEY}_${userName}` : BASE_STORAGE_KEY
+watch(
+  form,
+  () => {
+    clearTimeout(autosaveTimer)
+    autosaveTimer = setTimeout(() => {
+      guardarAuto()
+    }, 1200)
+  },
+  { deep: true },
+)
 
-  const saved = localStorage.getItem(storageKey)
-  if (saved) {
-    try {
-      form.value = JSON.parse(saved)
-      console.log('✔ Datos cargados desde:', storageKey)
-    } catch {
-      console.warn('No se pudo parsear localStorage')
-    }
+async function guardarAuto() {
+  if (!registroId.value) return
+
+  autosaveLoading.value = true
+
+  try {
+    await api.put('/DisenoIntervencionPublica/autosave', {
+      id: registroId.value,
+      ...form.value,
+      componentes: form.value.componentes.map((c) => ({
+        ...c,
+        resultado: typeof c.resultado === 'string' ? { descripcion: c.resultado } : c.resultado,
+      })),
+    })
+  } catch (err) {
+    console.warn('Autosave falló', err)
+  } finally {
+    autosaveLoading.value = false
   }
-})
+}
 
-// Guardado automático por usuario
-watch(form, (val) => localStorage.setItem(storageKey, JSON.stringify(val)), { deep: true })
-
-// ------------------------------------------
-//         LÓGICA DE COMPONENTES
-// ------------------------------------------
-
+// =====================
+//  COMPONENTES
+// =====================
 function guardarComponente(continuar = false) {
   if (!nuevoComponente.value.nombre?.trim()) {
     Notify.create({ type: 'warning', message: 'El componente debe tener un nombre' })
@@ -269,59 +286,49 @@ function guardarComponente(continuar = false) {
 
   form.value.componentes.push(componenteFinal)
 
-  nuevoComponente.value = { nombre: '', acciones: [{ nombre: '', cantidad: 0 }], resultado: '' }
+  nuevoComponente.value = {
+    nombre: '',
+    acciones: [{ nombre: '', cantidad: 0 }],
+    resultado: '',
+  }
 
   if (!continuar) showModal.value = false
 }
 
-// ------------------------------------------
-//               GUARDADO API
-// ------------------------------------------
-
+// =====================
+//   GUARDADO FINAL
+// =====================
 async function submitForm() {
   loading.value = true
 
   try {
-    const payload = {
+    await api.put(`/DisenoIntervencionPublica/${registroId.value}`, {
+      id: registroId.value,
       ...form.value,
       componentes: form.value.componentes.map((c) => ({
         ...c,
         resultado: typeof c.resultado === 'string' ? { descripcion: c.resultado } : c.resultado,
       })),
-    }
-
-    const res = await api.post('/DisenoIntervencionPublica', payload)
-
-    // Guardar última ruta por usuario
-    if (userName) {
-      localStorage.setItem(`ultimaRutaRegistro_${userName}`, ROUTE_AFTER_SAVE)
-    } else {
-      localStorage.setItem('ultimaRutaRegistro', ROUTE_AFTER_SAVE)
-    }
+    })
 
     Notify.create({
       type: 'positive',
-      message: res.data?.message || 'Diseño de intervención guardado correctamente',
+      message: 'Diseño de la Intervención Pública guardado correctamente',
     })
 
-    router.push(ROUTE_AFTER_SAVE)
+    router.push('/formulario-reglas-operacion-detalle')
   } catch (error) {
-    let mensaje = 'Error al guardar Diseño de la Intervención Pública'
-
-    if (error?.response) {
-      const status = error.response.status
-      if (status === 400) mensaje = 'Datos inválidos'
-      else if (status === 401) mensaje = 'Sesión expirada, inicia sesión nuevamente'
-      else if (status === 403) mensaje = 'No tienes permisos'
-      else if (status === 500) mensaje = 'Error interno del servidor'
-      else mensaje = error.response.data?.message || mensaje
-    }
-
-    Notify.create({ type: 'negative', message: mensaje })
+    Notify.create({
+      type: 'negative',
+      message:
+        error.response?.data?.message || 'Error al guardar Diseño de la Intervención Pública',
+    })
   } finally {
     loading.value = false
   }
 }
+
+onMounted(cargarBorrador)
 </script>
 
 <style scoped>
