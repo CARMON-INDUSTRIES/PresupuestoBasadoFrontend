@@ -20,13 +20,12 @@ export default defineRouter(function () {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   })
 
-  // 🧩 Guarda la última ruta visitada dentro del flujo de registro
   Router.afterEach((to) => {
     const rutasRegistro = [
       '/formulario-alineacion',
       '/formulario-identificacion',
       '/formulario-diseno',
-      '/formulario-ficha-tecnica',
+      '/formulario-ficha-tecnica-1',
     ]
 
     if (rutasRegistro.includes(to.path)) {
@@ -34,7 +33,6 @@ export default defineRouter(function () {
     }
   })
 
-  // 🛡️ Protección de rutas con token
   Router.beforeEach((to, from, next) => {
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
     const token = localStorage.getItem('token')

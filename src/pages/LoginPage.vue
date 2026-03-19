@@ -111,7 +111,7 @@ const rutasRegistro = [
   '/programacion-metas',
 ]
 
-const rutaFicha = '/formulario-ficha-tecnica-1'
+const rutaFicha = '/resumenes'
 
 const handleLogin = async () => {
   if (!login.value.user || !login.value.password) {
@@ -182,7 +182,7 @@ const handleLogin = async () => {
     if (ultimaRuta && indiceUltimaRuta > indiceAlineacion && ultimaRuta !== rutaFicha) {
       const { isConfirmed } = await Swal.fire({
         title: 'Registro incompleto',
-        text: `Te quedaste en: ${obtenerTextoRuta(ultimaRuta)}`,
+        text: `Te quedaste en ${obtenerTextoRuta(ultimaRuta)}`,
         icon: 'info',
         confirmButtonText: 'Continuar desde ahí',
         showCancelButton: true,
@@ -236,7 +236,7 @@ function obtenerTextoRuta(ruta) {
     '/formulario-analisis-alternativas': 'la sección de Análisis de Alternativas',
     '/formulario-estructura-analitica': 'la sección de Estructura Analítica',
     '/formulario-matriz-indicadores': 'la sección de Matriz de Indicadores',
-    '/formulario-ficha-tecnica-1': 'la Ficha Técnica',
+    '/formulario-ficha-tecnica-1': 'la seccion Ficha Técnica',
     '/formulario-reglas-operacion-detalle': 'la sección de Reglas de Operación Detalle',
     '/registro-datos': 'la sección de Registro de Datos',
     '/programacion-metas': 'la sección de Programación de Metas',

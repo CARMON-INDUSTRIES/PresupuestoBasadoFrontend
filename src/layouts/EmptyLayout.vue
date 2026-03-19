@@ -313,7 +313,6 @@ const rutasRegistro = [
   '/formulario-arbol-objetivos',
   '/formulario-analisis-alternativas',
   '/formulario-estructura-analitica',
-  '/formulario-ficha-tecnica-1',
 ]
 
 const RUTA_TO_STORAGE = {
@@ -331,6 +330,7 @@ const RUTA_TO_STORAGE = {
   '/formulario-programa-social': 'formularioProgramaSocialCompleto',
   '/formulario-reglas-operacion': 'formularioReglasOperacion',
   '/formulario-poblacion': 'formularioProgramaSocial',
+  '/formulario-ficha-tecnica-1': 'formularioFichaTecnica',
 }
 
 // Guardar última ruta visitada

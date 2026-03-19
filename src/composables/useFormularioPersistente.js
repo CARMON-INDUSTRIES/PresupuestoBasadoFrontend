@@ -20,10 +20,10 @@ export function useFormularioPersistente(storageKey, endpointBase) {
     if (guardado) {
       try {
         datos.value = JSON.parse(guardado)
-        console.log(`🟡 Cargado desde localStorage (${storageKey})`, datos.value)
+        console.log(`Cargado desde localStorage (${storageKey})`, datos.value)
         return
       } catch (err) {
-        console.warn(`⚠️ Error al parsear localStorage[${storageKey}]`, err)
+        console.warn(`Error al parsear localStorage[${storageKey}]`, err)
       }
     }
 
@@ -31,9 +31,9 @@ export function useFormularioPersistente(storageKey, endpointBase) {
       const res = await api.get(`${endpointBase}/ultimo`)
       datos.value = res.data || {}
       localStorage.setItem(storageKey, JSON.stringify(datos.value))
-      console.log(`✅ Cargado desde BD (${storageKey})`, datos.value)
+      console.log(`Cargado desde BD (${storageKey})`, datos.value)
     } catch (err) {
-      console.error(`❌ Error al cargar ${storageKey}:`, err)
+      console.error(`Error al cargar ${storageKey}:`, err)
     }
   }
 
@@ -47,10 +47,10 @@ export function useFormularioPersistente(storageKey, endpointBase) {
       }
       datos.value = res.data
       localStorage.setItem(storageKey, JSON.stringify(res.data))
-      console.log(`💾 Guardado ${storageKey}`, res.data)
+      console.log(`Guardado ${storageKey}`, res.data)
       return true
     } catch (err) {
-      console.error(`❌ Error al guardar ${storageKey}:`, err)
+      console.error(`Error al guardar ${storageKey}:`, err)
       Notify.create({ type: 'negative', message: 'Error al guardar datos' })
       return false
     }
@@ -63,7 +63,7 @@ export function useFormularioPersistente(storageKey, endpointBase) {
       try {
         localStorage.setItem(storageKey, JSON.stringify(val))
       } catch (err) {
-        console.warn(`⚠️ Error al guardar automáticamente ${storageKey}`, err)
+        console.warn(`Error al guardar automáticamente ${storageKey}`, err)
       }
     },
     { deep: true },
@@ -73,14 +73,14 @@ export function useFormularioPersistente(storageKey, endpointBase) {
   const limpiarFormulario = () => {
     localStorage.removeItem(storageKey)
     datos.value = {}
-    console.log(`🧹 Limpiado ${storageKey}`)
+    console.log(`Limpiado ${storageKey}`)
   }
 
   // 🔒 Limpiar todos los formularios persistentes al cerrar sesión
   const limpiarTodosFormularios = () => {
     window.__formulariosPersistentes.forEach((key) => {
       localStorage.removeItem(key)
-      console.log(`🧹 Limpiado ${key} (cierre de sesión)`)
+      console.log(`Limpiado ${key} (cierre de sesión)`)
     })
     window.__formulariosPersistentes = []
   }

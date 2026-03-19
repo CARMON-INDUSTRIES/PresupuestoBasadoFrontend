@@ -16,7 +16,18 @@
               :key="cIdx"
               class="q-pa-sm bg-grey-2 q-mb-sm rounded-borders"
             >
-              <div class="text-subtitle2"><q-icon name="widgets" /> {{ comp.nombre }}</div>
+              <div class="row items-center justify-between">
+                <div class="text-subtitle2"><q-icon name="widgets" /> {{ comp.nombre }}</div>
+
+                <q-btn
+                  dense
+                  flat
+                  round
+                  icon="delete"
+                  color="negative"
+                  @click="form.componentes.splice(cIdx, 1)"
+                />
+              </div>
 
               <div
                 v-for="(accion, aIdx) in comp.acciones"
