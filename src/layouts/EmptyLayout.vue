@@ -28,7 +28,7 @@
     </q-header>
 
     <!-- Sidebar -->
-    <q-drawer v-model="sidebarOpen" side="left" show-if-above bordered :width="280" class="sidebar">
+    <q-drawer v-model="sidebarOpen" side="left" show-if-above bordered :width="300" class="sidebar">
       <div
         class="column full-height"
         style="
@@ -40,7 +40,7 @@
         <!-- Avatar + nombre -->
         <div class="column items-center q-my-xl">
           <q-avatar size="100px" class="shadow-4 avatar-border">
-            <img :src="previewFoto || fotoActual" alt="Avatar usuario" />
+            <img :src="previewFoto || fotoActual" alt="Usuario" />
           </q-avatar>
 
           <div class="text-h6 text-weight-bold q-mt-sm text-white">
@@ -132,11 +132,6 @@
               <q-item clickable v-ripple @click="$router.push('/formulario-clasificacion')">
                 <q-item-section avatar><q-icon name="category" /></q-item-section>
                 <q-item-section>Clasificación</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple @click="$router.push('/formulario-actividad')">
-                <q-item-section avatar><q-icon name="task" /></q-item-section>
-                <q-item-section>Actividades</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/formulario-ficha-tecnica-1')">
