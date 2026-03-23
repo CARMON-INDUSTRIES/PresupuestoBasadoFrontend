@@ -70,6 +70,16 @@
           <q-item
             clickable
             v-ripple
+            @click="goTo('/registro-usuario-detalle')"
+            class="hover-item text-white"
+          >
+            <q-item-section avatar><q-icon name="person" /></q-item-section>
+            <q-item-section>Datos Personales</q-item-section>
+          </q-item>
+
+          <q-item
+            clickable
+            v-ripple
             @click="goTo('/programacion-metas')"
             class="hover-item text-white"
           >
@@ -377,7 +387,6 @@ function onFileAdded(files) {
   }
 }
 
-// ✅ Previsualizar imagen seleccionada
 function previewImage(file) {
   if (file && file instanceof File) {
     const reader = new FileReader()
