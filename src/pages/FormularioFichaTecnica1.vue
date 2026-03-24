@@ -154,7 +154,7 @@ onMounted(async () => {
       tipoIndicador.value = ficha.tipoIndicador || ''
       indicadores.value = ficha.indicadores || []
       programacionMetas.value = ficha.programacionMetas || programacionMetas.value
-      Notify.create({ type: 'info', message: 'Ficha cargada desde respaldo local' })
+      //Notify.create({ type: 'info', message: 'Ficha cargada desde respaldo local' })
     }
 
     const me = await api.get('/Cuentas/me')

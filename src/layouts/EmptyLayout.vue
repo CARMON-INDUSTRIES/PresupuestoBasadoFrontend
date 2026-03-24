@@ -28,14 +28,10 @@
     </q-header>
 
     <!-- Sidebar -->
-    <q-drawer v-model="sidebarOpen" side="left" show-if-above bordered :width="300" class="sidebar">
+    <q-drawer v-model="sidebarOpen" side="left" show-if-above bordered :width="405" class="sidebar">
       <div
         class="column full-height"
-        style="
-          background-image: url('/images/sidebar.jpg');
-          background-size: cover;
-          background-position: center;
-        "
+        style="background-color: #691b31; background-size: cover; background-position: center"
       >
         <!-- Avatar + nombre -->
         <div class="column items-center q-my-xl">
@@ -51,7 +47,7 @@
         <q-separator color="white" inset />
 
         <!-- Menú -->
-        <q-list class="q-pa-sm">
+        <q-list class="q-pa-sm sidebar-content">
           <q-item
             clickable
             v-ripple
@@ -120,11 +116,6 @@
             class="text-white hover-item"
           >
             <q-list dense>
-              <q-item clickable v-ripple @click="$router.push('/formulario-alineacion')">
-                <q-item-section avatar><q-icon name="account_tree" /></q-item-section>
-                <q-item-section>Alineación</q-item-section>
-              </q-item>
-
               <q-item
                 clickable
                 v-ripple
@@ -585,5 +576,15 @@ async function cerrarSesion() {
 .hover-item:hover {
   background-color: rgba(255, 215, 0, 0.2);
   transition: 0.2s;
+}
+
+.sidebar-content,
+.sidebar-content .q-item,
+.sidebar-content .q-expansion-item,
+.sidebar-content .q-expansion-item__container,
+.sidebar-content .q-expansion-item__content,
+.sidebar-content .q-list {
+  background-color: #691b31 !important;
+  color: white;
 }
 </style>
