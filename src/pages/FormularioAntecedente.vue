@@ -59,6 +59,17 @@
 
         <q-card-actions align="right">
           <q-btn
+            label="Pantalla Anterior"
+            color="primary"
+            text-color="white"
+            rounded
+            unelevated
+            class="submit-btn"
+            to="formulario-clasificacion"
+            :loading="loading"
+          />
+
+          <q-btn
             color="primary"
             label="Continuar"
             type="submit"

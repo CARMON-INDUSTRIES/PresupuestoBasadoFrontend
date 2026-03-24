@@ -29,7 +29,23 @@
       </q-card-section>
 
       <q-card-actions align="right" class="q-mt-md">
-        <q-btn color="primary" label="Continuar" rounded @click="irAMatrizIndicadores" />
+        <q-btn
+          label="Pantalla Anterior"
+          color="primary"
+          text-color="white"
+          rounded
+          unelevated
+          class="registrar"
+          to="formulario-analisis-alternativas"
+          :loading="loading"
+        />
+        <q-btn
+          color="primary"
+          label="Continuar"
+          class="submit-btn"
+          rounded
+          @click="irAMatrizIndicadores"
+        />
       </q-card-actions>
     </q-card>
   </q-page>
@@ -151,5 +167,22 @@ function irAMatrizIndicadores() {
 .anexo7-table td {
   vertical-align: top;
   white-space: normal !important;
+}
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>

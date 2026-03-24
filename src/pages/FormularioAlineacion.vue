@@ -151,6 +151,7 @@
             unelevated
             @click="registrarAlineacion"
             :disable="loading || !puedeRegistrar"
+            class="registrar"
           />
 
           <q-btn
@@ -585,5 +586,23 @@ async function submitForm() {
   font-size: 1.5rem;
   font-weight: bold;
   color: #691b31;
+}
+
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>

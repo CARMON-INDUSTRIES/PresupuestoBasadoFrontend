@@ -52,6 +52,17 @@
 
       <q-card-actions align="right">
         <q-btn
+          label="Pantalla Anterior"
+          color="primary"
+          text-color="white"
+          rounded
+          unelevated
+          class="registrar"
+          to="formulario-programa-social"
+          :loading="loading"
+        />
+
+        <q-btn
           :loading="subiendo"
           label="Guardar"
           color="primary"
@@ -146,12 +157,26 @@ async function guardarPadron() {
   font-weight: bold;
   font-size: 1.1rem;
 }
+
 .bg-white {
   background: white;
 }
+
 .submit-btn {
   font-weight: 900;
   font-size: 0.8rem;
-  padding: 12px 40px;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>

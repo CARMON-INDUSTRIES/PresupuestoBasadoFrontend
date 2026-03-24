@@ -57,10 +57,22 @@
 
         <q-card-actions align="right">
           <q-btn
-            label="Guardar"
+            label="Pantalla Anterior"
+            color="primary"
+            text-color="white"
+            rounded
+            unelevated
+            class="registrar"
+            to="formulario-diseno-intervencion"
+            :loading="loading"
+          />
+
+          <q-btn
+            label="Continuar"
             color="primary"
             text-color="white"
             type="submit"
+            class="submit-btn"
             rounded
             unelevated
           />
@@ -95,7 +107,7 @@ onMounted(() => {
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved) {
     form.value = JSON.parse(saved)
-    console.log('✅ Datos cargados desde localStorage:', form.value)
+    console.log('Datos cargados desde localStorage:', form.value)
   }
 })
 
@@ -134,5 +146,23 @@ async function guardarDetalle() {
 }
 .q-mt-md {
   margin-top: 15px;
+}
+
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>

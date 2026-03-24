@@ -50,8 +50,18 @@
       </q-table>
 
       <div class="q-mt-md text-center flex flex-center q-gutter-md">
-        <q-btn color="primary" label="Confirmar" @click="validarConfirmar" />
-        <q-btn color="secondary" label="Continuar" @click="continuarFlujo" />
+        <q-btn
+          label="Pantalla Anterior"
+          color="primary"
+          text-color="white"
+          rounded
+          unelevated
+          class="registrar"
+          to="formulario-arbol-objetivos"
+          :loading="loading"
+        />
+        <q-btn color="primary" label="Confirmar" rounded @click="validarConfirmar" />
+        <q-btn color="secondary" label="Continuar" rounded @click="continuarFlujo" />
       </div>
     </q-card>
   </q-page>

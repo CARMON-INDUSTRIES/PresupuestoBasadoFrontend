@@ -93,6 +93,17 @@
 
       <q-card-actions align="right">
         <q-btn
+          label="Pantalla Anterior"
+          color="primary"
+          text-color="white"
+          rounded
+          unelevated
+          class="registrar"
+          to="formulario-reglas-operacion"
+          :loading="loading"
+        />
+
+        <q-btn
           color="primary"
           label="Guardar"
           text-color="white"
@@ -164,6 +175,15 @@ async function guardarEfectoSuperior() {
 }
 
 .submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
   font-weight: 900;
   font-size: 0.8rem;
   padding-left: 40px;

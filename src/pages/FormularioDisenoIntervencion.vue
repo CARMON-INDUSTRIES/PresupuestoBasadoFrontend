@@ -75,6 +75,17 @@
 
         <q-card-actions align="right">
           <q-btn
+            label="Pantalla Anterior"
+            color="primary"
+            text-color="white"
+            rounded
+            unelevated
+            class="registrar"
+            to="formulario-cobertura"
+            :loading="loading"
+          />
+
+          <q-btn
             color="primary"
             text-color="white"
             label="Continuar"
@@ -347,6 +358,18 @@ onMounted(cargarBorrador)
 .submit-btn {
   font-weight: 900;
   font-size: 0.8rem;
-  padding: 12px 40px;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>

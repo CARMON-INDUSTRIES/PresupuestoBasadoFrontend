@@ -111,8 +111,26 @@
         </div>
       </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn color="primary" label="Guardar" :loading="loading" @click="guardar" />
+      <q-card-actions align="right" class="q-mt-lg">
+        <q-btn
+          label="Pantalla Anterior"
+          color="primary"
+          text-color="white"
+          rounded
+          unelevated
+          class="registrar"
+          to="formulario-alineacion"
+          :loading="loading"
+        />
+
+        <q-btn
+          color="primary"
+          label="Guardar"
+          class="submit-btn"
+          rounded
+          :loading="loading"
+          @click="guardar"
+        />
       </q-card-actions>
     </q-card>
   </q-page>
@@ -129,9 +147,6 @@ const router = useRouter()
 const loading = ref(false)
 const generandoIA = ref(false)
 
-// ------------------------------
-//     Estados principales
-// ------------------------------
 const arbolProblemas = ref({
   efectoSuperior: null,
   problemaCentral: null,
@@ -144,9 +159,6 @@ const arbolObjetivos = ref({
   componentes: [],
 })
 
-// ------------------------------
-//     Multiusuario
-// ------------------------------
 let userName = null
 let storageKey = BASE_STORAGE_KEY
 
@@ -164,9 +176,6 @@ async function resolveUserName() {
   }
 }
 
-// ------------------------------
-// Helper
-// ------------------------------
 function itemToString(item) {
   if (!item) return ''
   return typeof item === 'string' ? item : (item.descripcion ?? '')
@@ -184,7 +193,7 @@ function estaVacioArbolObjetivos(arbol) {
 async function convertirConIA(textoBase, nivel) {
   if (!textoBase) return ''
 
-  console.log('IA llamada:', nivel, textoBase)
+  //console.log('IA llamada:', nivel, textoBase)
 
   try {
     const { data } = await api.post('/ArbolObjetivos/convertir-positivo', {
@@ -200,7 +209,7 @@ async function convertirConIA(textoBase, nivel) {
 
 async function generarObjetivosAutomaticamente() {
   generandoIA.value = true
-  console.log('Generando árbol de objetivos con IA...')
+  //console.log('Generando árbol de objetivos con IA...')
 
   try {
     if (!arbolObjetivos.value.fin && arbolProblemas.value.efectoSuperior?.descripcion) {
@@ -245,15 +254,9 @@ async function generarObjetivosAutomaticamente() {
   }
 }
 
-// ------------------------------
-//     onMounted
-// ------------------------------
 onMounted(async () => {
   userName = await resolveUserName()
   storageKey = userName ? `${BASE_STORAGE_KEY}_${userName}` : BASE_STORAGE_KEY
-
-  console.log('✔ Usuario detectado:', userName)
-  console.log('✔ Usando storage key:', storageKey)
 
   try {
     const [efectoRes, problemaRes, disenoRes] = await Promise.all([
@@ -284,7 +287,7 @@ onMounted(async () => {
 
     if (saved) {
       arbolObjetivos.value = JSON.parse(saved)
-      console.log('✔ Árbol de objetivos cargado desde localStorage')
+      //console.log('✔ Árbol de objetivos cargado desde localStorage')
     } else {
       arbolObjetivos.value = {
         fin: '',
@@ -306,9 +309,6 @@ onMounted(async () => {
   }
 })
 
-// ------------------------------
-// Guardado automático MULTIUSER
-// ------------------------------
 watch(
   arbolObjetivos,
   (val) => {
@@ -317,9 +317,6 @@ watch(
   { deep: true },
 )
 
-// ------------------------------
-//       GUARDAR API
-// ------------------------------
 async function guardar() {
   loading.value = true
   try {
@@ -350,3 +347,23 @@ async function guardar() {
   }
 }
 </script>
+
+<style scoped>
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+</style>

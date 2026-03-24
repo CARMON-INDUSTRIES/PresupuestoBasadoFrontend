@@ -62,7 +62,17 @@
       </template>
 
       <q-card-actions align="right" v-if="indicadores.length">
-        <q-btn color="primary" label="Guardar y Continuar" @click="guardar" />
+        <q-btn
+          label="Pantalla Anterior"
+          color="primary"
+          text-color="white"
+          rounded
+          unelevated
+          class="registrar"
+          to="formulario-estructura-analitica"
+          :loading="loading"
+        />
+        <q-btn color="primary" label="Guardar" rounded class="submit-btn" @click="guardar" />
       </q-card-actions>
     </q-card>
   </q-page>
@@ -284,11 +294,25 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.bg-primary {
-  background-color: #7f1d35 !important;
-}
 .scroll-x {
   overflow-x: auto;
   white-space: nowrap;
+}
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>

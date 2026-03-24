@@ -69,6 +69,17 @@
 
       <q-card-actions align="right" class="q-mt-lg">
         <q-btn
+          label="Pantalla Anterior"
+          color="primary"
+          text-color="white"
+          rounded
+          unelevated
+          class="registrar"
+          to="FormularioAnalisisInvolucrados"
+          :loading="loading"
+        />
+
+        <q-btn
           color="primary"
           text-color="white"
           label="Continuar"
@@ -255,7 +266,19 @@ onMounted(() => {
 
 .submit-btn {
   font-weight: 900;
-  font-size: 0.9rem;
-  padding: 12px 40px;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>

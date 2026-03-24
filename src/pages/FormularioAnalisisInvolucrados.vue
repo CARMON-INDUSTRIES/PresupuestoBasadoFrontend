@@ -75,9 +75,19 @@
 
       <q-card-actions align="right">
         <q-btn
+          label="Pantalla Anterior"
           color="primary"
           text-color="white"
-          icon="arrow_forward"
+          rounded
+          unelevated
+          class="registrar"
+          to="PoblacionAreaEnfoquePotencial"
+          :loading="loading"
+        />
+
+        <q-btn
+          color="primary"
+          text-color="white"
           label="Continuar"
           rounded
           class="submit-btn"
@@ -138,6 +148,15 @@ onMounted(() => {
 }
 
 .submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
   font-weight: 900;
   font-size: 0.8rem;
   padding-left: 40px;

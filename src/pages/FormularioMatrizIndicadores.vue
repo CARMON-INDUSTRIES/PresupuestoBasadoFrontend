@@ -68,9 +68,26 @@
         </template>
       </q-table>
 
-      <div class="q-mt-md text-right">
-        <q-btn color="primary" label="Siguiente" :loading="loading" @click="guardarMatriz" />
-      </div>
+      <q-card-actions align="right" class="q-mt-md">
+        <q-btn
+          label="Pantalla Anterior"
+          color="primary"
+          text-color="white"
+          rounded
+          unelevated
+          class="registrar"
+          to="formulario-estructura-analitica"
+          :loading="loading"
+        />
+        <q-btn
+          color="primary"
+          label="Siguiente"
+          rounded
+          class="submit-btn"
+          :loading="loading"
+          @click="guardarMatriz"
+        />
+      </q-card-actions>
 
       <q-dialog v-model="modalVisible" persistent>
         <q-card style="min-width: 520px">
@@ -124,7 +141,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { Notify } from 'quasar'
+import { Notify, QCardActions } from 'quasar'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
@@ -325,5 +342,22 @@ function guardarNarrativo() {
 .q-table .q-td {
   white-space: normal !important;
   word-break: break-word;
+}
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>

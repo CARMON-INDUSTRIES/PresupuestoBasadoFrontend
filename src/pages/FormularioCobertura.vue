@@ -129,6 +129,17 @@
 
         <q-card-actions align="right">
           <q-btn
+            label="Pantalla Anterior"
+            color="primary"
+            text-color="white"
+            rounded
+            unelevated
+            class="registrar"
+            to="formulario-determinacion-justificacion"
+            :loading="loading"
+          />
+
+          <q-btn
             color="primary"
             text-color="white"
             label="Continuar"
@@ -180,7 +191,7 @@ onMounted(async () => {
 
     if (data) {
       form.value = { ...form.value, ...data }
-      console.log('📥 Borrador cargado:', data)
+      //console.log('📥 Borrador cargado:', data)
     }
   } catch (error) {
     console.warn('⚠ No se pudo cargar el borrador:', error)
@@ -199,7 +210,7 @@ watch(
     clearTimeout(autosaveTimeout)
     autosaveTimeout = setTimeout(async () => {
       try {
-        console.log('Autosave ejecutado')
+        //console.log('Autosave ejecutado')
         await api.put('/Cobertura/autosave', form.value)
       } catch (err) {
         console.warn(' Error en autosave:', err)
@@ -263,6 +274,18 @@ async function submitForm() {
 .submit-btn {
   font-weight: 900;
   font-size: 0.8rem;
-  padding: 12px 40px;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>
