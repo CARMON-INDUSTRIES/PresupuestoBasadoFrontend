@@ -384,7 +384,7 @@ onMounted(async () => {
             actions: [
               {
                 label: 'Recargar',
-                color: 'white',
+                color: 'black',
                 handler: () => location.reload(),
               },
             ],
