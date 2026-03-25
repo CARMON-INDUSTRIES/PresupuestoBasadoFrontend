@@ -3,7 +3,7 @@
     <q-card flat bordered class="q-pa-lg" style="max-width: 1200px; margin: auto">
       <q-card-section>
         <div class="row items-center justify-between">
-          <div class="text-h6 text-primary">Usuario: {{ form.user }}</div>
+          <div class="text-h6 text-primary">Usuario: {{ form.User }}</div>
           <q-btn
             color="secondary"
             label="Cambiar contraseña"
@@ -167,16 +167,19 @@ const entidad = ref([])
 
 onMounted(async () => {
   try {
-    const datosBasicos = localStorage.getItem('usuarioBasico')
-    if (datosBasicos) {
-      const datos = JSON.parse(datosBasicos)
+    // ✅ Obtener usuario REAL desde userNameActual (string)
+    const userNameActual = localStorage.getItem('userNameActual')
 
-      Object.assign(form.value, datos)
-
-      if (datos.user && !form.value.User) {
-        form.value.User = datos.user
+    if (userNameActual) {
+      try {
+        form.value.User = JSON.parse(userNameActual)
+      } catch {
+        form.value.User = userNameActual // ← fallback si no es JSON
       }
     }
+
+    // (Opcional) limpiar basura anterior
+    localStorage.removeItem('usuarioBasico')
 
     const [resUnidades, resEntidades] = await Promise.all([
       api.get('/UnidadAdministrativa'),
@@ -202,12 +205,10 @@ async function registrarUsuario() {
 
     Notify.create({ type: 'positive', message: 'Usuario actualizado exitosamente' })
 
+    // ✅ Guardar SOLO el string del usuario (no objeto)
     localStorage.setItem(
-      'usuarioBasico',
-      JSON.stringify({
-        ...form.value,
-        User: form.value.NuevoUserName || form.value.User,
-      }),
+      'userNameActual',
+      JSON.stringify(form.value.NuevoUserName || form.value.User),
     )
   } catch (err) {
     console.error('error catastrofico', err)
@@ -228,6 +229,7 @@ async function cambiarPassword() {
       user: form.value.User,
       password: nuevaPassword.value,
     })
+
     Notify.create({ type: 'positive', message: 'Contraseña actualizada correctamente' })
     abrirModal.value = false
   } catch (err) {
