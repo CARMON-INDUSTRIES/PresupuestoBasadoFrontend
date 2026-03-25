@@ -173,11 +173,6 @@
                 <q-item-section>Cobertura</q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple @click="$router.push('/formulario-justificacion')">
-                <q-item-section avatar><q-icon name="fact_check" /></q-item-section>
-                <q-item-section>Justificación</q-item-section>
-              </q-item>
-
               <q-item
                 clickable
                 v-ripple

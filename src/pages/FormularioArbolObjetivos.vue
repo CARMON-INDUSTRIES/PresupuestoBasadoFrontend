@@ -338,7 +338,7 @@ async function guardar() {
       localStorage.setItem('ultimaRutaRegistro', '/formulario-analisis-alternativas')
     }
 
-    Notify.create({ type: 'positive', message: 'Árbol de Objetivos guardado' })
+    Notify.create({ type: 'postive', message: 'Árbol de Objetivos guardado' })
     router.push('/formulario-analisis-alternativas')
   } catch (error) {
     console.warn(' No se pudo guardar el árbol:', error)
