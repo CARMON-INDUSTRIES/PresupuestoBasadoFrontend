@@ -328,6 +328,11 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 import { Notify } from 'quasar'
+import { onBeforeUnmount } from 'vue'
+
+onBeforeUnmount(() => {
+  if (versionInterval) clearInterval(versionInterval)
+})
 
 const router = useRouter()
 const sidebarOpen = ref(false)
@@ -348,19 +353,49 @@ const showNuevaPassword = ref(false)
 const nuevaFoto = ref(null)
 const previewFoto = ref(null)
 
+const CURRENT_VERSION = '1.0.0' // 👈 cámbiala en cada deploy
+let versionInterval = null
+
 onMounted(async () => {
   try {
+    // 🔹 Obtener usuario
     const { data } = await api.get('/Cuentas/me')
     nombreUsuario.value = data.userName || data.nombre || 'Usuario'
 
     if (data.fotoUrl) {
-      // Si la URL empieza con "/uploads/", se concatena el dominio del backend
       if (data.fotoUrl.startsWith('/uploads/')) {
         fotoActual.value = `${import.meta.env.VITE_API_URL}${data.fotoUrl}`
       } else {
         fotoActual.value = data.fotoUrl
       }
     }
+
+    //  DETECTOR DE NUEVA VERSIÓN
+    versionInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`/version.json?t=${Date.now()}`)
+        const data = await res.json()
+
+        if (data.version !== CURRENT_VERSION) {
+          Notify.create({
+            type: 'warning',
+            message: 'Hay una nueva versión disponible ',
+            timeout: 0,
+            actions: [
+              {
+                label: 'Recargar',
+                color: 'white',
+                handler: () => location.reload(),
+              },
+            ],
+          })
+
+          clearInterval(versionInterval) // evita spam
+        }
+      } catch (e) {
+        console.error('Error verificando versión', e)
+      }
+    }, 30000) // cada 30 segundos
   } catch (err) {
     console.error('Error al obtener usuario:', err)
     nombreUsuario.value = 'Invitado'
