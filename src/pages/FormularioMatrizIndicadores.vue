@@ -237,13 +237,13 @@ onMounted(async () => {
       const borradorRes = await api.get('/MatrizIndicadores/ultimo')
       const borrador = borradorRes.data
 
-      if (borrador) {
+      if (borrador && Array.isArray(borrador.filas)) {
         matrizId.value = borrador.id
-        if (Array.isArray(borrador.filas) && borrador.filas.length === nuevasFilas.length) {
-          filas.value = borrador.filas
-        } else {
-          filas.value = nuevasFilas
-        }
+
+        // 🔥 Validar que corresponda al mismo objetivo
+        const coincide = borrador.filas.some((f) => f.nivel?.includes(objetivo.fin || ''))
+
+        filas.value = coincide ? borrador.filas : nuevasFilas
       } else {
         filas.value = nuevasFilas
       }
