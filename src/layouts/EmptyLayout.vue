@@ -377,22 +377,20 @@ onMounted(async () => {
         const data = await res.json()
 
         if (data.version !== CURRENT_VERSION) {
-          clearInterval(versionInterval) // evita múltiples ejecuciones
+          Notify.create({
+            type: 'warning',
+            message: 'Hay una nueva versión disponible ',
+            timeout: 0,
+            actions: [
+              {
+                label: 'Recargar',
+                color: 'black',
+                handler: () => location.reload(),
+              },
+            ],
+          })
 
-          setTimeout(() => {
-            Notify.create({
-              type: 'warning',
-              message: 'Hay una nueva versión disponible',
-              timeout: 0,
-              actions: [
-                {
-                  label: 'Recargar',
-                  color: 'black',
-                  handler: () => location.reload(),
-                },
-              ],
-            })
-          }, 10000) // ⏱️ 10 segundos
+          clearInterval(versionInterval) // evita spam
         }
       } catch (e) {
         console.error('Error verificando versión', e)
