@@ -11,7 +11,7 @@
 
       <div class="text-subtitle1 text-grey-3 q-mb-lg">
         Estamos mejorando el sistema para brindarte una mejor experiencia.<br />
-        Por favor, intenta nuevamente más tarde.
+        Por favor, intenta mañana a las 09:00 AM.
       </div>
 
       <q-spinner-dots size="40px" color="amber" class="q-mb-md" />
