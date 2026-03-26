@@ -264,24 +264,42 @@ async function cargarLineasAccion() {
 
 async function guardar() {
   try {
+    const metasTransformadas = programacionMetas.value.map((m, index) => ({
+      metaProgramadaNombre: `Meta ${index + 1}`,
+      cantidad: Number(m.cantidad) || 0,
+      periodoCumplimiento: 'Mensual',
+      mes: index + 1,
+      cantidadEsperada: Number(m.cantidad) || 0,
+      alcanzado: Number(m.alcanzado) || 0,
+    }))
+
     const fichaPayload = {
       claveIndicador: claveIndicador.value,
       tipoIndicador: tipoIndicador.value,
-      indicadores: indicadores.value,
-      programacionMetas: programacionMetas.value,
+
+      indicadores: indicadores.value.map((ind) => ({
+        ...ind,
+        lineaBaseAnio:
+          ind.lineaBaseAnio !== null && ind.lineaBaseAnio !== undefined
+            ? String(ind.lineaBaseAnio)
+            : '',
+      })),
+
+      metasProgramadas: metasTransformadas,
+
+      lineasAccion: [],
     }
 
-    fichaPayload.indicadores = fichaPayload.indicadores.map((ind) => ({
-      ...ind,
-      lineaBaseAnio:
-        ind.lineaBaseAnio !== null && ind.lineaBaseAnio !== undefined
-          ? String(ind.lineaBaseAnio)
-          : '',
-    }))
+    console.log('PAYLOAD CORRECTO:', fichaPayload)
 
     await api.post('/FichaIndicador', fichaPayload)
+
     localStorage.setItem('fichaIndicador', JSON.stringify(fichaPayload))
-    Notify.create({ type: 'positive', message: 'Ficha técnica guardada correctamente' })
+
+    Notify.create({
+      type: 'positive',
+      message: 'Ficha técnica guardada correctamente',
+    })
   } catch (err) {
     console.error('Error al guardar ficha:', err)
     Notify.create({ type: 'negative', message: 'Error al guardar ficha' })

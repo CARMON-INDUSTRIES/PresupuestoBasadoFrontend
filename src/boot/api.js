@@ -4,7 +4,7 @@ import axios from 'axios'
 const baseURL =
   process.env.NODE_ENV === 'development'
     ? 'https://localhost:7125/api' // localhost para pruebas
-    : 'https://presupuestobr2025.somee.com/api' // producción en Somee
+    : 'https://presupuesto-basado.somee.com/api' // producción en Somee
 
 // Configura instancia
 const api = axios.create({
