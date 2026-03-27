@@ -54,11 +54,7 @@
 
         <FormulaIndicador v-model="indicadorActivo" :siglas="siglas" />
 
-        <MetasIndicador
-          v-model="indicadorActivo"
-          :programacion-metas="programacionMetas"
-          @update:programacion-metas="programacionMetas = $event"
-        />
+        <MetasIndicador v-model="indicadorActivo" />
       </template>
 
       <q-card-actions align="right" v-if="indicadores.length">
@@ -77,7 +73,6 @@
     </q-card>
   </q-page>
 </template>
-
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Notify } from 'quasar'
@@ -91,14 +86,8 @@ const claveIndicador = ref('')
 const tipoIndicador = ref('')
 const indicadores = ref([])
 const indiceSeleccionado = ref(0)
-const programacionMetas = ref(
-  Array.from({ length: 12 }, (_, i) => ({
-    mes: `Mes ${i + 1}`,
-    cantidad: 0,
-    alcanzado: 0,
-    fecha: '',
-  })),
-)
+
+/* ❌ ELIMINADO: programacionMetas */
 
 const siglas = ref({ resultadoEsperado: '', numerador: '', denominador: '' })
 let siglasInterval = null
@@ -153,8 +142,7 @@ onMounted(async () => {
       claveIndicador.value = ficha.claveIndicador || ''
       tipoIndicador.value = ficha.tipoIndicador || ''
       indicadores.value = ficha.indicadores || []
-      programacionMetas.value = ficha.programacionMetas || programacionMetas.value
-      //Notify.create({ type: 'info', message: 'Ficha cargada desde respaldo local' })
+      // 🔥 YA NO cargar programacionMetas global
     }
 
     const me = await api.get('/Cuentas/me')
@@ -162,6 +150,7 @@ onMounted(async () => {
 
     const mir = await api.get('/MatrizIndicadores/ultimo')
     const filas = mir.data?.filas || []
+
     indicadores.value = filas.map((f) => ({
       id: f.id,
       nivel: f.nivel || '',
@@ -183,6 +172,15 @@ onMounted(async () => {
         denominador: f.fuentes?.denominador || '',
       },
       metas: f.metas || [],
+
+      /* 🔥 CLAVE: metas por indicador */
+      metasProgramadas: Array.from({ length: 12 }, (_, i) => ({
+        mes: `Mes ${i + 1}`,
+        cantidad: 0,
+        alcanzado: 0,
+        fecha: '',
+      })),
+
       lineaBaseValor: f.lineaBase?.valor ?? null,
       lineaBaseUnidad: f.lineaBase?.unidad ?? '',
       lineaBaseAnio: f.lineaBase?.anio ?? '',
@@ -249,6 +247,7 @@ async function cargarLineasAccion() {
 
     const res = await api.get('/AlineacionMunicipio')
     const data = res.data || []
+
     indicadores.value.forEach((ind) => {
       ind.lineasAccion = data.map((la) => ({
         id: la.id,
@@ -264,28 +263,27 @@ async function cargarLineasAccion() {
 
 async function guardar() {
   try {
-    const metasTransformadas = programacionMetas.value.map((m, index) => ({
-      metaProgramadaNombre: `Meta ${index + 1}`,
-      cantidad: Number(m.cantidad) || 0,
-      periodoCumplimiento: 'Mensual',
-      mes: index + 1,
-      cantidadEsperada: Number(m.cantidad) || 0,
-      alcanzado: Number(m.alcanzado) || 0,
-    }))
-
     const fichaPayload = {
       claveIndicador: claveIndicador.value,
       tipoIndicador: tipoIndicador.value,
 
+      /* 🔥 metas ahora van por indicador */
       indicadores: indicadores.value.map((ind) => ({
         ...ind,
         lineaBaseAnio:
           ind.lineaBaseAnio !== null && ind.lineaBaseAnio !== undefined
             ? String(ind.lineaBaseAnio)
             : '',
-      })),
 
-      metasProgramadas: metasTransformadas,
+        metasProgramadas: (ind.metasProgramadas || []).map((m, index) => ({
+          metaProgramadaNombre: `Meta ${index + 1}`,
+          cantidad: Number(m.cantidad) || 0,
+          periodoCumplimiento: 'Mensual',
+          mes: index + 1,
+          cantidadEsperada: Number(m.cantidad) || 0,
+          alcanzado: Number(m.alcanzado) || 0,
+        })),
+      })),
 
       lineasAccion: [],
     }

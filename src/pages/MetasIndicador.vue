@@ -125,7 +125,7 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits } from 'vue'
+import { ref, computed, watch, defineProps, defineEmits } from 'vue'
 import { Notify } from 'quasar'
 
 const props = defineProps({
@@ -133,18 +133,24 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  programacionMetas: {
-    type: Array,
-    default: () => [],
-  },
 })
 
-const emit = defineEmits(['update:modelValue', 'update:programacionMetas'])
+const emit = defineEmits(['update:modelValue'])
 
 const periodos = ['Primer trimestre', 'Segundo trimestre', 'Tercer trimestre', 'Cuarto trimestre']
 const nuevaMeta = ref({ cantidad: null, periodoCumplimiento: '' })
 const modoProgramacion = ref('prorratear')
-const localProgramacionMetas = ref([...props.programacionMetas])
+
+/* 🔥 CLAVE: ahora las metas viven dentro del indicador */
+const localProgramacionMetas = computed({
+  get: () => props.modelValue.metasProgramadas || [],
+  set: (val) => {
+    emit('update:modelValue', {
+      ...props.modelValue,
+      metasProgramadas: val,
+    })
+  },
+})
 
 function updateField(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
@@ -158,7 +164,9 @@ function agregarMeta() {
 
   const metasActualizadas = [...(props.modelValue.metas || []), { ...nuevaMeta.value }]
   emit('update:modelValue', { ...props.modelValue, metas: metasActualizadas })
+
   nuevaMeta.value = { cantidad: null, periodoCumplimiento: '' }
+
   Notify.create({ type: 'positive', message: 'Meta agregada' })
 }
 
@@ -218,26 +226,22 @@ function getMesesAcumulados(periodo) {
   }
 }
 
+/* 🔥 PRORRATEO CORRECTO (sin estado global) */
 watch(
   [modoProgramacion, () => nuevaMeta.value.cantidad, () => nuevaMeta.value.periodoCumplimiento],
   ([modo, cantidad, periodo]) => {
     if (modo === 'prorratear' && cantidad && periodo) {
       const mesesAcumulados = getMesesAcumulados(periodo)
       const prorrateo = (cantidad / mesesAcumulados.length).toFixed(2)
-      localProgramacionMetas.value.forEach((meta, index) => {
-        meta.cantidad = mesesAcumulados.includes(index) ? parseFloat(prorrateo) : 0
-      })
-      emit('update:programacionMetas', localProgramacionMetas.value)
+
+      const nuevas = localProgramacionMetas.value.map((meta, index) => ({
+        ...meta,
+        cantidad: mesesAcumulados.includes(index) ? parseFloat(prorrateo) : 0,
+      }))
+
+      localProgramacionMetas.value = nuevas
     }
   },
-)
-
-watch(
-  () => props.programacionMetas,
-  (newValue) => {
-    localProgramacionMetas.value = [...newValue]
-  },
-  { deep: true },
 )
 </script>
 
