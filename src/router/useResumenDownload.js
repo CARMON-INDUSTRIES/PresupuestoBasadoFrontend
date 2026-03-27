@@ -4,7 +4,7 @@ import { PDFDocument } from 'pdf-lib'
 const isLocal = window.location.hostname === 'localhost'
 const API_BASE_URL = isLocal
   ? 'https://localhost:7125/api'
-  : 'https://presupuestobr2025.somee.com/api'
+  : 'https://presupuesto-basado.somee.com/api'
 
 export function useResumenDownload() {
   function getToken() {
