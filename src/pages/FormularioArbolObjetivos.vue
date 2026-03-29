@@ -286,8 +286,33 @@ onMounted(async () => {
     const saved = localStorage.getItem(storageKey)
 
     if (saved) {
-      arbolObjetivos.value = JSON.parse(saved)
-      //console.log('✔ Árbol de objetivos cargado desde localStorage')
+      const baseComponentes = componentesProblema.map((c) => ({
+        nombre: '',
+        medios: c.acciones.map(() => ''),
+        resultados: c.resultados.map(() => ''),
+      }))
+
+      if (saved) {
+        const parsed = JSON.parse(saved)
+
+        arbolObjetivos.value = {
+          fin: parsed.fin || '',
+          objetivoCentral: parsed.objetivoCentral || '',
+          componentes: baseComponentes.map((base, i) => ({
+            nombre: parsed.componentes?.[i]?.nombre || '',
+            medios: base.medios.map((_, m) => parsed.componentes?.[i]?.medios?.[m] || ''),
+            resultados: base.resultados.map(
+              (_, r) => parsed.componentes?.[i]?.resultados?.[r] || '',
+            ),
+          })),
+        }
+      } else {
+        arbolObjetivos.value = {
+          fin: '',
+          objetivoCentral: '',
+          componentes: baseComponentes,
+        }
+      } //console.log('✔ Árbol de objetivos cargado desde localStorage')
     } else {
       arbolObjetivos.value = {
         fin: '',
