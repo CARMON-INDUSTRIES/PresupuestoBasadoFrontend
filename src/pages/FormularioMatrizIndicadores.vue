@@ -141,7 +141,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { Notify, QCardActions } from 'quasar'
+import { Notify } from 'quasar'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
@@ -187,6 +187,22 @@ function crearFila(nivel) {
   }
 }
 
+function construirEstructura(objetivo) {
+  const estructura = []
+
+  estructura.push(`Fin: ${objetivo.fin || ''}`)
+  estructura.push(`Propósito: ${objetivo.objetivoCentral || ''}`)
+
+  objetivo.componentes?.forEach((c, ci) => {
+    estructura.push(`Componente: ${c?.nombre || `Componente ${ci + 1}`}`)
+    c.medios?.forEach((m, mi) => {
+      estructura.push(`Actividad: ${m || `Actividad ${mi + 1}`}`)
+    })
+  })
+
+  return estructura
+}
+
 let autosaveTimer = null
 async function autosave() {
   clearTimeout(autosaveTimer)
@@ -222,12 +238,14 @@ onMounted(async () => {
     const objetivoRes = await api.get('/ArbolObjetivos/ultimo')
     const objetivo = objetivoRes.data || { componentes: [] }
 
+    // 🔥 Construcción base SIEMPRE desde objetivo
     const nuevasFilas = []
     nuevasFilas.push(crearFila(`Fin: ${objetivo.fin || ''}`))
     nuevasFilas.push(crearFila(`Propósito: ${objetivo.objetivoCentral || ''}`))
 
     objetivo.componentes?.forEach((c, ci) => {
       nuevasFilas.push(crearFila(`Componente: ${c?.nombre || `Componente ${ci + 1}`}`))
+
       c.medios?.forEach((m, mi) => {
         nuevasFilas.push(crearFila(`Actividad: ${m || `Actividad ${mi + 1}`}`))
       })
@@ -240,8 +258,17 @@ onMounted(async () => {
       if (borrador && Array.isArray(borrador.filas)) {
         matrizId.value = borrador.id
 
-        // 🔥 Validar que corresponda al mismo objetivo
-        const coincide = borrador.filas.some((f) => f.nivel?.includes(objetivo.fin || ''))
+        // 🔥 VALIDACIÓN FUERTE (estructura completa)
+        const estructuraNueva = construirEstructura(objetivo)
+        const estructuraBorrador = borrador.filas.map((f) => f.nivel)
+
+        const coincide =
+          estructuraNueva.length === estructuraBorrador.length &&
+          estructuraNueva.every((val, i) => val === estructuraBorrador[i])
+
+        if (!coincide) {
+          console.warn('⚠ Estructura cambió, regenerando matriz limpia')
+        }
 
         filas.value = coincide ? borrador.filas : nuevasFilas
       } else {
@@ -249,7 +276,7 @@ onMounted(async () => {
       }
     } catch (err) {
       filas.value = nuevasFilas
-      console.error('Error al iniciar componente MIR:', err)
+      console.error('Error al cargar borrador MIR:', err)
     }
   } catch (error) {
     console.error('Error al iniciar componente MIR:', error)
@@ -313,16 +340,20 @@ function obtenerLabelsParaNivel(nivel) {
 function abrirModal(row) {
   filaSeleccionada.value = row
   labelsNarrativos.value = obtenerLabelsParaNivel(row.nivel)
+
   const partes = (row.resumenNarrativo || '').split(' | ')
   camposNarrativos.value = labelsNarrativos.value.map((_, i) => partes[i] ?? '')
+
   indicadoresTemp.value = row.indicadores || ''
   mediosTemp.value = row.medios || ''
   supuestosTemp.value = row.supuestos || ''
+
   modalVisible.value = true
 }
 
 function guardarNarrativo() {
   if (!filaSeleccionada.value) return
+
   filaSeleccionada.value.resumenNarrativo = camposNarrativos.value.join(' | ')
   filaSeleccionada.value.indicadores = indicadoresTemp.value
   filaSeleccionada.value.medios = mediosTemp.value
