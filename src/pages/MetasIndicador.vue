@@ -141,7 +141,6 @@ const periodos = ['Primer trimestre', 'Segundo trimestre', 'Tercer trimestre', '
 const nuevaMeta = ref({ cantidad: null, periodoCumplimiento: '' })
 const modoProgramacion = ref('prorratear')
 
-/* 🔥 CLAVE: ahora las metas viven dentro del indicador */
 const localProgramacionMetas = computed({
   get: () => props.modelValue.metasProgramadas || [],
   set: (val) => {
@@ -226,7 +225,6 @@ function getMesesAcumulados(periodo) {
   }
 }
 
-/* 🔥 PRORRATEO CORRECTO (sin estado global) */
 watch(
   [modoProgramacion, () => nuevaMeta.value.cantidad, () => nuevaMeta.value.periodoCumplimiento],
   ([modo, cantidad, periodo]) => {

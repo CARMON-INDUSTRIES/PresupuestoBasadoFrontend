@@ -3,7 +3,7 @@
     <q-form @submit.prevent="submitForm" class="q-gutter-md">
       <q-card flat bordered class="q-pa-md">
         <q-card-section>
-          <div class="text-h6">1. Identificación del Problema Público</div>
+          <div class="text-h6">Identificación del Problema Público</div>
         </q-card-section>
 
         <q-card-section class="q-gutter-md">

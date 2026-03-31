@@ -238,7 +238,6 @@ onMounted(async () => {
     const objetivoRes = await api.get('/ArbolObjetivos/ultimo')
     const objetivo = objetivoRes.data || { componentes: [] }
 
-    // 🔥 Construcción base SIEMPRE desde objetivo
     const nuevasFilas = []
     nuevasFilas.push(crearFila(`Fin: ${objetivo.fin || ''}`))
     nuevasFilas.push(crearFila(`Propósito: ${objetivo.objetivoCentral || ''}`))
@@ -252,13 +251,21 @@ onMounted(async () => {
     })
 
     try {
-      const borradorRes = await api.get('/MatrizIndicadores/ultimo')
+      const borradorRes = await api.post('/MatrizIndicadores/borrador', {
+        Id: matrizId.value ?? 0,
+        UnidadResponsable: usuario.value.nombreMatriz || usuario.value.cargo || '',
+        UnidadPresupuestal: usuario.value.unidadesPresupuestales || '',
+        ProgramaSectorial: usuario.value.programaSectorial || '',
+        ProgramaPresupuestario: usuario.value.programaPresupuestario || '',
+        ResponsableMIR: usuario.value.nombreCompleto || '',
+        Filas: nuevasFilas,
+      })
+
       const borrador = borradorRes.data
 
       if (borrador && Array.isArray(borrador.filas)) {
         matrizId.value = borrador.id
 
-        // 🔥 VALIDACIÓN FUERTE (estructura completa)
         const estructuraNueva = construirEstructura(objetivo)
         const estructuraBorrador = borrador.filas.map((f) => f.nivel)
 
@@ -267,10 +274,11 @@ onMounted(async () => {
           estructuraNueva.every((val, i) => val === estructuraBorrador[i])
 
         if (!coincide) {
-          console.warn('⚠ Estructura cambió, regenerando matriz limpia')
+          console.warn('Estructura cambió, regenerando matriz limpia')
+          filas.value = nuevasFilas
+        } else {
+          filas.value = borrador.filas
         }
-
-        filas.value = coincide ? borrador.filas : nuevasFilas
       } else {
         filas.value = nuevasFilas
       }

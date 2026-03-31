@@ -2,7 +2,7 @@
   <q-page padding class="resumen-page" style="background-color: #691b31">
     <q-card flat bordered class="resumen-card q-pa-lg">
       <q-card-section>
-        <div class="text-h4 text-center text-primary q-mb-md">Resúmenes Generales</div>
+        <div class="text-h4 text-center text-black q-mb-md">Resúmenes Generales</div>
       </q-card-section>
 
       <q-separator spaced />

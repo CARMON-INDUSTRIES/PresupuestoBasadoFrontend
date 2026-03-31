@@ -2,7 +2,7 @@
   <q-page padding style="background-color: #691b31">
     <q-card class="q-pa-md">
       <q-card-section>
-        <div class="text-h6">Anexo 6 - Análisis de Alternativas</div>
+        <div class="text-h6">Análisis de Alternativas</div>
       </q-card-section>
 
       <q-table

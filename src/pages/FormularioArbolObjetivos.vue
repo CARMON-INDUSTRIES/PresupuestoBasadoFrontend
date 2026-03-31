@@ -119,7 +119,7 @@
           rounded
           unelevated
           class="registrar"
-          to="formulario-alineacion"
+          to="formulario-arbol-problemas"
           :loading="loading"
         />
 
@@ -142,10 +142,11 @@ import { Notify } from 'quasar'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 
-const BASE_STORAGE_KEY = 'formularioArbolObjetivos'
 const router = useRouter()
 const loading = ref(false)
 const generandoIA = ref(false)
+
+const arbolId = ref(null)
 
 const arbolProblemas = ref({
   efectoSuperior: null,
@@ -158,23 +159,6 @@ const arbolObjetivos = ref({
   objetivoCentral: '',
   componentes: [],
 })
-
-let userName = null
-let storageKey = BASE_STORAGE_KEY
-
-async function resolveUserName() {
-  let user = localStorage.getItem('userNameActual')
-  if (user) return user
-
-  try {
-    const { data } = await api.get('/Cuentas/me')
-    user = data?.userName || data?.username || null
-    if (user) localStorage.setItem('userNameActual', user)
-    return user
-  } catch {
-    return null
-  }
-}
 
 function itemToString(item) {
   if (!item) return ''
@@ -192,24 +176,19 @@ function estaVacioArbolObjetivos(arbol) {
 
 async function convertirConIA(textoBase, nivel) {
   if (!textoBase) return ''
-
-  //console.log('IA llamada:', nivel, textoBase)
-
   try {
     const { data } = await api.post('/ArbolObjetivos/convertir-positivo', {
       textoBase,
       nivel,
     })
     return data?.textoPositivo || ''
-  } catch (error) {
-    console.error('Error IA:', error)
+  } catch {
     return ''
   }
 }
 
 async function generarObjetivosAutomaticamente() {
   generandoIA.value = true
-  //console.log('Generando árbol de objetivos con IA...')
 
   try {
     if (!arbolObjetivos.value.fin && arbolProblemas.value.efectoSuperior?.descripcion) {
@@ -254,10 +233,31 @@ async function generarObjetivosAutomaticamente() {
   }
 }
 
-onMounted(async () => {
-  userName = await resolveUserName()
-  storageKey = userName ? `${BASE_STORAGE_KEY}_${userName}` : BASE_STORAGE_KEY
+let autosaveTimer = null
+function autosave() {
+  clearTimeout(autosaveTimer)
 
+  autosaveTimer = setTimeout(async () => {
+    try {
+      const payload = {
+        id: arbolId.value ?? 0,
+        fin: arbolObjetivos.value.fin,
+        objetivoCentral: arbolObjetivos.value.objetivoCentral,
+        componentes: arbolObjetivos.value.componentes,
+      }
+
+      const res = await api.post('/ArbolObjetivos/borrador', payload)
+
+      if (res?.data?.id) arbolId.value = res.data.id
+
+      console.log('💾 Árbol autosave')
+    } catch (err) {
+      console.warn('Autosave error:', err)
+    }
+  }, 700)
+}
+
+onMounted(async () => {
   try {
     const [efectoRes, problemaRes, disenoRes] = await Promise.all([
       api.get('/EfectoSuperior/ultimo'),
@@ -265,11 +265,7 @@ onMounted(async () => {
       api.get('/DisenoIntervencionPublica/ultimo'),
     ])
 
-    const compSrc = Array.isArray(disenoRes.data?.componentes)
-      ? disenoRes.data.componentes
-      : Array.isArray(disenoRes.data)
-        ? disenoRes.data
-        : []
+    const compSrc = Array.isArray(disenoRes.data?.componentes) ? disenoRes.data.componentes : []
 
     const componentesProblema = compSrc.map((c) => ({
       nombre: c?.nombre ?? '',
@@ -283,45 +279,40 @@ onMounted(async () => {
       componentes: componentesProblema,
     }
 
-    const saved = localStorage.getItem(storageKey)
+    const baseComponentes = componentesProblema.map((c) => ({
+      nombre: '',
+      medios: c.acciones.map(() => ''),
+      resultados: c.resultados.map(() => ''),
+    }))
 
-    if (saved) {
-      const baseComponentes = componentesProblema.map((c) => ({
-        nombre: '',
-        medios: c.acciones.map(() => ''),
-        resultados: c.resultados.map(() => ''),
-      }))
+    // 🔥 1. Intentar cargar borrador
+    try {
+      const borradorRes = await api.get('/ArbolObjetivos/ultimo')
+      const borrador = borradorRes.data
 
-      if (saved) {
-        const parsed = JSON.parse(saved)
+      if (borrador && borrador.componentes) {
+        arbolId.value = borrador.id
 
         arbolObjetivos.value = {
-          fin: parsed.fin || '',
-          objetivoCentral: parsed.objetivoCentral || '',
+          fin: borrador.fin || '',
+          objetivoCentral: borrador.objetivoCentral || '',
           componentes: baseComponentes.map((base, i) => ({
-            nombre: parsed.componentes?.[i]?.nombre || '',
-            medios: base.medios.map((_, m) => parsed.componentes?.[i]?.medios?.[m] || ''),
+            nombre: borrador.componentes?.[i]?.nombre || '',
+            medios: base.medios.map((_, m) => borrador.componentes?.[i]?.medios?.[m] || ''),
             resultados: base.resultados.map(
-              (_, r) => parsed.componentes?.[i]?.resultados?.[r] || '',
+              (_, r) => borrador.componentes?.[i]?.resultados?.[r] || '',
             ),
           })),
         }
       } else {
-        arbolObjetivos.value = {
-          fin: '',
-          objetivoCentral: '',
-          componentes: baseComponentes,
-        }
-      } //console.log('✔ Árbol de objetivos cargado desde localStorage')
-    } else {
+        throw new Error()
+      }
+    } catch {
+      // 🔥 2. Si no hay nada → estructura limpia
       arbolObjetivos.value = {
         fin: '',
         objetivoCentral: '',
-        componentes: componentesProblema.map((c) => ({
-          nombre: '',
-          medios: c.acciones.map(() => ''),
-          resultados: c.resultados.map(() => ''),
-        })),
+        componentes: baseComponentes,
       }
     }
 
@@ -334,10 +325,11 @@ onMounted(async () => {
   }
 })
 
+// 🔥 autosave real
 watch(
   arbolObjetivos,
-  (val) => {
-    localStorage.setItem(storageKey, JSON.stringify(val))
+  () => {
+    autosave()
   },
   { deep: true },
 )
@@ -348,25 +340,15 @@ async function guardar() {
     const payload = {
       fin: arbolObjetivos.value.fin,
       objetivoCentral: arbolObjetivos.value.objetivoCentral,
-      componentes: arbolObjetivos.value.componentes.map((c) => ({
-        nombre: c.nombre,
-        medios: [...c.medios],
-        resultados: [...c.resultados],
-      })),
+      componentes: arbolObjetivos.value.componentes,
     }
 
     await api.post('/ArbolObjetivos', payload)
 
-    if (userName) {
-      localStorage.setItem(`ultimaRutaRegistro_${userName}`, '/formulario-analisis-alternativas')
-    } else {
-      localStorage.setItem('ultimaRutaRegistro', '/formulario-analisis-alternativas')
-    }
-
-    Notify.create({ type: 'postive', message: 'Árbol de Objetivos guardado' })
+    Notify.create({ type: 'positive', message: 'Árbol de Objetivos guardado' })
     router.push('/formulario-analisis-alternativas')
   } catch (error) {
-    console.warn(' No se pudo guardar el árbol:', error)
+    console.warn('No se pudo guardar:', error)
   } finally {
     loading.value = false
   }

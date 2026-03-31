@@ -167,18 +167,16 @@ const entidad = ref([])
 
 onMounted(async () => {
   try {
-    // ✅ Obtener usuario REAL desde userNameActual (string)
     const userNameActual = localStorage.getItem('userNameActual')
 
     if (userNameActual) {
       try {
         form.value.User = JSON.parse(userNameActual)
       } catch {
-        form.value.User = userNameActual // ← fallback si no es JSON
+        form.value.User = userNameActual
       }
     }
 
-    // (Opcional) limpiar basura anterior
     localStorage.removeItem('usuarioBasico')
 
     const [resUnidades, resEntidades] = await Promise.all([
@@ -205,7 +203,6 @@ async function registrarUsuario() {
 
     Notify.create({ type: 'positive', message: 'Usuario actualizado exitosamente' })
 
-    // ✅ Guardar SOLO el string del usuario (no objeto)
     localStorage.setItem(
       'userNameActual',
       JSON.stringify(form.value.NuevoUserName || form.value.User),

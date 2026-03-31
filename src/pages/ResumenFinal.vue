@@ -360,7 +360,7 @@ onMounted(async () => {
     console.log('Padron:', padronRes.data)
     console.log('Reglas:', reglasRes.data)
   } catch (err) {
-    console.error('❌ Error al cargar resumen:', err)
+    console.error('Error al cargar resumen: ', err)
   }
 })
 </script>

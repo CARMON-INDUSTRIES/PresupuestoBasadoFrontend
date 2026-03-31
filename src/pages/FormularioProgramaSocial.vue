@@ -148,8 +148,8 @@ async function guardarProgramaSocial() {
 
 <style scoped>
 .form-title {
-  font-size: 2rem;
-  font-weight: 700;
+  font-weight: bold;
+  font-size: 1.1rem;
 }
 
 .submit-btn {

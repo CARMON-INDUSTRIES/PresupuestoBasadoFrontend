@@ -1,9 +1,7 @@
 <template>
   <q-layout view="hHh lpR fFf">
-    <!-- Navbar -->
     <q-header elevated class="navbar">
       <q-toolbar class="q-pl-md q-pr-md">
-        <!-- Botón para abrir sidebar -->
         <q-btn flat dense round icon="menu" class="q-mr-md" @click="sidebarOpen = !sidebarOpen" />
 
         <q-toolbar-title class="text-h6 text-weight-bold">
@@ -12,7 +10,6 @@
 
         <q-space />
 
-        <!-- Botón de cerrar sesión -->
         <q-btn
           flat
           dense
@@ -27,13 +24,11 @@
       </q-toolbar>
     </q-header>
 
-    <!-- Sidebar -->
     <q-drawer v-model="sidebarOpen" side="left" show-if-above bordered :width="405" class="sidebar">
       <div
         class="column full-height"
         style="background-color: #691b31; background-size: cover; background-position: center"
       >
-        <!-- Avatar + nombre -->
         <div class="column items-center q-my-xl">
           <q-avatar size="100px" class="shadow-4 avatar-border">
             <img :src="previewFoto || fotoActual" alt="Usuario" />
@@ -46,7 +41,6 @@
 
         <q-separator color="white" inset />
 
-        <!-- Menú -->
         <q-list class="q-pa-sm sidebar-content">
           <q-item
             clickable
@@ -85,7 +79,6 @@
 
           <q-separator color="white" inset class="q-my-sm" />
 
-          <!-- Sección de Configuración -->
           <q-expansion-item
             icon="settings"
             label="Configuración"
@@ -116,37 +109,18 @@
             class="text-white hover-item"
           >
             <q-list dense>
-              <q-item
-                clickable
-                v-ripple
-                @click="$router.push('/formulario-identificacion-problema')"
-              >
+              <q-item clickable v-ripple @click="$router.push('/formulario-alineacion')">
                 <q-item-section avatar><q-icon name="badge" /></q-item-section>
-                <q-item-section>Identificación</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple @click="$router.push('/formulario-diseno-intervencion')">
-                <q-item-section avatar><q-icon name="architecture" /></q-item-section>
-                <q-item-section>Diseño de la intervención</q-item-section>
+                <q-item-section>Alineación</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/formulario-clasificacion')">
-                <q-item-section avatar><q-icon name="category" /></q-item-section>
-                <q-item-section>Clasificación</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple @click="$router.push('/formulario-ficha-tecnica-1')">
-                <q-item-section avatar><q-icon name="feed" /></q-item-section>
-                <q-item-section>Ficha técnica</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple @click="$router.push('/formulario-matriz-indicadores')">
-                <q-item-section avatar><q-icon name="grid_on" /></q-item-section>
-                <q-item-section>Matriz de indicadores</q-item-section>
+                <q-item-section avatar><q-icon name="architecture" /></q-item-section>
+                <q-item-section>Clasificación Funcional</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/formulario-antecedente')">
-                <q-item-section avatar><q-icon name="history" /></q-item-section>
+                <q-item-section avatar><q-icon name="category" /></q-item-section>
                 <q-item-section>Antecedentes</q-item-section>
               </q-item>
 
@@ -155,8 +129,8 @@
                 v-ripple
                 @click="$router.push('/formulario-identificacion-problema')"
               >
-                <q-item-section avatar><q-icon name="report_problem" /></q-item-section>
-                <q-item-section>Identificación del problema</q-item-section>
+                <q-item-section avatar><q-icon name="feed" /></q-item-section>
+                <q-item-section>Identificación y Descripción del Problema</q-item-section>
               </q-item>
 
               <q-item
@@ -164,13 +138,18 @@
                 v-ripple
                 @click="$router.push('/formulario-determinacion-justificacion')"
               >
-                <q-item-section avatar><q-icon name="rule" /></q-item-section>
-                <q-item-section>Determinación y justificación</q-item-section>
+                <q-item-section avatar><q-icon name="grid_on" /></q-item-section>
+                <q-item-section>Determinación y Justificación</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/formulario-cobertura')">
-                <q-item-section avatar><q-icon name="public" /></q-item-section>
+                <q-item-section avatar><q-icon name="history" /></q-item-section>
                 <q-item-section>Cobertura</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="$router.push('/formulario-diseno-intervencion')">
+                <q-item-section avatar><q-icon name="report_problem" /></q-item-section>
+                <q-item-section>Diseño de la Intervención Pública</q-item-section>
               </q-item>
 
               <q-item
@@ -178,53 +157,63 @@
                 v-ripple
                 @click="$router.push('/formulario-reglas-operacion-detalle')"
               >
-                <q-item-section avatar><q-icon name="gavel" /></q-item-section>
-                <q-item-section>Reglas de operación (detalle)</q-item-section>
+                <q-item-section avatar><q-icon name="rule" /></q-item-section>
+                <q-item-section>Reglas Operación (detalle)</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/formulario-programa-social')">
-                <q-item-section avatar><q-icon name="groups" /></q-item-section>
-                <q-item-section>Programa social</q-item-section>
+                <q-item-section avatar><q-icon name="public" /></q-item-section>
+                <q-item-section>Programa Social</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/formulario-padron-beneficiarios')">
-                <q-item-section avatar><q-icon name="list_alt" /></q-item-section>
-                <q-item-section>Padrón de beneficiarios</q-item-section>
+                <q-item-section avatar><q-icon name="gavel" /></q-item-section>
+                <q-item-section>Padrón beneficiarios</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/formulario-reglas-operacion')">
-                <q-item-section avatar><q-icon name="menu_book" /></q-item-section>
-                <q-item-section>Reglas de operación</q-item-section>
+                <q-item-section avatar><q-icon name="groups" /></q-item-section>
+                <q-item-section>Reglas Operación</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/PoblacionAreaEnfoquePotencial')">
-                <q-item-section avatar><q-icon name="people" /></q-item-section>
-                <q-item-section>Población potencial</q-item-section>
+                <q-item-section avatar><q-icon name="list_alt" /></q-item-section>
+                <q-item-section>Definición del Problema</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/FormularioAnalisisInvolucrados')">
-                <q-item-section avatar><q-icon name="diversity_3" /></q-item-section>
-                <q-item-section>Análisis de involucrados</q-item-section>
+                <q-item-section avatar><q-icon name="menu_book" /></q-item-section>
+                <q-item-section>Análisis de Involucrados</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/formulario-arbol-problemas')">
-                <q-item-section avatar><q-icon name="device_hub" /></q-item-section>
-                <q-item-section>Árbol de problemas</q-item-section>
+                <q-item-section avatar><q-icon name="people" /></q-item-section>
+                <q-item-section>Árbol de Problemas</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/formulario-arbol-objetivos')">
-                <q-item-section avatar><q-icon name="account_tree" /></q-item-section>
-                <q-item-section>Árbol de objetivos</q-item-section>
+                <q-item-section avatar><q-icon name="diversity_3" /></q-item-section>
+                <q-item-section>Árbol de Objetivos</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/formulario-analisis-alternativas')">
-                <q-item-section avatar><q-icon name="alt_route" /></q-item-section>
-                <q-item-section>Análisis de alternativas</q-item-section>
+                <q-item-section avatar><q-icon name="device_hub" /></q-item-section>
+                <q-item-section>Análisis de Alternativas</q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="$router.push('/formulario-estructura-analitica')">
+                <q-item-section avatar><q-icon name="account_tree" /></q-item-section>
+                <q-item-section>Estructura Analítica</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="$router.push('/formulario-matriz-indicadores')">
+                <q-item-section avatar><q-icon name="alt_route" /></q-item-section>
+                <q-item-section>Matriz de Indicadores</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="$router.push('/formulario-ficha-tecnica-1')">
                 <q-item-section avatar><q-icon name="schema" /></q-item-section>
-                <q-item-section>Estructura analítica</q-item-section>
+                <q-item-section>Ficha Técnica</q-item-section>
               </q-item>
             </q-list>
           </q-expansion-item>
@@ -239,11 +228,9 @@
       </div>
     </q-drawer>
 
-    <!-- Contenido -->
     <q-page-container>
       <router-view />
     </q-page-container>
-    <!-- Dialogo Cambiar Contraseña -->
     <q-dialog v-model="dialogCambiarPassword">
       <q-card>
         <q-card-section>
@@ -252,7 +239,6 @@
         </q-card-section>
 
         <q-card-section>
-          <!-- Contraseña actual -->
           <q-input
             filled
             v-model="passwordActual"
@@ -269,7 +255,6 @@
             </template>
           </q-input>
 
-          <!-- Nueva contraseña -->
           <q-input
             filled
             v-model="nuevaPassword"
@@ -293,7 +278,6 @@
       </q-card>
     </q-dialog>
 
-    <!-- Dialogo Cambiar Foto (placeholder) -->
     <q-dialog v-model="dialogCambiarFoto">
       <q-card>
         <q-card-section>

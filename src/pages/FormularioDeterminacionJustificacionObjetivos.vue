@@ -3,7 +3,7 @@
     <q-form @submit.prevent="submitForm" class="q-gutter-md">
       <q-card flat bordered class="q-pa-md">
         <q-card-section>
-          <div class="form-title">3. Determinación y Justificación de los Objetivos</div>
+          <div class="form-title">Determinación y Justificación de los Objetivos</div>
           <q-separator color="#691b31" spaced />
         </q-card-section>
 
@@ -81,7 +81,6 @@ onMounted(async () => {
   try {
     const { data } = await api.get('/DeterminacionJustificacionObjetivos/borrador')
     form.value = data
-    //console.log('Borrador cargado:', data)
   } catch (error) {
     console.warn('No se pudo cargar el borrador:', error)
     Notify.create({
@@ -99,7 +98,6 @@ watch(
     clearTimeout(autosaveTimeout)
     autosaveTimeout = setTimeout(async () => {
       try {
-        //console.log('Autosave ejecutado')
         await api.put('/DeterminacionJustificacionObjetivos/autosave', form.value)
       } catch (err) {
         console.warn('Error en autosave:', err)

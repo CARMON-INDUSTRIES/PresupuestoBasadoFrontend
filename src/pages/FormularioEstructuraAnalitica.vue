@@ -2,9 +2,7 @@
   <q-page padding style="background-color: #691b31">
     <q-card flat bordered class="q-pa-md" style="max-width: 1100px; margin: auto">
       <q-card-section>
-        <div class="text-h5 text-center">
-          Anexo 7 - Estructura Analítica del Programa Presupuestario
-        </div>
+        <div class="text-h5 text-center">Estructura Analítica del Programa Presupuestario</div>
       </q-card-section>
 
       <q-separator />

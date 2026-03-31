@@ -87,8 +87,6 @@ const tipoIndicador = ref('')
 const indicadores = ref([])
 const indiceSeleccionado = ref(0)
 
-/* ❌ ELIMINADO: programacionMetas */
-
 const siglas = ref({ resultadoEsperado: '', numerador: '', denominador: '' })
 let siglasInterval = null
 
@@ -142,7 +140,6 @@ onMounted(async () => {
       claveIndicador.value = ficha.claveIndicador || ''
       tipoIndicador.value = ficha.tipoIndicador || ''
       indicadores.value = ficha.indicadores || []
-      // 🔥 YA NO cargar programacionMetas global
     }
 
     const me = await api.get('/Cuentas/me')
@@ -173,7 +170,6 @@ onMounted(async () => {
       },
       metas: f.metas || [],
 
-      /* 🔥 CLAVE: metas por indicador */
       metasProgramadas: Array.from({ length: 12 }, (_, i) => ({
         mes: `Mes ${i + 1}`,
         cantidad: 0,
@@ -267,7 +263,6 @@ async function guardar() {
       claveIndicador: claveIndicador.value,
       tipoIndicador: tipoIndicador.value,
 
-      /* 🔥 metas ahora van por indicador */
       indicadores: indicadores.value.map((ind) => ({
         ...ind,
         lineaBaseAnio:

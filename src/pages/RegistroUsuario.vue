@@ -1,4 +1,27 @@
 <template>
+  <q-dialog v-model="mostrarLogin" persistent>
+    <q-card style="min-width: 350px">
+      <q-card-section>
+        <div class="text-h6">Acceso restringido</div>
+      </q-card-section>
+
+      <q-card-section>
+        <q-input
+          v-model="passwordAcceso"
+          label="Ingrese contraseña"
+          type="password"
+          filled
+          autofocus
+          @keyup.enter="validarAcceso"
+        />
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn label="Entrar" color="primary" @click="validarAcceso" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
   <q-page padding style="background-color: #691b31">
     <q-form @submit.prevent="registrarUsuario" class="q-gutter-md">
       <q-card flat bordered class="q-pa-lg" style="max-width: 1200px; height: 550px; margin: auto">
@@ -107,6 +130,22 @@ const roles = [
 const unidades = ref([])
 const entidad = ref([])
 const loading = ref(false)
+
+const mostrarLogin = ref(true)
+const passwordAcceso = ref('')
+
+const PASSWORD_CORRECTA = 'Wishyouwerehere.1950'
+
+function validarAcceso() {
+  if (passwordAcceso.value === PASSWORD_CORRECTA) {
+    mostrarLogin.value = false
+  } else {
+    Notify.create({
+      type: 'negative',
+      message: 'Contraseña incorrecta',
+    })
+  }
+}
 
 onMounted(async () => {
   try {

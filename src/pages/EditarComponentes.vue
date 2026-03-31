@@ -44,7 +44,7 @@
     <q-dialog v-model="showModal" persistent>
       <q-card style="min-width: 600px; max-width: 800px">
         <q-card-section>
-          <div class="form-title">Editar Componente</div>
+          <div class="form-title">Editar Componentes</div>
         </q-card-section>
         <q-separator />
         <q-card-section>
