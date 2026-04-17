@@ -221,9 +221,11 @@ async function autosave() {
 
       const res = await api.post('/MatrizIndicadores/borrador', matrizPayload)
 
-      if (res?.data?.id) matrizId.value = res.data.id
+      if (res?.data?.id || res?.data?.Id) {
+        matrizId.value = res.data.id ?? res.data.Id
+      }
 
-      console.log('💾 Autosave (borrador) guardado en servidor', matrizId.value)
+      console.log('💾 Autosave guardado', matrizId.value)
     } catch (err) {
       console.warn('⚠ Autosave falló:', err)
     }
@@ -250,44 +252,36 @@ onMounted(async () => {
       })
     })
 
+    let borrador = null
+
     try {
-      const borradorRes = await api.post('/MatrizIndicadores/borrador', {
-        Id: matrizId.value ?? 0,
-        UnidadResponsable: usuario.value.nombreMatriz || usuario.value.cargo || '',
-        UnidadPresupuestal: usuario.value.unidadesPresupuestales || '',
-        ProgramaSectorial: usuario.value.programaSectorial || '',
-        ProgramaPresupuestario: usuario.value.programaPresupuestario || '',
-        ResponsableMIR: usuario.value.nombreCompleto || '',
-        Filas: nuevasFilas,
-      })
+      const res = await api.get('/MatrizIndicadores/ultimo')
+      borrador = res.data
+    } catch {
+      console.warn('No hay borrador previo')
+    }
 
-      const borrador = borradorRes.data
+    if (borrador && Array.isArray(borrador.filas)) {
+      matrizId.value = borrador.id ?? borrador.Id
 
-      if (borrador && Array.isArray(borrador.filas)) {
-        matrizId.value = borrador.id
+      const estructuraNueva = construirEstructura(objetivo)
+      const estructuraBorrador = borrador.filas.map((f) => f.nivel)
 
-        const estructuraNueva = construirEstructura(objetivo)
-        const estructuraBorrador = borrador.filas.map((f) => f.nivel)
+      const coincide =
+        estructuraNueva.length === estructuraBorrador.length &&
+        estructuraNueva.every((val, i) => val === estructuraBorrador[i])
 
-        const coincide =
-          estructuraNueva.length === estructuraBorrador.length &&
-          estructuraNueva.every((val, i) => val === estructuraBorrador[i])
-
-        if (!coincide) {
-          console.warn('Estructura cambió, regenerando matriz limpia')
-          filas.value = nuevasFilas
-        } else {
-          filas.value = borrador.filas
-        }
-      } else {
+      if (!coincide) {
+        console.warn('Estructura cambió, regenerando')
         filas.value = nuevasFilas
+      } else {
+        filas.value = borrador.filas
       }
-    } catch (err) {
+    } else {
       filas.value = nuevasFilas
-      console.error('Error al cargar borrador MIR:', err)
     }
   } catch (error) {
-    console.error('Error al iniciar componente MIR:', error)
+    console.error('Error al iniciar MIR:', error)
     Notify.create({ type: 'negative', message: 'Error al cargar datos iniciales de la MIR' })
   }
 })
@@ -320,7 +314,9 @@ async function guardarMatriz() {
       Notify.create({ type: 'positive', message: 'Matriz actualizada correctamente' })
     } else {
       const res = await api.post('/MatrizIndicadores', matrizPayload)
-      if (res?.data?.id) matrizId.value = res.data.id
+      if (res?.data?.id || res?.data?.Id) {
+        matrizId.value = res.data.id ?? res.data.Id
+      }
       Notify.create({ type: 'positive', message: 'Matriz creada correctamente' })
     }
 
@@ -334,14 +330,11 @@ async function guardarMatriz() {
 }
 
 function obtenerLabelsParaNivel(nivel) {
-  if (nivel.startsWith('Fin'))
-    return ['Contribuir a un objetivo superior (ej: mejorar calidad de vida)']
+  if (nivel.startsWith('Fin')) return ['Contribuir a un objetivo superior']
   if (nivel.startsWith('Propósito'))
     return ['Sujeto beneficiario', 'Verbo en presente', 'Resultado logrado']
-  if (nivel.startsWith('Componente'))
-    return ['Producto o servicio proporcionado', 'Verbo en pasado participio']
-  if (nivel.startsWith('Actividad'))
-    return ['Sustantivo derivado de verbo', 'Complemento (acciones o procesos)']
+  if (nivel.startsWith('Componente')) return ['Producto o servicio', 'Verbo en participio']
+  if (nivel.startsWith('Actividad')) return ['Acción', 'Proceso']
   return ['Texto general']
 }
 
@@ -370,7 +363,6 @@ function guardarNarrativo() {
   autosave()
 }
 </script>
-
 <style scoped>
 .q-markup-table td.bg-primary {
   background: #7f1d35 !important;
