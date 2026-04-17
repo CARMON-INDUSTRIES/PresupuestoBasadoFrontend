@@ -557,6 +557,15 @@ async function submitForm() {
       })
     }
 
+    // 🔥 NUEVO: GUARDAR EFECTO SUPERIOR
+    if (alineacionMunicipal?.objetivoLabel) {
+      console.log('EFECTO SUPERIOR:', alineacionMunicipal.objetivoLabel)
+
+      await api.post('/EfectoSuperior', {
+        descripcion: alineacionMunicipal.objetivoLabel,
+      })
+    }
+
     localStorage.removeItem('alineacionMunicipal')
     localStorage.removeItem('alineacionEstatal')
     localStorage.removeItem('LineaMunicipal')

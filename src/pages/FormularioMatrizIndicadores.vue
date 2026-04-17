@@ -349,7 +349,7 @@ function abrirModal(row) {
   filaSeleccionada.value = row
   labelsNarrativos.value = obtenerLabelsParaNivel(row.nivel)
 
-  const partes = (row.resumenNarrativo || '').split(' | ')
+  const partes = (row.resumenNarrativo || '').split(' ')
   camposNarrativos.value = labelsNarrativos.value.map((_, i) => partes[i] ?? '')
 
   indicadoresTemp.value = row.indicadores || ''
@@ -362,7 +362,7 @@ function abrirModal(row) {
 function guardarNarrativo() {
   if (!filaSeleccionada.value) return
 
-  filaSeleccionada.value.resumenNarrativo = camposNarrativos.value.join(' | ')
+  filaSeleccionada.value.resumenNarrativo = camposNarrativos.value.join(' ')
   filaSeleccionada.value.indicadores = indicadoresTemp.value
   filaSeleccionada.value.medios = mediosTemp.value
   filaSeleccionada.value.supuestos = supuestosTemp.value
