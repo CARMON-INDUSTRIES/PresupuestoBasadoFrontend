@@ -103,7 +103,7 @@ onMounted(async () => {
     const res = await api.get('/DisenoIntervencionPublica/ultimo')
     const comps = res.data.componentes || []
 
-    tabla.value = comps.flatMap((c) => {
+    const estructuraNueva = comps.flatMap((c) => {
       const filaComponente = {
         nombre: `Componente: ${c.nombre}`,
         facultad: 0,
@@ -118,6 +118,7 @@ onMounted(async () => {
       const filasActividades = (c.acciones || []).map((a) => {
         const actividadNombre =
           typeof a === 'string' ? a : (a.nombre ?? a.titulo ?? a.descripcion ?? JSON.stringify(a))
+
         return {
           nombre: `Actividad: ${actividadNombre}`,
           facultad: 0,
@@ -132,9 +133,44 @@ onMounted(async () => {
 
       return [filaComponente, ...filasActividades]
     })
+
+    let borrador = null
+    try {
+      const resBorrador = await api.get('/AnalisisAlternativas/ultimo')
+      borrador = resBorrador.data
+    } catch (error) {
+      console.warn('No hay borrador previo', error)
+    }
+
+    if (borrador && Array.isArray(borrador.alternativas)) {
+      const mapa = new Map()
+      borrador.alternativas.forEach((a) => mapa.set(a.nombre, a))
+
+      tabla.value = estructuraNueva.map((fila) => {
+        const existente = mapa.get(fila.nombre)
+
+        if (!existente) return fila
+
+        return {
+          nombre: fila.nombre,
+          facultad: existente.facultad ?? 0,
+          presupuesto: existente.presupuesto ?? 0,
+          cortoPlazo: existente.cortoPlazo ?? 0,
+          recursosTecnicos: existente.recursosTecnicos ?? 0,
+          recursosAdm: existente.recursosAdministrativos ?? 0,
+          cultural: existente.culturalSocial ?? 0,
+          impacto: existente.impacto ?? 0,
+        }
+      })
+    } else {
+      tabla.value = estructuraNueva
+    }
   } catch (error) {
-    console.error(' Error al cargar alternativas:', error)
-    Notify.create({ type: 'negative', message: 'Error al cargar alternativas' })
+    console.error('Error al cargar alternativas:', error)
+    Notify.create({
+      type: 'negative',
+      message: 'Error al cargar alternativas',
+    })
   }
 })
 

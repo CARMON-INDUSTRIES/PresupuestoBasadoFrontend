@@ -264,8 +264,17 @@ onMounted(async () => {
     if (borrador && Array.isArray(borrador.filas)) {
       matrizId.value = borrador.id ?? borrador.Id
 
-      const estructuraNueva = construirEstructura(objetivo)
-      const estructuraBorrador = borrador.filas.map((f) => f.nivel)
+      function normalizarNivel(nivel) {
+        if (!nivel) return ''
+        if (nivel.startsWith('Fin')) return 'Fin'
+        if (nivel.startsWith('Propósito')) return 'Propósito'
+        if (nivel.startsWith('Componente')) return 'Componente'
+        if (nivel.startsWith('Actividad')) return 'Actividad'
+        return nivel
+      }
+
+      const estructuraNueva = construirEstructura(objetivo).map(normalizarNivel)
+      const estructuraBorrador = borrador.filas.map((f) => normalizarNivel(f.nivel))
 
       const coincide =
         estructuraNueva.length === estructuraBorrador.length &&
