@@ -31,7 +31,7 @@
       >
         <div class="column items-center q-my-xl">
           <q-avatar size="100px" class="shadow-4 avatar-border">
-            <img :src="previewFoto || fotoActual" alt="Usuario" />
+            <img :src="previewFoto || fotoActual" alt="" />
           </q-avatar>
 
           <div class="text-h6 text-weight-bold q-mt-sm text-white">
