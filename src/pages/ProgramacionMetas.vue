@@ -31,6 +31,7 @@
               <th>Mes</th>
               <th>Programado</th>
               <th>Alcanzado</th>
+              <th>Semáforo</th>
             </tr>
           </thead>
 
@@ -42,8 +43,14 @@
                 {{ meta.cantidadEsperada ?? meta.cantidad ?? 0 }}
               </td>
 
-              <td>
+              <td style="width: 180px">
                 <q-input v-model.number="meta.alcanzado" type="number" dense filled />
+              </td>
+
+              <td style="width: 180px">
+                <q-badge :color="obtenerColorSemaforo(meta)" class="q-pa-sm full-width text-center">
+                  {{ obtenerTextoSemaforo(meta) }}
+                </q-badge>
               </td>
             </tr>
           </tbody>
@@ -85,11 +92,7 @@ const indicadorActivo = computed(() => {
 
 onMounted(async () => {
   try {
-    console.log('CONSULTANDO API...')
-
     const res = await api.get('/ProgramacionMetas/ultima')
-
-    console.log('RESPUESTA API:', res.data)
 
     const fichaData = res.data
 
@@ -103,10 +106,7 @@ onMounted(async () => {
 
     ficha.value = fichaData
 
-    // 🔥 importante
     indicadores.value = [...fichaData.indicadores]
-
-    console.log('INDICADORES:', indicadores.value)
 
     if (indicadores.value.length > 0) {
       indiceSeleccionado.value = 0
@@ -125,9 +125,12 @@ async function guardarCambios() {
   try {
     if (!indicadorActivo.value) return
 
-    const metas = indicadorActivo.value.metasProgramadas || []
+    const metas = indicadorActivo.value.metasProgramadas.map((m) => ({
+      id: m.id,
+      alcanzado: Number(m.alcanzado) || 0,
+    }))
 
-    console.log('GUARDANDO:', metas)
+    console.log('METAS ENVIADAS:', metas)
 
     await api.put('/ProgramacionMetas/actualizar-avances', metas)
 
@@ -138,10 +141,41 @@ async function guardarCambios() {
   } catch (err) {
     console.error('ERROR GUARDAR:', err)
 
+    console.log(err.response?.data)
+
     Notify.create({
       type: 'negative',
       message: 'Error al guardar',
     })
   }
+}
+
+function obtenerPorcentaje(meta) {
+  const esperado = Number(meta.cantidadEsperada ?? meta.cantidad ?? 0)
+  const alcanzado = Number(meta.alcanzado ?? 0)
+
+  if (esperado <= 0) return 0
+
+  return (alcanzado / esperado) * 100
+}
+
+function obtenerColorSemaforo(meta) {
+  const porcentaje = obtenerPorcentaje(meta)
+
+  if (porcentaje >= 100) return 'positive'
+
+  if (porcentaje >= 70) return 'warning'
+
+  return 'negative'
+}
+
+function obtenerTextoSemaforo(meta) {
+  const porcentaje = obtenerPorcentaje(meta)
+
+  if (porcentaje >= 100) return 'Cumplido'
+
+  if (porcentaje >= 70) return 'En riesgo'
+
+  return 'Rezago'
 }
 </script>
