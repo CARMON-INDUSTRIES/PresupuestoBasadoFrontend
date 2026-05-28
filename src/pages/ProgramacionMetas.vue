@@ -6,7 +6,7 @@
       </q-card-section>
 
       <q-card-section>
-        <div class="text-caption text-grey-7">Indicadores cargados: {{ indicadores.length }}</div>
+        <div class="text-caption text-grey-10">Indicadores cargados: {{ indicadores.length }}</div>
       </q-card-section>
 
       <q-card-section v-if="indicadores.length">
@@ -57,12 +57,19 @@
         </q-markup-table>
       </q-card-section>
 
-      <q-card-actions align="right">
+      <q-card-actions align="between" class="q-mt-md">
         <q-btn
           color="primary"
           label="Guardar cambios"
           @click="guardarCambios"
           :disable="!indicadorActivo"
+        />
+
+        <q-btn
+          color="deep-orange"
+          icon="picture_as_pdf"
+          label="Descargar fichas actualizadas"
+          @click="descargarPdfActualizado"
         />
       </q-card-actions>
     </q-card>
@@ -177,5 +184,36 @@ function obtenerTextoSemaforo(meta) {
   if (porcentaje >= 70) return 'En riesgo'
 
   return 'Rezago'
+}
+
+async function descargarPdfActualizado() {
+  try {
+    const response = await api.get('/FormatoFichaFinal/ultimo', {
+      responseType: 'blob',
+    })
+
+    const blob = new Blob([response.data], {
+      type: 'application/pdf',
+    })
+
+    const url = window.URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'FichasActualizadas.pdf'
+
+    document.body.appendChild(link)
+    link.click()
+
+    link.remove()
+    window.URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error('ERROR PDF:', err)
+
+    Notify.create({
+      type: 'negative',
+      message: 'Error al descargar PDF',
+    })
+  }
 }
 </script>

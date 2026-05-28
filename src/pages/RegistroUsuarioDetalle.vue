@@ -75,7 +75,7 @@
             </div>
 
             <div class="col-4">
-              <q-input v-model="form.nombreMatriz" label="Nombre Matriz" filled stack-label>
+              <q-input v-model="form.nombreMatriz" label="Programa Presupuestal" filled stack-label>
                 <template #prepend><q-icon name="description" /></template>
               </q-input>
             </div>
