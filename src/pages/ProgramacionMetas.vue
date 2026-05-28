@@ -65,6 +65,10 @@
           :disable="!indicadorActivo"
         />
 
+        <div class="text-caption text-grey-10">
+          Primero presionar guardar cambios, despues descargar las fichas actualizadas
+        </div>
+
         <q-btn
           color="deep-orange"
           icon="picture_as_pdf"
