@@ -19,14 +19,25 @@
               <div class="row items-center justify-between">
                 <div class="text-subtitle2"><q-icon name="widgets" /> {{ comp.nombre }}</div>
 
-                <q-btn
-                  dense
-                  flat
-                  round
-                  icon="delete"
-                  color="negative"
-                  @click="form.componentes.splice(cIdx, 1)"
-                />
+                <div class="row items-center q-gutter-sm">
+                  <q-btn
+                    dense
+                    flat
+                    round
+                    icon="edit"
+                    color="primary"
+                    @click="editarComponente(comp, cIdx)"
+                  />
+
+                  <q-btn
+                    dense
+                    flat
+                    round
+                    icon="delete"
+                    color="negative"
+                    @click="form.componentes.splice(cIdx, 1)"
+                  />
+                </div>
               </div>
 
               <div
@@ -102,7 +113,9 @@
     <q-dialog v-model="showModal" persistent>
       <q-card style="min-width: 600px; max-width: 800px">
         <q-card-section>
-          <div class="form-title">Nuevo Componente</div>
+          <div class="form-title">
+            {{ modoEdicion ? 'Editar Componente' : 'Nuevo Componente' }}
+          </div>
         </q-card-section>
         <q-separator />
         <q-card-section>
@@ -193,7 +206,12 @@
         <q-separator />
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" color="negative" v-close-popup />
-          <q-btn flat label="Guardar Componente" color="primary" @click="guardarComponente()" />
+          <q-btn
+            flat
+            :label="modoEdicion ? 'Actualizar Componente' : 'Guardar Componente'"
+            color="primary"
+            @click="guardarComponente()"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -210,6 +228,8 @@ const router = useRouter()
 const loading = ref(false)
 const autosaveLoading = ref(false)
 const showModal = ref(false)
+const modoEdicion = ref(false)
+const indiceEditando = ref(null)
 
 const registroId = ref(null)
 
@@ -274,26 +294,56 @@ async function guardarAuto() {
   }
 }
 
+function editarComponente(comp, index) {
+  modoEdicion.value = true
+  indiceEditando.value = index
+
+  nuevoComponente.value = {
+    nombre: comp.nombre.replace(/^\d+\.\s*/, ''),
+
+    acciones: comp.acciones.map((a) => ({
+      nombre: a.descripcion.replace(/^\d+\.\d+\s*/, ''),
+      cantidad: a.cantidad,
+    })),
+
+    resultado:
+      typeof comp.resultado === 'string'
+        ? comp.resultado.replace(/^\d+\.\d+\.\d+\s*/, '')
+        : comp.resultado.descripcion.replace(/^\d+\.\d+\.\d+\s*/, ''),
+  }
+
+  showModal.value = true
+}
+
 function guardarComponente(continuar = false) {
   if (!nuevoComponente.value.nombre?.trim()) {
-    Notify.create({ type: 'warning', message: 'El componente debe tener un nombre' })
+    Notify.create({
+      type: 'warning',
+      message: 'El componente debe tener un nombre',
+    })
     return
   }
 
-  const compIndex = proximoIndiceComp.value
+  const compIndex = modoEdicion.value ? indiceEditando.value + 1 : proximoIndiceComp.value
 
   const componenteFinal = {
     nombre: `${compIndex}. ${nuevoComponente.value.nombre.trim()}`,
+
     acciones: nuevoComponente.value.acciones.map((accion, aIdx) => ({
       descripcion: `${compIndex}.${aIdx + 1} ${accion.nombre.trim()}`,
       cantidad: accion.cantidad ?? 0,
     })),
+
     resultado: {
       descripcion: `${compIndex}.1.1 ${nuevoComponente.value.resultado.trim()}`,
     },
   }
 
-  form.value.componentes.push(componenteFinal)
+  if (modoEdicion.value) {
+    form.value.componentes[indiceEditando.value] = componenteFinal
+  } else {
+    form.value.componentes.push(componenteFinal)
+  }
 
   nuevoComponente.value = {
     nombre: '',
@@ -301,7 +351,12 @@ function guardarComponente(continuar = false) {
     resultado: '',
   }
 
-  if (!continuar) showModal.value = false
+  modoEdicion.value = false
+  indiceEditando.value = null
+
+  if (!continuar) {
+    showModal.value = false
+  }
 }
 
 async function submitForm() {
