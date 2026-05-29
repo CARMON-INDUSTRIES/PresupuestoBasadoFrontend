@@ -1,71 +1,92 @@
 <template>
-  <q-page padding style="background-color: #691b31">
-    <q-form @submit.prevent="guardarProgramaSocial" class="q-gutter-md">
-      <q-card flat bordered class="q-pa-md">
-        <q-card-section>
-          <div class="form-title">¿Es un programa social?</div>
-          <q-option-group
-            v-model="form.esProgramaSocial"
-            :options="[
-              { label: 'Sí', value: true },
-              { label: 'No', value: false },
-            ]"
-            type="radio"
-            inline
-            color="primary"
-          />
-        </q-card-section>
-      </q-card>
+  <q-page class="page-container">
+    <div class="content-wrapper">
+      <!-- HEADER -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Programa Social</h1>
+          <p class="page-subtitle">
+            Define si el programa pertenece al ámbito social y selecciona sus categorías
+            correspondientes.
+          </p>
+        </div>
+      </div>
 
-      <q-card v-if="form.esProgramaSocial" flat bordered class="q-pa-md">
-        <q-card-section>
-          <div class="text-subtitle1">Categorías</div>
-          <q-separator spaced />
+      <!-- CARD PRINCIPAL -->
+      <q-form @submit.prevent="guardarProgramaSocial">
+        <q-card class="modern-card">
+          <q-card-section>
+            <div class="section-title">¿Es un programa social?</div>
 
-          <div v-for="cat in categorias" :key="cat.nombre" class="q-mb-md">
-            <q-toggle v-model="cat.seleccionado" :label="cat.nombre" color="primary" />
+            <q-option-group
+              v-model="form.esProgramaSocial"
+              :options="[
+                { label: 'Sí', value: true },
+                { label: 'No', value: false },
+              ]"
+              type="radio"
+              inline
+              color="primary"
+              class="modern-radio"
+            />
+          </q-card-section>
 
-            <div v-if="cat.seleccionado" class="q-mt-sm">
-              <q-option-group
-                v-model="cat.tipo"
-                :options="[
-                  { label: 'Directo', value: 'Directo' },
-                  { label: 'Indirecto', value: 'Indirecto' },
-                ]"
-                type="radio"
-                color="primary"
-                inline
-              />
+          <!-- CATEGORÍAS -->
+          <q-card-section v-if="form.esProgramaSocial">
+            <div class="section-title q-mb-lg">Categorías del programa</div>
+
+            <div class="categories-grid">
+              <q-card
+                v-for="cat in categorias"
+                :key="cat.nombre"
+                flat
+                bordered
+                class="category-card"
+                :class="{ active: cat.seleccionado }"
+              >
+                <q-card-section>
+                  <div class="row items-center justify-between">
+                    <div class="category-title">
+                      {{ cat.nombre }}
+                    </div>
+
+                    <q-toggle v-model="cat.seleccionado" color="primary" />
+                  </div>
+
+                  <transition name="fade">
+                    <div v-if="cat.seleccionado" class="q-mt-md">
+                      <q-option-group
+                        v-model="cat.tipo"
+                        :options="[
+                          { label: 'Directo', value: 'Directo' },
+                          { label: 'Indirecto', value: 'Indirecto' },
+                        ]"
+                        type="radio"
+                        inline
+                        color="primary"
+                        class="modern-radio"
+                      />
+                    </div>
+                  </transition>
+                </q-card-section>
+              </q-card>
             </div>
+          </q-card-section>
 
-            <q-separator spaced />
-          </div>
-        </q-card-section>
-      </q-card>
+          <!-- ACCIONES -->
+          <q-card-actions align="right" class="q-pa-lg actions-container">
+            <q-btn
+              label="Pantalla anterior"
+              class="secondary-btn"
+              unelevated
+              to="formulario-reglas-operacion-detalle"
+            />
 
-      <q-card-actions align="right">
-        <q-btn
-          label="Pantalla Anterior"
-          color="primary"
-          text-color="white"
-          rounded
-          unelevated
-          class="registrar"
-          to="formulario-reglas-operacion-detalle"
-          :loading="loading"
-        />
-
-        <q-btn
-          label="Continuar"
-          color="primary"
-          text-color="white"
-          type="submit"
-          rounded
-          unelevated
-          class="submit-btn"
-        />
-      </q-card-actions>
-    </q-form>
+            <q-btn label="Continuar" type="submit" class="primary-btn" unelevated />
+          </q-card-actions>
+        </q-card>
+      </q-form>
+    </div>
   </q-page>
 </template>
 
@@ -147,26 +168,136 @@ async function guardarProgramaSocial() {
 </script>
 
 <style scoped>
-.form-title {
-  font-weight: bold;
-  font-size: 1.1rem;
+.page-container {
+  background: #f4f6f9;
+  min-height: 100vh;
 }
 
-.submit-btn {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.content-wrapper {
+  max-width: 1200px;
+  margin: auto;
+  padding: 24px;
 }
 
-.registrar {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #691b31;
+  margin: 0;
+}
+
+.page-subtitle {
+  color: #6b7280;
+  margin-top: 8px;
+  font-size: 1rem;
+}
+
+.modern-card {
+  border-radius: 24px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  border: none;
+  background: white;
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.category-card {
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+  background: #fff;
+}
+
+.category-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.category-card.active {
+  border-color: #c5a46d;
+  background: #fffbf5;
+}
+
+.category-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.modern-radio {
+  margin-top: 12px;
+}
+
+.primary-btn {
+  background: #c5a46d;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.primary-btn:hover {
+  opacity: 0.95;
+}
+
+.secondary-btn {
+  background: #691b31;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.actions-container {
+  gap: 12px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.7rem;
+  }
+
+  .actions-container {
+    flex-direction: column;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
+
+  .categories-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

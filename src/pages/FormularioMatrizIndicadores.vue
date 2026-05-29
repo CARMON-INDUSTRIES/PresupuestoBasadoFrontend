@@ -10,11 +10,14 @@
           <tr>
             <td class="bg-primary text-white text-weight-bold">Programa Presupuestario:</td>
             <td>{{ usuario.programaPresupuestario || '' }}</td>
+
             <td class="bg-primary text-white text-weight-bold" style="width: 30%">
               Unidad Responsable:
             </td>
+
             <td>{{ usuario.nombreMatriz || usuario.cargo || '' }}</td>
           </tr>
+
           <tr>
             <td class="bg-primary text-white text-weight-bold">Responsable:</td>
             <td>{{ usuario.nombreCompleto || '' }}</td>
@@ -22,6 +25,7 @@
             <td class="bg-primary text-white text-weight-bold" style="width: 30%">
               Unidad Presupuestal Responsable de la Elaboración de la MIR:
             </td>
+
             <td>{{ usuario.unidadesPresupuestales || '' }}</td>
           </tr>
         </tbody>
@@ -33,42 +37,71 @@
         separator="cell"
         :rows="filas"
         :columns="columns"
-        row-key="id"
+        row-key="nivel"
         :pagination="{ rowsPerPage: 0 }"
+        class="mir-table"
       >
         <template v-slot:body-cell="props">
           <q-td :props="props">
             <template v-if="props.col.name === 'nivel'">
-              <span class="text-grey-7">{{ textoBaseNivel(props.row.nivel) }}</span>
+              <div class="text-grey-8 text-weight-bold">
+                {{ textoBaseNivel(props.row.nivel) }}
+              </div>
+
+              <div class="text-caption text-grey-6 q-mt-xs">
+                {{ props.row.nivel }}
+              </div>
             </template>
 
             <template v-else-if="props.col.name === 'resumenNarrativo'">
-              <div class="row items-center no-wrap">
+              <div class="row items-center no-wrap full-width">
                 <div class="col">
-                  <span v-if="props.row.resumenNarrativo">{{ props.row.resumenNarrativo }}</span>
-                  <span v-else class="text-grey-6">Sin capturarㅤ</span>
+                  <div v-if="props.row.resumenNarrativo" class="texto-celda">
+                    {{ props.row.resumenNarrativo }}
+                  </div>
+
+                  <div v-else class="text-grey-5 italic">Sin capturar</div>
                 </div>
-                <div class="col-auto">
+
+                <div class="col-auto row q-gutter-xs">
                   <q-btn
                     size="sm"
                     flat
+                    round
                     color="primary"
-                    icon="note_add"
-                    label="Capturar"
+                    icon="edit"
                     @click="abrirModal(props.row)"
-                  />
+                  >
+                    <q-tooltip>
+                      {{ props.row.resumenNarrativo ? 'Editar captura' : 'Capturar información' }}
+                    </q-tooltip>
+                  </q-btn>
                 </div>
               </div>
             </template>
 
-            <template v-else>
-              {{ props.row[props.col.name] }}
+            <template v-else-if="props.col.name === 'indicadores'">
+              <div class="texto-celda">
+                {{ props.row.indicadores || '—' }}
+              </div>
+            </template>
+
+            <template v-else-if="props.col.name === 'medios'">
+              <div class="texto-celda">
+                {{ props.row.medios || '—' }}
+              </div>
+            </template>
+
+            <template v-else-if="props.col.name === 'supuestos'">
+              <div class="texto-celda">
+                {{ props.row.supuestos || '—' }}
+              </div>
             </template>
           </q-td>
         </template>
       </q-table>
 
-      <q-card-actions align="right" class="q-mt-md">
+      <q-card-actions align="right" class="q-mt-lg">
         <q-btn
           label="Pantalla Anterior"
           color="primary"
@@ -79,10 +112,12 @@
           to="formulario-estructura-analitica"
           :loading="loading"
         />
+
         <q-btn
           color="primary"
           label="Siguiente"
           rounded
+          unelevated
           class="submit-btn"
           :loading="loading"
           @click="guardarMatriz"
@@ -90,15 +125,16 @@
       </q-card-actions>
 
       <q-dialog v-model="modalVisible" persistent>
-        <q-card style="min-width: 520px">
-          <q-card-section class="q-pb-none">
-            <div class="text-h6">Captura — {{ filaSeleccionada?.nivel }}</div>
-            <div class="text-caption text-grey-7">
-              Complete los campos de acuerdo con la sintaxis y lineamientos.
+        <q-card class="modal-card">
+          <q-card-section class="bg-primary text-white">
+            <div class="text-h6">Captura MIR</div>
+
+            <div class="text-subtitle2 q-mt-xs">
+              {{ filaSeleccionada?.nivel }}
             </div>
           </q-card-section>
 
-          <q-card-section>
+          <q-card-section class="q-pa-lg">
             <div class="q-mb-md" v-for="(campo, idx) in camposNarrativos" :key="idx">
               <q-input
                 v-model="camposNarrativos[idx]"
@@ -129,9 +165,16 @@
             <q-input v-model="supuestosTemp" label="Supuestos" type="textarea" filled autogrow />
           </q-card-section>
 
-          <q-card-actions align="right">
+          <q-card-actions align="right" class="q-pa-md">
             <q-btn flat label="Cancelar" color="negative" v-close-popup />
-            <q-btn flat label="Guardar" color="primary" @click="guardarNarrativo" v-close-popup />
+
+            <q-btn
+              unelevated
+              label="Guardar"
+              color="primary"
+              @click="guardarNarrativo"
+              v-close-popup
+            />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -372,17 +415,33 @@ function guardarNarrativo() {
   autosave()
 }
 </script>
+
 <style scoped>
 .q-markup-table td.bg-primary {
   background: #7f1d35 !important;
 }
+
 .q-markup-table td {
   vertical-align: middle;
 }
-.q-table .q-td {
+
+.mir-table .q-td {
   white-space: normal !important;
   word-break: break-word;
+  vertical-align: top;
 }
+
+.texto-celda {
+  white-space: pre-line;
+  line-height: 1.5;
+}
+
+.modal-card {
+  min-width: 650px;
+  max-width: 850px;
+  border-radius: 14px;
+}
+
 .submit-btn {
   font-weight: 900;
   font-size: 0.8rem;

@@ -1,86 +1,178 @@
 <template>
-  <q-page padding style="background-color: #691b31">
-    <q-form @submit.prevent="submitForm" class="q-gutter-md">
-      <q-card flat bordered class="q-pa-md">
-        <q-card-section>
-          <div class="form-title">Antecedentes</div>
-          <q-separator color="#691b31" spaced />
-        </q-card-section>
+  <q-page class="page-container">
+    <div class="content-wrapper">
+      <!-- HEADER -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Antecedentes</h1>
 
-        <q-card-section class="q-gutter-md">
-          <q-input
-            filled
-            v-model="form.descripcionPrograma"
-            label="1.1 Identifique y describa el entorno en el que operará el programa, considerando la situación, problema o necesidad de llevar a cabo una intervención pública."
-            type="textarea"
-            rounded
+          <p class="page-subtitle">
+            Documenta el contexto histórico, normativo y operativo del programa presupuestario.
+          </p>
+        </div>
+
+        <!-- AUTOGUARDADO -->
+        <div class="autosave-status">
+          <q-chip
+            v-if="autosaveLoading"
+            color="orange-1"
+            text-color="orange-9"
+            icon="sync"
+            class="autosave-chip"
           >
-            <template v-slot:prepend>
-              <q-icon name="description" />
-            </template>
-          </q-input>
+            Guardando...
+          </q-chip>
 
-          <q-input
-            filled
-            v-model="form.contextoHistoricoNormativo"
-            label="1.2 Incorpore información estadística y cualitativa, que permita dimensionar y describir de manera general las acciones que se hayan realizado."
-            type="textarea"
-            rounded
+          <q-chip
+            v-else
+            color="green-1"
+            text-color="green-9"
+            icon="check_circle"
+            class="autosave-chip"
           >
-            <template v-slot:prepend>
-              <q-icon name="bar_chart" />
-            </template>
-          </q-input>
+            Autoguardado activo
+          </q-chip>
+        </div>
+      </div>
 
-          <q-input
-            filled
-            v-model="form.problematicaOrigen"
-            label="1.3 Identifique los actores que están involucrados con la atención a dicho problema o necesidad."
-            type="textarea"
-            rounded
-          >
-            <template v-slot:prepend>
-              <q-icon name="group" />
-            </template>
-          </q-input>
+      <!-- STEPPER -->
+      <q-stepper flat bordered color="primary" animated class="modern-stepper">
+        <q-step :name="1" title="Alineación" icon="account_tree" done />
 
-          <q-input
-            filled
-            v-model="form.experienciasPrevias"
-            label="1.4 Describa la evolución del programa señalando los resultados obtenidos."
-            type="textarea"
-            rounded
-          >
-            <template v-slot:prepend>
-              <q-icon name="history" />
-            </template>
-          </q-input>
-        </q-card-section>
+        <q-step :name="2" title="Clasificación" icon="dashboard" done />
 
-        <q-card-actions align="right">
-          <q-btn
-            label="Pantalla Anterior"
-            color="primary"
-            text-color="white"
-            rounded
-            unelevated
-            class="submit-btn"
-            to="formulario-clasificacion"
-            :loading="loading"
-          />
+        <q-step :name="3" title="Antecedentes" icon="history_edu" active />
 
-          <q-btn
-            color="primary"
-            label="Continuar"
-            type="submit"
-            rounded
-            unelevated
-            class="submit-btn"
-            :loading="loading"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-form>
+        <q-step :name="4" title="Problema" icon="warning" />
+
+        <q-step :name="5" title="Metas" icon="track_changes" />
+      </q-stepper>
+
+      <!-- FORM -->
+      <q-form @submit.prevent="submitForm">
+        <!-- CARD -->
+        <q-card class="modern-card">
+          <q-card-section class="q-pb-none">
+            <div class="section-title">Información general del programa</div>
+
+            <div class="section-description">
+              Describe el entorno, antecedentes y evolución del programa presupuestario.
+            </div>
+          </q-card-section>
+
+          <!-- CAMPOS -->
+          <q-card-section class="form-column">
+            <!-- 1 -->
+            <div class="question-block">
+              <div class="question-title">1.1 Entorno operativo del programa</div>
+
+              <q-input
+                outlined
+                bg-color="white"
+                v-model="form.descripcionPrograma"
+                type="textarea"
+                autogrow
+                class="modern-textarea"
+                placeholder="Describe la situación, problemática o necesidad que motiva la intervención pública..."
+              >
+                <template v-slot:prepend>
+                  <q-icon name="description" color="primary" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- 2 -->
+            <div class="question-block">
+              <div class="question-title">1.2 Información estadística y cualitativa</div>
+
+              <q-input
+                outlined
+                bg-color="white"
+                v-model="form.contextoHistoricoNormativo"
+                type="textarea"
+                autogrow
+                class="modern-textarea"
+                placeholder="Incorpora datos, estadísticas y antecedentes relevantes..."
+              >
+                <template v-slot:prepend>
+                  <q-icon name="bar_chart" color="primary" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- 3 -->
+            <div class="question-block">
+              <div class="question-title">1.3 Actores involucrados</div>
+
+              <q-input
+                outlined
+                bg-color="white"
+                v-model="form.problematicaOrigen"
+                type="textarea"
+                autogrow
+                class="modern-textarea"
+                placeholder="Describe los actores responsables o relacionados con la atención del problema..."
+              >
+                <template v-slot:prepend>
+                  <q-icon name="group" color="primary" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- 4 -->
+            <div class="question-block">
+              <div class="question-title">1.4 Evolución y resultados del programa</div>
+
+              <q-input
+                outlined
+                bg-color="white"
+                v-model="form.experienciasPrevias"
+                type="textarea"
+                autogrow
+                class="modern-textarea"
+                placeholder="Describe la evolución histórica y resultados obtenidos..."
+              >
+                <template v-slot:prepend>
+                  <q-icon name="history" color="primary" />
+                </template>
+              </q-input>
+            </div>
+          </q-card-section>
+
+          <!-- INFO -->
+          <q-card-section>
+            <q-banner rounded class="info-banner">
+              <template v-slot:avatar>
+                <q-icon name="info" />
+              </template>
+
+              La información se guarda automáticamente mientras escribes.
+            </q-banner>
+          </q-card-section>
+
+          <!-- ACTIONS -->
+          <q-card-actions align="right" class="q-pa-lg actions-container">
+            <q-btn
+              label="Pantalla anterior"
+              class="secondary-btn"
+              unelevated
+              to="/formulario-clasificacion"
+              :loading="loading"
+              icon="arrow_back"
+            />
+
+            <q-btn
+              label="Continuar"
+              class="primary-btn"
+              type="submit"
+              unelevated
+              :loading="loading"
+              icon-right="arrow_forward"
+            />
+          </q-card-actions>
+        </q-card>
+      </q-form>
+    </div>
   </q-page>
 </template>
 
@@ -177,27 +269,144 @@ onMounted(cargarBorrador)
 </script>
 
 <style scoped>
-.q-card {
-  max-width: 800px;
+.page-container {
+  background: #f4f6f9;
+  min-height: 100vh;
+}
+
+.content-wrapper {
+  max-width: 1200px;
   margin: auto;
+  padding: 24px;
 }
 
-.form-title {
-  font-size: 2rem;
-  font-weight: 700;
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  font-weight: 800;
   color: #691b31;
+  margin: 0;
 }
 
-.q-field__control {
+.page-subtitle {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 1rem;
+  max-width: 700px;
+}
+
+.autosave-status {
+  display: flex;
+  align-items: center;
+}
+
+.autosave-chip {
+  font-weight: 600;
   border-radius: 12px;
 }
 
-.submit-btn {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.modern-stepper {
+  border-radius: 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+.modern-card {
+  border-radius: 24px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  border: none;
+  background: white;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.section-description {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.question-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.question-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.modern-textarea {
+  transition: all 0.2s ease;
+}
+
+.modern-textarea:hover {
+  transform: translateY(-1px);
+}
+
+.primary-btn {
+  background: #c5a46d;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.secondary-btn {
+  background: #691b31;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.actions-container {
+  gap: 12px;
+}
+
+.info-banner {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 14px;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+  }
+
+  .page-title {
+    font-size: 1.7rem;
+  }
+
+  .actions-container {
+    flex-direction: column;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
 }
 </style>

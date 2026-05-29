@@ -1,138 +1,182 @@
 <template>
-  <q-page padding style="background-color: #691b31">
-    <q-card flat bordered class="q-pa-md" style="max-width: 1100px; margin: auto">
-      <q-card-section>
-        <div class="text-h5 text-center">Árbol de Objetivos</div>
-      </q-card-section>
+  <q-page class="page-container">
+    <div class="content-wrapper">
+      <div class="page-header">
+        <h1 class="page-title">Árbol de Objetivos</h1>
+        <p class="page-subtitle">
+          Transformación del árbol de problemas en objetivos, medios y fines en positivo.
+        </p>
+      </div>
 
-      <q-card-section class="q-gutter-md">
-        <div class="row justify-center q-mt-lg">
-          <div class="col-12 col-md-8">
-            <q-card flat bordered class="q-pa-md text-center">
-              <div class="text-subtitle2">Fin (Efecto Superior en positivo)</div>
-              <q-input v-model="arbolObjetivos.fin" filled type="textarea" autogrow />
-              <div class="text-caption text-grey-7 q-mt-xs">
-                Basado en: {{ arbolProblemas.efectoSuperior?.descripcion || '—' }}
+      <q-card flat class="modern-card q-pa-xl">
+        <!-- FIN -->
+        <div class="row justify-center q-mb-xl">
+          <div class="col-12 col-lg-8">
+            <div class="tree-card tree-fin">
+              <div class="tree-label">Fin</div>
+
+              <q-input
+                v-model="arbolObjetivos.fin"
+                filled
+                autogrow
+                type="textarea"
+                class="modern-input"
+                placeholder="Describe el fin esperado..."
+              />
+
+              <div class="tree-reference">
+                Basado en:
+                {{ arbolProblemas.efectoSuperior?.descripcion || '—' }}
               </div>
-              <div class="flecha-down"></div>
-            </q-card>
+
+              <div class="connector"></div>
+            </div>
           </div>
         </div>
 
-        <div class="row justify-around q-col-gutter-lg q-mt-md">
+        <!-- EFECTOS -->
+        <div class="row q-col-gutter-xl justify-center q-mb-xl">
           <div
             v-for="(comp, cIndex) in arbolObjetivos.componentes"
             :key="'res-' + cIndex"
-            class="col-12 col-md-3"
+            class="col-12 col-md-6 col-lg-3"
           >
-            <q-card flat bordered class="q-pa-sm text-center relative-position">
-              <div class="text-subtitle2">Efectos</div>
+            <div class="tree-card tree-effect">
+              <div class="tree-label">Efectos</div>
+
               <div
                 v-for="(res, rIndex) in comp.resultados"
-                :key="'resultados-' + cIndex + '-' + rIndex"
-                class="q-mb-sm"
+                :key="'resultado-' + cIndex + '-' + rIndex"
+                class="q-mb-md"
               >
                 <q-input
                   v-model="arbolObjetivos.componentes[cIndex].resultados[rIndex]"
                   filled
-                  :label="`Efecto ${rIndex + 1}`"
                   autogrow
+                  :label="`Efecto ${rIndex + 1}`"
+                  class="modern-input"
                 />
-                <div class="text-caption text-grey-7">
-                  Basado en: {{ arbolProblemas.componentes[cIndex]?.resultados?.[rIndex] || '—' }}
+
+                <div class="tree-reference">
+                  Basado en:
+                  {{ arbolProblemas.componentes[cIndex]?.resultados?.[rIndex] || '—' }}
                 </div>
               </div>
-              <div class="flecha-down"></div>
-            </q-card>
+
+              <div class="connector"></div>
+            </div>
           </div>
         </div>
 
-        <div class="row justify-center q-mt-lg">
-          <div class="col-12 col-md-8">
-            <q-card flat bordered class="q-pa-md text-center relative-position">
-              <div class="text-subtitle2">Objetivo Central</div>
-              <q-input v-model="arbolObjetivos.objetivoCentral" filled type="textarea" autogrow />
-              <div class="text-caption text-grey-7 q-mt-xs">
-                Basado en: {{ arbolProblemas.problemaCentral?.problemaCentral || '—' }}
+        <!-- OBJETIVO CENTRAL -->
+        <div class="row justify-center q-mb-xl">
+          <div class="col-12 col-lg-8">
+            <div class="tree-card tree-objective">
+              <div class="tree-label">Objetivo Central</div>
+
+              <q-input
+                v-model="arbolObjetivos.objetivoCentral"
+                filled
+                autogrow
+                type="textarea"
+                class="modern-input"
+                placeholder="Describe el objetivo central..."
+              />
+
+              <div class="tree-reference">
+                Basado en:
+                {{ arbolProblemas.problemaCentral?.problemaCentral || '—' }}
               </div>
-              <div class="flecha-down"></div>
-            </q-card>
+
+              <div class="connector"></div>
+            </div>
           </div>
         </div>
 
-        <div class="row justify-around q-col-gutter-lg q-mt-lg">
+        <!-- COMPONENTES -->
+        <div class="row q-col-gutter-xl justify-center q-mb-xl">
           <div
             v-for="(comp, cIndex) in arbolObjetivos.componentes"
             :key="'comp-' + cIndex"
-            class="col-12 col-md-3"
+            class="col-12 col-md-6 col-lg-3"
           >
-            <q-card flat bordered class="q-pa-sm text-center relative-position">
-              <div class="text-subtitle2">Componente {{ cIndex + 1 }}</div>
+            <div class="tree-card tree-component">
+              <div class="tree-label">Componente {{ cIndex + 1 }}</div>
+
               <q-input
                 v-model="arbolObjetivos.componentes[cIndex].nombre"
                 filled
-                label="Nombre en positivo"
                 autogrow
+                label="Nombre en positivo"
+                class="modern-input"
               />
-              <div class="text-caption text-grey-7 q-mt-xs">
-                Basado en: {{ arbolProblemas.componentes[cIndex]?.nombre || '—' }}
+
+              <div class="tree-reference">
+                Basado en:
+                {{ arbolProblemas.componentes[cIndex]?.nombre || '—' }}
               </div>
-              <div class="flecha-down"></div>
-            </q-card>
+
+              <div class="connector"></div>
+            </div>
           </div>
         </div>
 
-        <div class="row justify-around q-col-gutter-lg q-mt-md">
+        <!-- MEDIOS -->
+        <div class="row q-col-gutter-xl justify-center">
           <div
             v-for="(comp, cIndex) in arbolObjetivos.componentes"
-            :key="'medios-' + cIndex"
-            class="col-12 col-md-3"
+            :key="'medio-' + cIndex"
+            class="col-12 col-md-6 col-lg-3"
           >
-            <q-card flat bordered class="q-pa-sm text-center relative-position">
-              <div class="text-subtitle2">Medios</div>
+            <div class="tree-card tree-medium">
+              <div class="tree-label">Medios</div>
+
               <div
                 v-for="(medio, mIndex) in comp.medios"
-                :key="'medio-' + cIndex + '-' + mIndex"
-                class="q-mb-sm"
+                :key="'medio-item-' + cIndex + '-' + mIndex"
+                class="q-mb-md"
               >
                 <q-input
                   v-model="arbolObjetivos.componentes[cIndex].medios[mIndex]"
                   filled
-                  :label="`Medio ${mIndex + 1}`"
                   autogrow
+                  :label="`Medio ${mIndex + 1}`"
+                  class="modern-input"
                 />
-                <div class="text-caption text-grey-7">
+
+                <div class="tree-reference">
                   Basado en:
                   {{ arbolProblemas.componentes[cIndex]?.acciones?.[mIndex]?.descripcion || '—' }}
                 </div>
               </div>
-            </q-card>
+            </div>
           </div>
         </div>
-      </q-card-section>
 
-      <q-card-actions align="right" class="q-mt-lg">
-        <q-btn
-          label="Pantalla Anterior"
-          color="primary"
-          text-color="white"
-          rounded
-          unelevated
-          class="registrar"
-          to="formulario-arbol-problemas"
-          :loading="loading"
-        />
+        <q-separator class="q-my-xl" />
 
-        <q-btn
-          color="primary"
-          label="Guardar"
-          class="submit-btn"
-          rounded
-          :loading="loading"
-          @click="guardar"
-        />
-      </q-card-actions>
-    </q-card>
+        <!-- BOTONES -->
+        <div class="row justify-end actions-container">
+          <q-btn
+            label="Pantalla Anterior"
+            rounded
+            unelevated
+            class="secondary-btn"
+            to="formulario-arbol-problemas"
+            :loading="loading"
+          />
+
+          <q-btn
+            rounded
+            unelevated
+            class="primary-btn"
+            :loading="loading || generandoIA"
+            label="Guardar"
+            @click="guardar"
+          />
+        </div>
+      </q-card>
+    </div>
   </q-page>
 </template>
 
@@ -356,21 +400,162 @@ async function guardar() {
 </script>
 
 <style scoped>
-.submit-btn {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.page-container {
+  background: #f4f6f9;
+  min-height: 100vh;
 }
 
-.registrar {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.content-wrapper {
+  max-width: 1400px;
+  margin: auto;
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.page-title {
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: #691b31;
+  margin: 0;
+}
+
+.page-subtitle {
+  color: #6b7280;
+  margin-top: 8px;
+  font-size: 1rem;
+}
+
+.modern-card {
+  border-radius: 28px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  background: white;
+  border: none;
+}
+
+.tree-card {
+  position: relative;
+  border-radius: 24px;
+  padding: 24px;
+  height: 100%;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.tree-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+}
+
+.tree-fin {
+  background: linear-gradient(135deg, #691b31, #8a1538);
+  color: white;
+}
+
+.tree-effect {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+}
+
+.tree-objective {
+  background: linear-gradient(135deg, #7c1d36, #691b31);
+  color: white;
+}
+
+.tree-component {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+}
+
+.tree-medium {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.tree-label {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 18px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.tree-reference {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.connector {
+  width: 3px;
+  height: 28px;
+  background: rgba(156, 163, 175, 0.7);
+  position: absolute;
+  left: 50%;
+  bottom: -28px;
+  transform: translateX(-50%);
+}
+
+.modern-input {
+  transition: all 0.2s ease;
+}
+
+.modern-input:hover {
+  transform: translateY(-1px);
+}
+
+.actions-container {
+  gap: 14px;
+}
+
+.primary-btn {
+  background: #c5a46d;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.secondary-btn {
+  background: #691b31;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.primary-btn:hover,
+.secondary-btn:hover {
+  opacity: 0.95;
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 16px;
+  }
+
+  .page-title {
+    font-size: 1.8rem;
+  }
+
+  .actions-container {
+    flex-direction: column;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
+
+  .tree-card {
+    padding: 18px;
+  }
 }
 </style>

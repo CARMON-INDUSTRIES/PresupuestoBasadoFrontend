@@ -1,120 +1,172 @@
 <template>
-  <q-page padding style="background-color: #691b31">
-    <q-card flat bordered class="q-pa-lg" style="max-width: 900px; margin: auto">
-      <q-card-section>
-        <div class="form-title text-center">Definición del Problema</div>
-      </q-card-section>
+  <q-page class="page-container">
+    <div class="content-wrapper">
+      <!-- Header -->
+      <div class="page-header">
+        <h1 class="page-title">Definición del Problema</h1>
+        <p class="page-subtitle">
+          Consulta y validación de la información estratégica del programa.
+        </p>
+      </div>
 
-      <q-card-section>
-        <div class="row q-col-gutter-md q-mb-md">
+      <q-card flat class="modern-card">
+        <q-card-section>
+          <div class="section-title">Resumen del Problema</div>
+
+          <div class="form-grid q-mt-md">
+            <q-input
+              class="modern-input full-width"
+              :model-value="resumen.identificacion?.problemaCentral || ''"
+              label="Problema Central o Propósito (2.1)"
+              filled
+              readonly
+              rounded
+            >
+              <template v-slot:prepend>
+                <q-icon name="report_problem" color="primary" />
+              </template>
+            </q-input>
+
+            <q-input
+              class="modern-input"
+              :model-value="
+                resumen.cobertura?.identificacionCaracterizacionPoblacionPotencial || ''
+              "
+              label="Población / Área de Enfoque Potencial (4.1)"
+              filled
+              readonly
+              rounded
+            >
+              <template v-slot:prepend>
+                <q-icon name="groups" color="primary" />
+              </template>
+            </q-input>
+
+            <q-input
+              class="modern-input"
+              :model-value="resumen.cobertura?.identificacionCaracterizacionPoblacionObjetivo || ''"
+              label="Población / Área de Enfoque Objetivo (4.2)"
+              filled
+              readonly
+              rounded
+            >
+              <template v-slot:prepend>
+                <q-icon name="group" color="primary" />
+              </template>
+            </q-input>
+          </div>
+        </q-card-section>
+
+        <q-separator spaced />
+
+        <q-card-section>
+          <div class="section-title">Magnitud del Problema</div>
+
+          <div class="form-grid q-mt-md">
+            <q-input
+              class="modern-input full-width"
+              :model-value="resumen.cobertura?.unidadMedida || ''"
+              label="Unidad de Medida"
+              filled
+              readonly
+              rounded
+            >
+              <template v-slot:prepend>
+                <q-icon name="straighten" color="primary" />
+              </template>
+            </q-input>
+
+            <q-input
+              class="modern-input"
+              :model-value="String(resumen.cobertura?.cuantificacionPoblacionPotencial ?? '')"
+              label="Población Potencial"
+              filled
+              readonly
+              rounded
+            >
+              <template v-slot:prepend>
+                <q-icon name="people_alt" color="primary" />
+              </template>
+            </q-input>
+
+            <q-input
+              class="modern-input"
+              :model-value="String(resumen.cobertura?.cuantificacionPoblacionObjetivo ?? '')"
+              label="Población Objetivo"
+              filled
+              readonly
+              rounded
+            >
+              <template v-slot:prepend>
+                <q-icon name="person" color="primary" />
+              </template>
+            </q-input>
+
+            <q-input
+              class="modern-input"
+              :model-value="
+                String(resumen.cobertura?.cuantificacionPoblacionAtendidaAnterior ?? '')
+              "
+              label="Población Atendida Ejercicio Fiscal Anterior"
+              filled
+              readonly
+              rounded
+            >
+              <template v-slot:prepend>
+                <q-icon name="history" color="primary" />
+              </template>
+            </q-input>
+          </div>
+        </q-card-section>
+
+        <q-separator spaced />
+
+        <q-card-section>
+          <div class="section-title">Efecto Superior o Fin</div>
+
           <q-input
-            class="col-12"
-            :model-value="resumen.identificacion?.problemaCentral || ''"
-            label="Problema Central o Propósito (2.1)"
+            v-model="efectoSuperior"
+            type="textarea"
+            label="Describa el efecto superior o fin"
             filled
             readonly
             rounded
-          />
-        </div>
+            autogrow
+            class="modern-input"
+          >
+            <template v-slot:prepend>
+              <q-icon name="emoji_objects" color="primary" />
+            </template>
+          </q-input>
+        </q-card-section>
 
-        <div class="row q-col-gutter-md q-mb-md">
-          <q-input
-            class="col-6"
-            :model-value="resumen.cobertura?.identificacionCaracterizacionPoblacionPotencial || ''"
-            label="Población / Área de Enfoque Potencial (4.1)"
-            filled
-            readonly
+        <q-card-actions align="right" class="q-pa-lg actions-container">
+          <q-btn
+            label="Pantalla Anterior"
+            color="primary"
+            text-color="white"
             rounded
+            unelevated
+            class="secondary-btn"
+            to="/formulario-reglas-operacion"
+            :loading="loading"
+            icon="arrow_back"
           />
-          <q-input
-            class="col-6"
-            :model-value="resumen.cobertura?.identificacionCaracterizacionPoblacionObjetivo || ''"
-            label="Población / Área de Enfoque Objetivo (4.2)"
-            filled
-            readonly
+
+          <q-btn
+            color="primary"
+            label="Guardar"
+            text-color="white"
+            :loading="loading"
             rounded
+            unelevated
+            class="primary-btn"
+            icon="save"
+            @click="guardarEfectoSuperior"
           />
-        </div>
-
-        <div class="text-subtitle1 q-mb-sm">Magnitud del Problema</div>
-        <div class="row q-col-gutter-md q-mt-md">
-          <q-input
-            class="col-12"
-            :model-value="resumen.cobertura?.unidadMedida || ''"
-            label="Unidad de Medida"
-            filled
-            readonly
-            rounded
-          />
-        </div>
-        <br />
-
-        <div class="row q-col-gutter-md">
-          <q-input
-            class="col-4"
-            :model-value="String(resumen.cobertura?.cuantificacionPoblacionPotencial ?? '')"
-            label="Población Potencial"
-            filled
-            readonly
-            rounded
-          />
-          <q-input
-            class="col-4"
-            :model-value="String(resumen.cobertura?.cuantificacionPoblacionObjetivo ?? '')"
-            label="Población Objetivo"
-            filled
-            readonly
-            rounded
-          />
-          <q-input
-            class="col-4"
-            :model-value="String(resumen.cobertura?.cuantificacionPoblacionAtendidaAnterior ?? '')"
-            label="Población Atendida Ejercicio Fiscal Anterior"
-            filled
-            readonly
-            rounded
-          />
-        </div>
-      </q-card-section>
-
-      <q-separator />
-
-      <q-card-section>
-        <div class="text-subtitle1 q-mb-md">Efecto Superior o Fin</div>
-        <q-input
-          v-model="efectoSuperior"
-          type="textarea"
-          label="Describa el efecto superior o fin"
-          filled
-          readonly
-          rounded
-        />
-      </q-card-section>
-
-      <q-card-actions align="right">
-        <q-btn
-          label="Pantalla Anterior"
-          color="primary"
-          text-color="white"
-          rounded
-          unelevated
-          class="registrar"
-          to="formulario-reglas-operacion"
-          :loading="loading"
-        />
-
-        <q-btn
-          color="primary"
-          label="Guardar"
-          text-color="white"
-          :loading="loading"
-          rounded
-          unelevated
-          class="submit-btn"
-          @click="guardarEfectoSuperior"
-        />
-      </q-card-actions>
-    </q-card>
+        </q-card-actions>
+      </q-card>
+    </div>
   </q-page>
 </template>
 
@@ -169,26 +221,119 @@ async function guardarEfectoSuperior() {
 </script>
 
 <style scoped>
-.form-title {
-  font-size: 2rem;
+.page-container {
+  background: #f4f6f9;
+  min-height: 100vh;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: auto;
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #691b31;
+  margin: 0;
+}
+
+.page-subtitle {
+  color: #6b7280;
+  margin-top: 8px;
+  font-size: 1rem;
+}
+
+.modern-card {
+  border-radius: 24px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  border: none;
+  background: white;
+}
+
+.section-title {
+  font-size: 1.2rem;
   font-weight: 700;
+  color: #374151;
+  margin-bottom: 12px;
 }
 
-.submit-btn {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
 }
 
-.registrar {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.modern-input {
+  transition: all 0.2s ease;
+}
+
+.modern-input:hover {
+  transform: translateY(-1px);
+}
+
+.primary-btn {
+  background: #c5a46d;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.primary-btn:hover {
+  opacity: 0.95;
+}
+
+.secondary-btn {
+  background: #691b31;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.actions-container {
+  gap: 12px;
+}
+
+.warning-banner {
+  background: #fffbeb;
+  color: #b54708;
+  border-radius: 14px;
+}
+
+.q-field__control {
+  border-radius: 14px;
+  background: #fff;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.7rem;
+  }
+
+  .actions-container {
+    flex-direction: column;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

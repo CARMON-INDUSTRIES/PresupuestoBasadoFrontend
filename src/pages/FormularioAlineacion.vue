@@ -1,185 +1,233 @@
 <template>
-  <q-page padding style="background-color: #691b31">
-    <q-form @submit.prevent="submitForm" class="q-gutter-md">
-      <q-card flat bordered class="q-pa-md">
-        <q-card-section>
-          <div class="form-title">Alineación</div>
-          <q-separator color="#691b31" spaced />
-        </q-card-section>
+  <q-page class="page-container">
+    <div class="content-wrapper">
+      <!-- HEADER -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Alineación</h1>
+          <p class="page-subtitle">
+            Registra la alineación municipal y estatal del programa presupuestario.
+          </p>
+        </div>
+      </div>
 
-        <q-card-section class="q-gutter-md">
-          <q-select
-            filled
-            v-model="form.tipo"
-            :options="['Municipio', 'Estado']"
-            label="Tipo de alineación"
-            rounded
-            @update:model-value="onTipoChange"
-          >
-            <template v-slot:prepend>
-              <q-icon name="location_city" />
-            </template>
-          </q-select>
+      <!-- PROGRESO -->
+      <q-stepper flat bordered color="primary" animated class="modern-stepper">
+        <q-step :name="1" title="Alineación" icon="account_tree" :done="ambasCompletas" active />
 
-          <q-select
-            filled
-            v-model="form.acuerdo"
-            :options="acuerdos"
-            label="Acuerdo"
-            rounded
-            emit-value
-            map-options
-            @update:model-value="onAcuerdoChange"
-            :loading="loadingAcuerdos"
-            :disable="!form.tipo"
-          >
-            <template v-slot:prepend>
-              <q-icon name="article" />
-            </template>
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-grey">
-                  {{ form.tipo ? 'No hay acuerdos disponibles' : 'Selecciona un tipo primero' }}
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+        <q-step :name="2" title="Clasificación" icon="dashboard" />
 
-          <q-select
-            filled
-            v-model="form.objetivo"
-            :options="objetivos"
-            label="Objetivo"
-            rounded
-            emit-value
-            map-options
-            @update:model-value="onObjetivoChange"
-            :loading="loadingObjetivos"
-            :disable="!form.acuerdo"
-          >
-            <template v-slot:prepend>
-              <q-icon name="flag" />
-            </template>
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-grey">
-                  {{
-                    form.acuerdo ? 'No hay objetivos disponibles' : 'Selecciona un acuerdo primero'
-                  }}
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+        <q-step :name="3" title="Metas" icon="track_changes" />
+      </q-stepper>
 
-          <q-select
-            filled
-            v-model="form.estrategias"
-            :options="estrategias"
-            label="Estrategias"
-            rounded
-            multiple
-            emit-value
-            map-options
-            @update:model-value="onEstrategiasChange"
-            :loading="loadingEstrategias"
-            :disable="!form.objetivo"
-          >
-            <template v-slot:prepend>
-              <q-icon name="lightbulb" />
-            </template>
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-grey">
-                  {{
-                    form.objetivo
-                      ? 'No hay estrategias disponibles'
-                      : 'Selecciona un objetivo primero'
-                  }}
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+      <!-- FORM -->
+      <q-form @submit.prevent="submitForm">
+        <!-- CARD PRINCIPAL -->
+        <q-card class="modern-card">
+          <q-card-section class="q-pb-none">
+            <div class="section-title">Información de alineación</div>
+          </q-card-section>
 
-          <q-select
-            filled
-            v-model="form.lineasAccion"
-            :options="lineasAccion"
-            label="Líneas de acción"
-            rounded
-            multiple
-            emit-value
-            map-options
-            :loading="loadingLineas"
-            :disable="!form.estrategias.length"
-          >
-            <template v-slot:prepend>
-              <q-icon name="track_changes" />
-            </template>
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-grey">
-                  {{
-                    form.estrategias.length
-                      ? 'No hay líneas de acción disponibles'
-                      : 'Selecciona estrategias primero'
-                  }}
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+          <q-card-section class="form-grid">
+            <!-- TIPO -->
+            <q-select
+              outlined
+              bg-color="white"
+              v-model="form.tipo"
+              :options="['Municipio', 'Estado']"
+              label="Tipo de alineación"
+              class="modern-input"
+              @update:model-value="onTipoChange"
+            >
+              <template v-slot:prepend>
+                <q-icon name="location_city" color="primary" />
+              </template>
+            </q-select>
 
-          <q-select
-            v-if="form.tipo === 'Municipio'"
-            filled
-            v-model="form.ramo"
-            :options="ramos"
-            label="Tipo de ramo"
-            rounded
-          >
-            <template v-slot:prepend>
-              <q-icon name="account_balance" />
-            </template>
-          </q-select>
-        </q-card-section>
+            <!-- ACUERDO -->
+            <q-select
+              outlined
+              bg-color="white"
+              v-model="form.acuerdo"
+              :options="acuerdos"
+              label="Acuerdo"
+              emit-value
+              map-options
+              class="modern-input"
+              @update:model-value="onAcuerdoChange"
+              :loading="loadingAcuerdos"
+              :disable="!form.tipo"
+            >
+              <template v-slot:prepend>
+                <q-icon name="article" color="primary" />
+              </template>
 
-        <q-card-actions align="right" class="q-gutter-sm">
-          <q-btn
-            label="Registrar alineación"
-            color="secondary"
-            text-color="white"
-            rounded
-            unelevated
-            @click="registrarAlineacion"
-            :disable="loading || !puedeRegistrar"
-            class="registrar"
-          />
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    {{ form.tipo ? 'No hay acuerdos disponibles' : 'Selecciona un tipo primero' }}
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
 
-          <q-btn
-            label="Continuar"
-            color="primary"
-            text-color="white"
-            type="submit"
-            rounded
-            unelevated
-            class="submit-btn"
-            :loading="loading"
-            :disable="!ambasCompletas"
-          />
-        </q-card-actions>
+            <!-- OBJETIVO -->
+            <q-select
+              outlined
+              bg-color="white"
+              v-model="form.objetivo"
+              :options="objetivos"
+              label="Objetivo"
+              emit-value
+              map-options
+              class="modern-input"
+              @update:model-value="onObjetivoChange"
+              :loading="loadingObjetivos"
+              :disable="!form.acuerdo"
+            >
+              <template v-slot:prepend>
+                <q-icon name="flag" color="primary" />
+              </template>
 
-        <q-card-section v-if="ambasCompletas" class="text-positive text-center q-mt-sm">
-          Ambas alineaciones (Municipal y Estatal) registradas. Ya puedes continuar.
-        </q-card-section>
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    {{
+                      form.acuerdo
+                        ? 'No hay objetivos disponibles'
+                        : 'Selecciona un acuerdo primero'
+                    }}
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
 
-        <q-card-section v-else class="text-grey-7 text-center q-mt-sm text-caption">
-          <div v-if="alineacionMunicipalCompleta">Alineación Municipal registrada</div>
-          <div v-if="alineacionEstatalCompleta">Alineación Estatal registrada</div>
-          <div v-if="!alineacionMunicipalCompleta && !alineacionEstatalCompleta">
-            Debes registrar ambas alineaciones (Municipal y Estatal)
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-form>
+            <!-- ESTRATEGIAS -->
+            <q-select
+              outlined
+              bg-color="white"
+              v-model="form.estrategias"
+              :options="estrategias"
+              label="Estrategias"
+              multiple
+              emit-value
+              map-options
+              class="modern-input"
+              @update:model-value="onEstrategiasChange"
+              :loading="loadingEstrategias"
+              :disable="!form.objetivo"
+            >
+              <template v-slot:prepend>
+                <q-icon name="lightbulb" color="primary" />
+              </template>
+
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    {{
+                      form.objetivo
+                        ? 'No hay estrategias disponibles'
+                        : 'Selecciona un objetivo primero'
+                    }}
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+
+            <!-- LINEAS -->
+            <q-select
+              outlined
+              bg-color="white"
+              v-model="form.lineasAccion"
+              :options="lineasAccion"
+              label="Líneas de acción"
+              multiple
+              emit-value
+              map-options
+              class="modern-input"
+              :loading="loadingLineas"
+              :disable="!form.estrategias.length"
+            >
+              <template v-slot:prepend>
+                <q-icon name="track_changes" color="primary" />
+              </template>
+
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    {{
+                      form.estrategias.length
+                        ? 'No hay líneas de acción disponibles'
+                        : 'Selecciona estrategias primero'
+                    }}
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+
+            <!-- RAMO -->
+            <q-select
+              v-if="form.tipo === 'Municipio'"
+              outlined
+              bg-color="white"
+              v-model="form.ramo"
+              :options="ramos"
+              label="Tipo de ramo"
+              class="modern-input"
+            >
+              <template v-slot:prepend>
+                <q-icon name="account_balance" color="primary" />
+              </template>
+            </q-select>
+          </q-card-section>
+
+          <!-- ALERTAS -->
+          <q-card-section>
+            <q-banner v-if="ambasCompletas" rounded class="success-banner">
+              <template v-slot:avatar>
+                <q-icon name="check_circle" />
+              </template>
+
+              Ambas alineaciones fueron registradas correctamente.
+            </q-banner>
+
+            <q-banner v-else rounded class="warning-banner">
+              <template v-slot:avatar>
+                <q-icon name="info" />
+              </template>
+
+              <div v-if="alineacionMunicipalCompleta">Alineación Municipal registrada</div>
+
+              <div v-if="alineacionEstatalCompleta">Alineación Estatal registrada</div>
+
+              <div v-if="!alineacionMunicipalCompleta && !alineacionEstatalCompleta">
+                Debes registrar ambas alineaciones (Municipal y Estatal)
+              </div>
+            </q-banner>
+          </q-card-section>
+
+          <!-- BOTONES -->
+          <q-card-actions align="right" class="q-pa-lg actions-container">
+            <q-btn
+              label="Registrar alineación"
+              class="secondary-btn"
+              unelevated
+              :disable="loading || !puedeRegistrar"
+              @click="registrarAlineacion"
+            />
+
+            <q-btn
+              label="Continuar"
+              class="primary-btn"
+              type="submit"
+              unelevated
+              :loading="loading"
+              :disable="!ambasCompletas"
+            />
+          </q-card-actions>
+        </q-card>
+      </q-form>
+    </div>
   </q-page>
 </template>
 
@@ -591,27 +639,118 @@ async function submitForm() {
 </script>
 
 <style scoped>
-.form-title {
-  font-size: 1.5rem;
-  font-weight: bold;
+.page-container {
+  background: #f4f6f9;
+  min-height: 100vh;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: auto;
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  font-weight: 800;
   color: #691b31;
+  margin: 0;
 }
 
-.submit-btn {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.page-subtitle {
+  color: #6b7280;
+  margin-top: 8px;
+  font-size: 1rem;
 }
 
-.registrar {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.modern-stepper {
+  border-radius: 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+.modern-card {
+  border-radius: 24px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  border: none;
+  background: white;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.modern-input {
+  transition: all 0.2s ease;
+}
+
+.modern-input:hover {
+  transform: translateY(-1px);
+}
+
+.primary-btn {
+  background: #c5a46d;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.primary-btn:hover {
+  opacity: 0.95;
+}
+
+.secondary-btn {
+  background: #691b31;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.actions-container {
+  gap: 12px;
+}
+
+.success-banner {
+  background: #ecfdf3;
+  color: #027a48;
+  border-radius: 14px;
+}
+
+.warning-banner {
+  background: #fffbeb;
+  color: #b54708;
+  border-radius: 14px;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.7rem;
+  }
+
+  .actions-container {
+    flex-direction: column;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
 }
 </style>

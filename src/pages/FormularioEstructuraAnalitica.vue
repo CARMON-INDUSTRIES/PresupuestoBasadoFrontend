@@ -1,51 +1,56 @@
 <template>
-  <q-page padding style="background-color: #691b31">
-    <q-card flat bordered class="q-pa-md" style="max-width: 1100px; margin: auto">
-      <q-card-section>
-        <div class="text-h5 text-center">Estructura Analítica del Programa Presupuestario</div>
-      </q-card-section>
+  <q-page class="page-container">
+    <div class="content-wrapper">
+      <div class="page-header">
+        <h1 class="page-title">Estructura Analítica del Programa Presupuestario</h1>
+        <p class="page-subtitle">
+          Relación entre la problemática central y la solución propuesta derivada del árbol de
+          problemas y objetivos.
+        </p>
+      </div>
 
-      <q-separator />
+      <q-card flat class="modern-card">
+        <q-card-section>
+          <div class="section-title">Matriz analítica</div>
 
-      <q-card-section>
-        <q-table
-          flat
-          bordered
-          :rows="tabla"
-          :columns="columns"
-          row-key="campo"
-          separator="cell"
-          class="anexo7-table"
-          :rows-per-page-options="[0]"
-        >
-          <template v-slot:body-cell="props">
-            <q-td :props="props">
-              <div v-html="props.value"></div>
-            </q-td>
-          </template>
-        </q-table>
-      </q-card-section>
+          <q-table
+            flat
+            bordered
+            :rows="tabla"
+            :columns="columns"
+            row-key="campo"
+            separator="cell"
+            class="modern-table"
+            :rows-per-page-options="[0]"
+          >
+            <template v-slot:body-cell="props">
+              <q-td :props="props">
+                <div class="table-content" v-html="props.value"></div>
+              </q-td>
+            </template>
+          </q-table>
+        </q-card-section>
 
-      <q-card-actions align="right" class="q-mt-md">
-        <q-btn
-          label="Pantalla Anterior"
-          color="primary"
-          text-color="white"
-          rounded
-          unelevated
-          class="registrar"
-          to="formulario-analisis-alternativas"
-          :loading="loading"
-        />
-        <q-btn
-          color="primary"
-          label="Continuar"
-          class="submit-btn"
-          rounded
-          @click="irAMatrizIndicadores"
-        />
-      </q-card-actions>
-    </q-card>
+        <q-card-actions align="right" class="actions-container q-pa-md">
+          <q-btn
+            label="Pantalla Anterior"
+            rounded
+            unelevated
+            class="secondary-btn"
+            to="formulario-analisis-alternativas"
+            :loading="loading"
+          />
+
+          <q-btn
+            label="Continuar"
+            rounded
+            unelevated
+            class="primary-btn"
+            @click="irAMatrizIndicadores"
+          />
+        </q-card-actions>
+      </q-card>
+    </div>
   </q-page>
 </template>
 
@@ -159,28 +164,123 @@ function irAMatrizIndicadores() {
 </script>
 
 <style scoped>
-.anexo7-table {
-  font-size: 14px;
-}
-.anexo7-table td {
-  vertical-align: top;
-  white-space: normal !important;
-}
-.submit-btn {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.page-container {
+  background: #f4f6f9;
+  min-height: 100vh;
 }
 
-.registrar {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.content-wrapper {
+  max-width: 1250px;
+  margin: auto;
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #691b31;
+  margin: 0;
+}
+
+.page-subtitle {
+  color: #6b7280;
+  margin-top: 8px;
+  font-size: 1rem;
+}
+
+.modern-card {
+  border-radius: 24px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  border: none;
+  background: white;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 18px;
+}
+
+.modern-table {
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.table-content {
+  white-space: normal;
+  line-height: 1.7;
+  color: #374151;
+}
+
+:deep(.q-table th) {
+  background: #691b31;
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 16px;
+}
+
+:deep(.q-table tbody td) {
+  vertical-align: top;
+  padding: 18px;
+  font-size: 0.95rem;
+}
+
+:deep(.q-table tbody tr:nth-child(even)) {
+  background: #fafafa;
+}
+
+.actions-container {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.primary-btn {
+  background: #c5a46d;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.primary-btn:hover {
+  opacity: 0.95;
+}
+
+.secondary-btn {
+  background: #691b31;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.7rem;
+  }
+
+  .actions-container {
+    flex-direction: column;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
+
+  :deep(.q-table th),
+  :deep(.q-table tbody td) {
+    font-size: 0.82rem;
+    padding: 10px;
+  }
 }
 </style>

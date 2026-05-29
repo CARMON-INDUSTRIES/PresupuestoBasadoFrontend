@@ -1,108 +1,157 @@
 <template>
-  <q-page padding style="background-color: #691b31">
-    <q-form @submit.prevent="submitForm" class="q-gutter-md">
-      <q-card flat bordered class="q-pa-md">
-        <q-card-section>
-          <div class="form-title">Clasificación Funcional</div>
-          <q-separator color="#691b31" spaced />
-        </q-card-section>
+  <q-page class="page-container">
+    <div class="content-wrapper">
+      <!-- HEADER -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Clasificación Funcional</h1>
 
-        <q-card-section class="q-gutter-md">
-          <q-select
-            filled
-            v-model="form.subfuncionId"
-            :options="subfunciones"
-            label="Subfunción"
-            rounded
-            emit-value
-            map-options
-            @update:model-value="onSubfuncionChange"
-          >
-            <template v-slot:prepend>
-              <q-icon name="subdirectory_arrow_right" />
-            </template>
-          </q-select>
+          <p class="page-subtitle">
+            Define la estructura funcional y operativa del programa presupuestario.
+          </p>
+        </div>
+      </div>
 
-          <q-select
-            filled
-            v-model="form.funcionId"
-            :options="funciones"
-            label="Función"
-            rounded
-            disable
-            emit-value
-            map-options
-          >
-            <template v-slot:prepend>
-              <q-icon name="work" />
-            </template>
-          </q-select>
+      <!-- STEPPER -->
+      <q-stepper flat bordered color="primary" animated class="modern-stepper">
+        <q-step :name="1" title="Alineación" icon="account_tree" done />
 
-          <q-select
-            filled
-            v-model="form.finalidadId"
-            :options="finalidades"
-            label="Finalidad"
-            rounded
-            disable
-            emit-value
-            map-options
-          >
-            <template v-slot:prepend>
-              <q-icon name="star" />
-            </template>
-          </q-select>
+        <q-step :name="2" title="Clasificación" icon="dashboard" active />
 
-          <q-select
-            filled
-            v-model="form.anioOperando"
-            :options="anios"
-            label="Año Operando"
-            rounded
-          >
-            <template v-slot:prepend>
-              <q-icon name="calendar_today" />
-            </template>
-          </q-select>
+        <q-step :name="3" title="Antecedentes" icon="history_edu" />
 
-          <q-select
-            filled
-            v-model="form.entregaBienes"
-            :options="opcionesEntregaBienes"
-            label="Entrega de Bienes o Servicios"
-            rounded
-          >
-            <template v-slot:prepend>
-              <q-icon name="handshake" />
-            </template>
-          </q-select>
-        </q-card-section>
+        <q-step :name="4" title="Metas" icon="track_changes" />
+      </q-stepper>
 
-        <q-card-actions align="right">
-          <q-btn
-            label="Pantalla Anterior"
-            color="primary"
-            text-color="white"
-            rounded
-            unelevated
-            class="registrar"
-            to="formulario-alineacion"
-            :loading="loading"
-          />
+      <!-- FORM -->
+      <q-form @submit.prevent="submitForm">
+        <!-- CARD -->
+        <q-card class="modern-card">
+          <q-card-section class="q-pb-none">
+            <div class="section-title">Información funcional</div>
 
-          <q-btn
-            label="Continuar"
-            color="primary"
-            text-color="white"
-            type="submit"
-            rounded
-            unelevated
-            class="submit-btn"
-            :loading="loading"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-form>
+            <div class="section-description">
+              Completa los campos relacionados con la clasificación funcional del programa.
+            </div>
+          </q-card-section>
+
+          <!-- FORM GRID -->
+          <q-card-section class="form-grid">
+            <!-- SUBFUNCION -->
+            <q-select
+              outlined
+              bg-color="white"
+              v-model="form.subfuncionId"
+              :options="subfunciones"
+              label="Subfunción"
+              emit-value
+              map-options
+              class="modern-input"
+              @update:model-value="onSubfuncionChange"
+            >
+              <template v-slot:prepend>
+                <q-icon name="subdirectory_arrow_right" color="primary" />
+              </template>
+            </q-select>
+
+            <!-- FUNCION -->
+            <q-select
+              outlined
+              bg-color="white"
+              v-model="form.funcionId"
+              :options="funciones"
+              label="Función"
+              disable
+              emit-value
+              map-options
+              class="modern-input"
+            >
+              <template v-slot:prepend>
+                <q-icon name="work" color="primary" />
+              </template>
+            </q-select>
+
+            <!-- FINALIDAD -->
+            <q-select
+              outlined
+              bg-color="white"
+              v-model="form.finalidadId"
+              :options="finalidades"
+              label="Finalidad"
+              disable
+              emit-value
+              map-options
+              class="modern-input"
+            >
+              <template v-slot:prepend>
+                <q-icon name="star" color="primary" />
+              </template>
+            </q-select>
+
+            <!-- AÑO -->
+            <q-select
+              outlined
+              bg-color="white"
+              v-model="form.anioOperando"
+              :options="anios"
+              label="Año Operando"
+              class="modern-input"
+            >
+              <template v-slot:prepend>
+                <q-icon name="calendar_today" color="primary" />
+              </template>
+            </q-select>
+
+            <!-- ENTREGA -->
+            <q-select
+              outlined
+              bg-color="white"
+              v-model="form.entregaBienes"
+              :options="opcionesEntregaBienes"
+              label="Entrega de Bienes o Servicios"
+              class="modern-input full-width"
+            >
+              <template v-slot:prepend>
+                <q-icon name="handshake" color="primary" />
+              </template>
+            </q-select>
+          </q-card-section>
+
+          <!-- INFO -->
+          <q-card-section>
+            <q-banner rounded class="info-banner">
+              <template v-slot:avatar>
+                <q-icon name="info" />
+              </template>
+
+              La función y finalidad se completan automáticamente con base en la subfunción
+              seleccionada.
+            </q-banner>
+          </q-card-section>
+
+          <!-- ACTIONS -->
+          <q-card-actions align="right" class="q-pa-lg actions-container">
+            <q-btn
+              label="Pantalla anterior"
+              class="secondary-btn"
+              unelevated
+              to="/formulario-alineacion"
+              :loading="loading"
+              icon="arrow_back"
+            />
+
+            <q-btn
+              label="Continuar"
+              class="primary-btn"
+              type="submit"
+              unelevated
+              :loading="loading"
+              icon-right="arrow_forward"
+            />
+          </q-card-actions>
+        </q-card>
+      </q-form>
+    </div>
   </q-page>
 </template>
 
@@ -260,33 +309,117 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.q-card {
-  max-width: 800px;
-  margin: auto;
-}
-.form-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #691b31;
-}
-.q-field__control {
-  border-radius: 12px;
-}
-.submit-btn {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.page-container {
+  background: #f4f6f9;
+  min-height: 100vh;
 }
 
-.registrar {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.content-wrapper {
+  max-width: 1200px;
+  margin: auto;
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #691b31;
+  margin: 0;
+}
+
+.page-subtitle {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.modern-stepper {
+  border-radius: 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+.modern-card {
+  border-radius: 24px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  border: none;
+  background: white;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.section-description {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.modern-input {
+  transition: all 0.2s ease;
+}
+
+.modern-input:hover {
+  transform: translateY(-1px);
+}
+
+.primary-btn {
+  background: #c5a46d;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.secondary-btn {
+  background: #691b31;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.actions-container {
+  gap: 12px;
+}
+
+.info-banner {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 14px;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.7rem;
+  }
+
+  .actions-container {
+    flex-direction: column;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
 }
 </style>

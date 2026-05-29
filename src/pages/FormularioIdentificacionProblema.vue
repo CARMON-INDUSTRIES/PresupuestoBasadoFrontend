@@ -1,131 +1,278 @@
 <template>
-  <q-page padding style="background-color: #691b31">
-    <q-form @submit.prevent="submitForm" class="q-gutter-md">
-      <q-card flat bordered class="q-pa-md">
-        <q-card-section>
-          <div class="form-title">Identificación y Descripción del Problema</div>
-          <q-separator color="#691b31" spaced />
-        </q-card-section>
+  <q-page class="page-container">
+    <div class="content-wrapper">
+      <!-- HEADER -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Identificación y Descripción del Problema</h1>
 
-        <q-card-section class="q-gutter-md">
-          <q-input
-            filled
-            v-model="form.problemaCentral"
-            label="2.1 Defina de manera concreta el problema central o necesidad única a la que responde el programa."
-            type="textarea"
-            rounded
+          <p class="page-subtitle">
+            Define el problema central, actores involucrados, causas, efectos y evolución de la
+            problemática.
+          </p>
+        </div>
+
+        <!-- ESTADO -->
+        <div class="autosave-status">
+          <q-chip
+            v-if="saving"
+            color="orange-1"
+            text-color="orange-9"
+            icon="sync"
+            class="autosave-chip"
           >
-            <template v-slot:prepend>
-              <q-icon name="report_problem" />
-            </template>
-          </q-input>
+            Guardando...
+          </q-chip>
 
-          <div class="text-subtitle1">
-            2.2 Describa los involucrados, los cuales pueden ser organizaciones, empresas, grupos e
-            individuos cuyos intereses serán coincidentes, complementarios o incluso antagónicos.
-            (Debe ser consistente con el Anexo II).
-          </div>
-
-          <q-input
-            filled
-            v-model="form.causaBeneficiados"
-            label="Beneficiados"
-            type="textarea"
-            rounded
+          <q-chip
+            v-else
+            color="green-1"
+            text-color="green-9"
+            icon="check_circle"
+            class="autosave-chip"
           >
-            <template v-slot:prepend>
-              <q-icon name="emoji_people" />
-            </template>
-          </q-input>
+            Autoguardado activo
+          </q-chip>
+        </div>
+      </div>
 
-          <q-input filled v-model="form.causaOpositores" label="Opositores" type="textarea" rounded>
-            <template v-slot:prepend>
-              <q-icon name="thumb_down" />
-            </template>
-          </q-input>
+      <!-- STEPPER -->
+      <q-stepper flat bordered animated color="primary" class="modern-stepper">
+        <q-step :name="1" title="Alineación" icon="account_tree" done />
 
-          <q-input filled v-model="form.causaEjecutores" label="Ejecutores" type="textarea" rounded>
-            <template v-slot:prepend>
-              <q-icon name="construction" />
-            </template>
-          </q-input>
+        <q-step :name="2" title="Clasificación" icon="dashboard" done />
 
-          <q-input
-            filled
-            v-model="form.causaIndiferentes"
-            label="Indiferentes"
-            type="textarea"
-            rounded
-          >
-            <template v-slot:prepend>
-              <q-icon name="remove_circle_outline" />
-            </template>
-          </q-input>
+        <q-step :name="3" title="Antecedentes" icon="history_edu" done />
 
-          <q-input
-            filled
-            v-model="form.involucrados"
-            label="2.3 Describa las causas que han dado origen al problema. (Debe ser consistente con el Anexo III)."
-            type="textarea"
-            rounded
-          >
-            <template v-slot:prepend>
-              <q-icon name="group" />
-            </template>
-          </q-input>
+        <q-step :name="4" title="Problema" icon="warning" active />
 
-          <q-input
-            filled
-            v-model="form.efectos"
-            label="2.4 Describa los efectos que dicho problema provoca en la población, en el ambiente o en el desarrollo económico y social."
-            type="textarea"
-            rounded
-          >
-            <template v-slot:prepend>
-              <q-icon name="visibility" />
-            </template>
-          </q-input>
+        <q-step :name="5" title="Justificación" icon="fact_check" />
 
-          <q-input
-            filled
-            v-model="form.evolucion"
-            label="2.5 Describa la evolución del problema o necesidad que se pretende atender, mediante un análisis con información cuantitativa y/o cualitativa."
-            type="textarea"
-            rounded
-          >
-            <template v-slot:prepend>
-              <q-icon name="timeline" />
-            </template>
-          </q-input>
-        </q-card-section>
+        <q-step :name="6" title="Metas" icon="track_changes" />
+      </q-stepper>
 
-        <q-card-actions align="right">
-          <q-btn
-            label="Pantalla Anterior"
-            color="primary"
-            text-color="white"
-            rounded
-            unelevated
-            class="registrar"
-            to="formulario-antecedente"
-            :loading="loading"
-          />
+      <!-- FORM -->
+      <q-form @submit.prevent="submitForm">
+        <q-card class="modern-card">
+          <!-- HEADER CARD -->
+          <q-card-section class="q-pb-none">
+            <div class="section-title">Diagnóstico del problema público</div>
 
-          <q-btn
-            color="primary"
-            text-color="white"
-            label="Continuar"
-            type="submit"
-            rounded
-            unelevated
-            class="submit-btn"
-            :loading="loading"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-form>
+            <div class="section-description">
+              Captura la información relacionada con la problemática que atiende el programa
+              presupuestario.
+            </div>
+          </q-card-section>
+
+          <!-- FORM -->
+          <q-card-section class="form-column">
+            <!-- PROBLEMA CENTRAL -->
+            <div class="question-block">
+              <div class="question-title">2.1 Problema central o necesidad principal</div>
+
+              <q-input
+                outlined
+                bg-color="white"
+                v-model="form.problemaCentral"
+                type="textarea"
+                autogrow
+                class="modern-textarea"
+                placeholder="Describe de forma concreta el problema central que atiende el programa..."
+              >
+                <template v-slot:prepend>
+                  <q-icon name="report_problem" color="primary" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- INVOLUCRADOS -->
+            <div class="question-block">
+              <div class="question-title">2.2 Actores involucrados</div>
+
+              <div class="question-helper">
+                Describe organizaciones, empresas, grupos o individuos relacionados con la
+                problemática.
+              </div>
+
+              <!-- GRID -->
+              <div class="actors-grid">
+                <!-- BENEFICIADOS -->
+                <q-card class="actor-card positive-card">
+                  <q-card-section>
+                    <div class="actor-title">Beneficiados</div>
+
+                    <q-input
+                      outlined
+                      bg-color="white"
+                      v-model="form.causaBeneficiados"
+                      type="textarea"
+                      autogrow
+                      class="modern-textarea"
+                    >
+                      <template v-slot:prepend>
+                        <q-icon name="emoji_people" color="positive" />
+                      </template>
+                    </q-input>
+                  </q-card-section>
+                </q-card>
+
+                <!-- OPOSITORES -->
+                <q-card class="actor-card negative-card">
+                  <q-card-section>
+                    <div class="actor-title">Opositores</div>
+
+                    <q-input
+                      outlined
+                      bg-color="white"
+                      v-model="form.causaOpositores"
+                      type="textarea"
+                      autogrow
+                      class="modern-textarea"
+                    >
+                      <template v-slot:prepend>
+                        <q-icon name="thumb_down" color="negative" />
+                      </template>
+                    </q-input>
+                  </q-card-section>
+                </q-card>
+
+                <!-- EJECUTORES -->
+                <q-card class="actor-card info-card">
+                  <q-card-section>
+                    <div class="actor-title">Ejecutores</div>
+
+                    <q-input
+                      outlined
+                      bg-color="white"
+                      v-model="form.causaEjecutores"
+                      type="textarea"
+                      autogrow
+                      class="modern-textarea"
+                    >
+                      <template v-slot:prepend>
+                        <q-icon name="construction" color="primary" />
+                      </template>
+                    </q-input>
+                  </q-card-section>
+                </q-card>
+
+                <!-- INDIFERENTES -->
+                <q-card class="actor-card neutral-card">
+                  <q-card-section>
+                    <div class="actor-title">Indiferentes</div>
+
+                    <q-input
+                      outlined
+                      bg-color="white"
+                      v-model="form.causaIndiferentes"
+                      type="textarea"
+                      autogrow
+                      class="modern-textarea"
+                    >
+                      <template v-slot:prepend>
+                        <q-icon name="remove_circle_outline" color="grey" />
+                      </template>
+                    </q-input>
+                  </q-card-section>
+                </q-card>
+              </div>
+            </div>
+
+            <!-- CAUSAS -->
+            <div class="question-block">
+              <div class="question-title">2.3 Causas del problema</div>
+
+              <q-input
+                outlined
+                bg-color="white"
+                v-model="form.involucrados"
+                type="textarea"
+                autogrow
+                class="modern-textarea"
+                placeholder="Describe las causas que originan el problema..."
+              >
+                <template v-slot:prepend>
+                  <q-icon name="group" color="primary" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- EFECTOS -->
+            <div class="question-block">
+              <div class="question-title">2.4 Efectos del problema</div>
+
+              <q-input
+                outlined
+                bg-color="white"
+                v-model="form.efectos"
+                type="textarea"
+                autogrow
+                class="modern-textarea"
+                placeholder="Describe los efectos generados en la población o entorno..."
+              >
+                <template v-slot:prepend>
+                  <q-icon name="visibility" color="primary" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- EVOLUCION -->
+            <div class="question-block">
+              <div class="question-title">2.5 Evolución histórica del problema</div>
+
+              <q-input
+                outlined
+                bg-color="white"
+                v-model="form.evolucion"
+                type="textarea"
+                autogrow
+                class="modern-textarea"
+                placeholder="Describe cómo ha evolucionado la problemática..."
+              >
+                <template v-slot:prepend>
+                  <q-icon name="timeline" color="primary" />
+                </template>
+              </q-input>
+            </div>
+          </q-card-section>
+
+          <!-- INFO -->
+          <q-card-section>
+            <q-banner rounded class="info-banner">
+              <template v-slot:avatar>
+                <q-icon name="info" />
+              </template>
+
+              La información se guarda automáticamente mientras escribes.
+            </q-banner>
+          </q-card-section>
+
+          <!-- ACTIONS -->
+          <q-card-actions align="right" class="q-pa-lg actions-container">
+            <q-btn
+              label="Pantalla anterior"
+              class="secondary-btn"
+              unelevated
+              to="/formulario-antecedente"
+              :loading="loading"
+              icon="arrow_back"
+            />
+
+            <q-btn
+              label="Continuar"
+              class="primary-btn"
+              type="submit"
+              unelevated
+              :loading="loading"
+              icon-right="arrow_forward"
+            />
+          </q-card-actions>
+        </q-card>
+      </q-form>
+    </div>
   </q-page>
 </template>
+
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -225,34 +372,184 @@ async function submitForm() {
 </script>
 
 <style scoped>
-.q-card {
-  max-width: 800px;
+.page-container {
+  background: #f4f6f9;
+  min-height: 100vh;
+}
+
+.content-wrapper {
+  max-width: 1250px;
   margin: auto;
+  padding: 24px;
 }
-.form-title {
-  font-size: 2rem;
-  font-weight: 700;
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  font-weight: 800;
   color: #691b31;
+  margin: 0;
 }
-.q-field__control {
+
+.page-subtitle {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 1rem;
+  max-width: 700px;
+}
+
+.autosave-status {
+  display: flex;
+  align-items: center;
+}
+
+.autosave-chip {
+  font-weight: 600;
   border-radius: 12px;
 }
 
-.submit-btn {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.modern-stepper {
+  border-radius: 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
 }
 
-.registrar {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.modern-card {
+  border-radius: 24px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  border: none;
+  background: white;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.section-description {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.question-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.question-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.question-helper {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.modern-textarea {
+  transition: all 0.2s ease;
+}
+
+.modern-textarea:hover {
+  transform: translateY(-1px);
+}
+
+.actors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.actor-card {
+  border-radius: 18px;
+  box-shadow: none;
+  border: 1px solid #e5e7eb;
+}
+
+.actor-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: #374151;
+}
+
+.positive-card {
+  background: #f0fdf4;
+}
+
+.negative-card {
+  background: #fef2f2;
+}
+
+.info-card {
+  background: #eff6ff;
+}
+
+.neutral-card {
+  background: #f9fafb;
+}
+
+.primary-btn {
+  background: #c5a46d;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.secondary-btn {
+  background: #691b31;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.actions-container {
+  gap: 12px;
+}
+
+.info-banner {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 14px;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+  }
+
+  .page-title {
+    font-size: 1.7rem;
+  }
+
+  .actions-container {
+    flex-direction: column;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
 }
 </style>
