@@ -186,7 +186,7 @@
               label="Pantalla anterior"
               icon="arrow_back"
               flat
-              class="back-btn"
+              class="secondary-btn"
               to="/formulario-cobertura"
               :loading="loading"
             />

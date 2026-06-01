@@ -1,136 +1,182 @@
 <template>
-  <q-page padding style="background-color: #691b31">
-    <q-card flat bordered class="q-pa-lg" style="max-width: 1200px; margin: auto">
-      <q-card-section>
+  <q-page padding class="perfil-page">
+    <q-card flat class="perfil-card">
+      <q-card-section class="perfil-header">
         <div class="row items-center justify-between">
-          <div class="text-h6 text-primary">Usuario: {{ form.User }}</div>
+          <div>
+            <div class="text-h5 text-weight-bold text-primary">Mi Perfil</div>
+            <div class="text-subtitle2 text-grey-7">Usuario: {{ form.User }}</div>
+          </div>
+
           <q-btn
             color="secondary"
-            label="Cambiar contraseña"
-            @click="abrirModal = true"
             icon="lock_reset"
+            label="Cambiar contraseña"
+            rounded
+            unelevated
+            @click="abrirModal = true"
           />
         </div>
       </q-card-section>
 
+      <q-separator />
+
       <q-card-section>
-        <q-form @submit.prevent="registrarUsuario" class="q-gutter-md">
-          <div class="row q-col-gutter-md">
-            <div class="col-4">
-              <q-input v-model="form.NuevoUserName" label="Nombre de Usuario" filled stack-label>
-                <template #prepend><q-icon name="person" /></template>
+        <q-form @submit.prevent="registrarUsuario">
+          <div class="row q-col-gutter-lg">
+            <div class="col-12 col-md-4">
+              <q-input v-model="form.NuevoUserName" label="Nombre de Usuario" outlined stack-label>
+                <template #prepend>
+                  <q-icon name="person" color="primary" />
+                </template>
               </q-input>
             </div>
 
-            <div class="col-4">
+            <div class="col-12 col-md-4">
               <q-input
                 v-model="form.email"
-                label="Correo electrónico"
+                label="Correo Electrónico"
                 type="email"
-                filled
+                outlined
                 stack-label
               >
-                <template #prepend><q-icon name="mail" /></template>
+                <template #prepend>
+                  <q-icon name="mail" color="primary" />
+                </template>
               </q-input>
             </div>
 
-            <div class="col-4">
-              <q-input v-model="form.nombreCompleto" label="Nombre completo" filled stack-label>
-                <template #prepend><q-icon name="badge" /></template>
+            <div class="col-12 col-md-4">
+              <q-input v-model="form.nombreCompleto" label="Nombre Completo" outlined stack-label>
+                <template #prepend>
+                  <q-icon name="badge" color="primary" />
+                </template>
               </q-input>
             </div>
 
-            <div class="col-4">
-              <q-input v-model="form.cargo" label="Cargo" filled stack-label>
-                <template #prepend><q-icon name="work" /></template>
+            <div class="col-12 col-md-4">
+              <q-input v-model="form.cargo" label="Cargo" outlined stack-label>
+                <template #prepend>
+                  <q-icon name="work" color="primary" />
+                </template>
               </q-input>
             </div>
 
-            <div class="col-4">
-              <q-input v-model="form.coordinador" label="Coordinador" filled stack-label>
-                <template #prepend><q-icon name="badge" /></template>
+            <div class="col-12 col-md-4">
+              <q-input v-model="form.coordinador" label="Coordinador" outlined stack-label>
+                <template #prepend>
+                  <q-icon name="supervisor_account" color="primary" />
+                </template>
               </q-input>
             </div>
 
-            <div class="col-4">
+            <div class="col-12 col-md-4">
               <q-input
                 v-model="form.unidadesPresupuestales"
                 label="Unidades Presupuestales"
-                filled
+                outlined
                 stack-label
               >
-                <template #prepend><q-icon name="domain" /></template>
+                <template #prepend>
+                  <q-icon name="account_balance" color="primary" />
+                </template>
               </q-input>
             </div>
 
-            <div class="col-4">
+            <div class="col-12 col-md-4">
               <q-input
                 v-model="form.programaPresupuestario"
                 label="Programa Presupuestario"
-                filled
+                outlined
                 stack-label
               >
-                <template #prepend><q-icon name="assignment" /></template>
+                <template #prepend>
+                  <q-icon name="assignment" color="primary" />
+                </template>
               </q-input>
             </div>
 
-            <div class="col-4">
-              <q-input v-model="form.nombreMatriz" label="Programa Presupuestal" filled stack-label>
-                <template #prepend><q-icon name="description" /></template>
+            <div class="col-12 col-md-4">
+              <q-input
+                v-model="form.nombreMatriz"
+                label="Programa Presupuestal"
+                outlined
+                stack-label
+              >
+                <template #prepend>
+                  <q-icon name="description" color="primary" />
+                </template>
               </q-input>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <q-select
+                v-model="form.unidadAdministrativaId"
+                :options="unidades"
+                label="Unidad Administrativa"
+                option-value="id"
+                option-label="unidad"
+                emit-value
+                map-options
+                outlined
+                stack-label
+              >
+                <template #prepend>
+                  <q-icon name="domain" color="primary" />
+                </template>
+              </q-select>
             </div>
           </div>
 
-          <div class="col-6">
-            <q-select
-              v-model="form.unidadAdministrativaId"
-              :options="unidades"
-              label="Unidad Administrativa"
-              option-value="id"
-              option-label="unidad"
-              filled
-              stack-label
-              emit-value
-              map-options
-              required
-            >
-              <template #prepend><q-icon name="domain" /></template>
-            </q-select>
+          <div class="row justify-end q-mt-xl">
+            <q-btn
+              label="Guardar Cambios"
+              icon="save"
+              color="primary"
+              rounded
+              unelevated
+              class="guardar-btn"
+              type="submit"
+              :loading="loading"
+            />
           </div>
-
-          <q-card-actions align="right">
-            <q-btn label="Registrar" color="primary" type="submit" :loading="loading" />
-          </q-card-actions>
         </q-form>
       </q-card-section>
     </q-card>
 
     <q-dialog v-model="abrirModal">
-      <q-card style="width: 400px">
-        <q-card-section class="text-h6 text-center"> Cambiar contraseña </q-card-section>
-        <q-item-label>ㅤㅤ­Incluya mayuscula, numeros y un carácter especial</q-item-label>
+      <q-card class="password-card">
+        <q-card-section class="bg-primary text-white">
+          <div class="text-h6">Cambiar Contraseña</div>
+        </q-card-section>
+
         <q-card-section>
+          <div class="text-caption text-grey-7 q-mb-md">
+            Incluya mayúsculas, números y un carácter especial.
+          </div>
+
           <q-input
             v-model="nuevaPassword"
             type="password"
             label="Nueva contraseña"
-            filled
-            stack-label
+            outlined
+            class="q-mb-md"
           />
-          <br />
+
           <q-input
             v-model="confirmarPassword"
             type="password"
             label="Confirmar contraseña"
-            filled
-            stack-label
+            outlined
           />
         </q-card-section>
+
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" v-close-popup />
           <q-btn
             label="Guardar"
             color="primary"
+            rounded
             :disable="!nuevaPassword || nuevaPassword !== confirmarPassword"
             @click="cambiarPassword"
           />
@@ -139,6 +185,7 @@
     </q-dialog>
   </q-page>
 </template>
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Notify } from 'quasar'
@@ -235,3 +282,53 @@ async function cambiarPassword() {
   }
 }
 </script>
+
+<style scoped>
+.perfil-page {
+  background: linear-gradient(135deg, #691b31 0%, #7f1d35 100%);
+  min-height: 100vh;
+}
+
+.perfil-card {
+  max-width: 1200px;
+  margin: auto;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+}
+
+.perfil-header {
+  padding: 24px;
+}
+
+.guardar-btn {
+  font-weight: 700;
+  padding: 12px 30px;
+  min-width: 220px;
+}
+
+.password-card {
+  width: 450px;
+  border-radius: 18px;
+}
+
+.q-field {
+  margin-bottom: 10px;
+}
+
+:deep(.q-field--outlined .q-field__control) {
+  border-radius: 12px;
+}
+
+:deep(.q-btn) {
+  transition: all 0.25s ease;
+}
+
+:deep(.q-btn:hover) {
+  transform: translateY(-2px);
+}
+
+:deep(.q-card) {
+  overflow: hidden;
+}
+</style>

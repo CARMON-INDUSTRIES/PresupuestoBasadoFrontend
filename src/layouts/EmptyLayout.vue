@@ -2,8 +2,14 @@
   <q-layout view="hHh lpR fFf">
     <q-header elevated class="navbar">
       <q-toolbar class="q-pl-md q-pr-md">
-        <q-btn flat dense round icon="menu" class="q-mr-md" @click="sidebarOpen = !sidebarOpen" />
-
+        <q-btn
+          flat
+          dense
+          round
+          icon="menu"
+          class="q-mr-md menu-btn"
+          @click="sidebarOpen = !sidebarOpen"
+        />
         <q-toolbar-title class="text-h6 text-weight-bold">
           Sistema de Presupuesto Basado en Resultados
         </q-toolbar-title>
@@ -24,13 +30,13 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="sidebarOpen" side="left" show-if-above bordered :width="405" class="sidebar">
+    <q-drawer v-model="sidebarOpen" side="left" show-if-above bordered :width="400" class="sidebar">
       <div
         class="column full-height"
         style="background-color: #691b31; background-size: cover; background-position: center"
       >
         <div class="column items-center q-my-xl">
-          <q-avatar size="100px" class="shadow-4 avatar-border">
+          <q-avatar size="120px" class="shadow-4 avatar-border">
             <img :src="previewFoto || fotoActual" alt="" />
           </q-avatar>
 
@@ -302,6 +308,7 @@
     </q-dialog>
   </q-layout>
 </template>
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -323,7 +330,6 @@ const nuevaPassword = ref('')
 const showPasswordActual = ref(false)
 const showNuevaPassword = ref(false)
 
-// --- Foto de perfil ---
 const nuevaFoto = ref(null)
 const previewFoto = ref(null)
 
@@ -388,7 +394,6 @@ async function cambiarFoto() {
 
     localStorage.setItem('fotoUsuario', data.fotoUrl)
 
-    // Limpieza
     previewFoto.value = null
     nuevaFoto.value = null
     dialogCambiarFoto.value = false
@@ -398,7 +403,6 @@ async function cambiarFoto() {
   }
 }
 
-// --- Rutas que se registran ---
 const rutasRegistro = [
   '/formulario-alineacion',
   '/formulario-identificacion',
@@ -445,7 +449,6 @@ const RUTA_TO_STORAGE = {
   '/formulario-ficha-tecnica-1': 'formularioFichaTecnica',
 }
 
-// Guardar última ruta visitada
 router.afterEach((to) => {
   if (rutasRegistro.includes(to.path)) {
     const user = localStorage.getItem('userNameActual')
@@ -455,13 +458,11 @@ router.afterEach((to) => {
   }
 })
 
-// Navegar
 function goTo(ruta) {
   sidebarOpen.value = false
   router.push(ruta)
 }
 
-// Abrir diálogos
 function abrirCambiarPassword() {
   dialogCambiarPassword.value = true
 }
@@ -469,7 +470,6 @@ function abrirCambiarFoto() {
   dialogCambiarFoto.value = true
 }
 
-// Cambiar contraseña
 async function cambiarPassword() {
   if (!passwordActual.value || !nuevaPassword.value) {
     Notify.create({ type: 'negative', message: 'Debes completar todos los campos' })
@@ -492,31 +492,24 @@ async function cambiarPassword() {
   }
 }
 
-// Cerrar sesión
 async function cerrarSesion() {
   try {
     await api.post('/Cuentas/logout')
 
     const user = localStorage.getItem('userNameActual')
 
-    // Obtener la última ruta de ese usuario
     const ultimaRuta = user ? localStorage.getItem(`ultimaRutaRegistro_${user}`) : null
 
-    // Obtener el storageKey correspondiente
     let storageKeyToKeep = null
     if (ultimaRuta && RUTA_TO_STORAGE[ultimaRuta]) {
       storageKeyToKeep = RUTA_TO_STORAGE[ultimaRuta]
     }
 
-    // Guardar temporalmente SI existe
     let tempValue = null
     if (storageKeyToKeep) {
       tempValue = localStorage.getItem(storageKeyToKeep)
     }
 
-    // Limpiar TODO
-
-    // Restaurar SOLO las claves del usuario actual
     if (user) {
       localStorage.setItem('userNameActual', user)
     }
@@ -538,23 +531,36 @@ async function cerrarSesion() {
 
 <style scoped>
 .navbar {
-  background: linear-gradient(120deg, #bc995b, #691b31);
+  background: linear-gradient(135deg, #691b31 0%, #8c2345 50%, #bc995b 100%);
   color: white;
-  height: 55px;
+  height: 68px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.navbar .q-toolbar-title {
+  letter-spacing: 0.5px;
+  font-size: 1.05rem;
 }
 
 .sidebar {
-  backdrop-filter: blur(6px);
-  background-color: rgba(0, 0, 0, 0.65);
+  background: #691b31;
+  border-right: none;
+}
+
+.sidebar > div {
+  background: linear-gradient(180deg, #691b31 0%, #5a172a 45%, #45111f 100%) !important;
 }
 
 .avatar-border {
-  border: 2px solid white;
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 0 0 4px rgba(188, 153, 91, 0.3),
+    0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
-.hover-item:hover {
-  background-color: rgba(255, 215, 0, 0.2);
-  transition: 0.2s;
+.text-h6 {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar-content,
@@ -563,7 +569,78 @@ async function cerrarSesion() {
 .sidebar-content .q-expansion-item__container,
 .sidebar-content .q-expansion-item__content,
 .sidebar-content .q-list {
-  background-color: #691b31 !important;
+  background: transparent !important;
   color: white;
+}
+
+.hover-item {
+  border-radius: 12px;
+  margin-bottom: 4px;
+  transition: all 0.25s ease;
+}
+
+.hover-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateX(6px);
+}
+
+.hover-item:hover .q-icon {
+  color: #bc995b;
+}
+
+.q-item .q-icon {
+  font-size: 22px;
+  transition: all 0.25s ease;
+}
+
+.q-expansion-item {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.q-expansion-item--expanded {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.q-expansion-item__toggle-icon {
+  color: #bc995b;
+}
+
+.q-separator {
+  opacity: 0.3;
+}
+
+.q-btn[text-color='white'] {
+  font-weight: 600;
+}
+
+.q-btn[text-color='white']:hover {
+  transform: translateY(-1px);
+}
+
+.sidebar-content {
+  overflow-y: auto;
+}
+
+.sidebar-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: #bc995b;
+  border-radius: 20px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: #d6b579;
+}
+
+.menu-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
 }
 </style>

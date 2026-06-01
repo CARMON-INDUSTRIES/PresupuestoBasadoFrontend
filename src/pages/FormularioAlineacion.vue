@@ -223,6 +223,7 @@
               unelevated
               :loading="loading"
               :disable="!ambasCompletas"
+              icon-right="arrow_forward"
             />
           </q-card-actions>
         </q-card>
@@ -605,7 +606,6 @@ async function submitForm() {
       })
     }
 
-    // 🔥 NUEVO: GUARDAR EFECTO SUPERIOR
     if (alineacionMunicipal?.objetivoLabel) {
       console.log('EFECTO SUPERIOR:', alineacionMunicipal.objetivoLabel)
 

@@ -1,5 +1,5 @@
 <template>
-  <q-page padding style="background-color: #691b31">
+  <q-page padding style="background-color: #f4f6f9">
     <q-card flat bordered class="q-pa-md" style="max-width: 1200px; margin: auto">
       <q-card-section>
         <div class="text-h5 text-center">Matriz de Indicadores para Resultados</div>

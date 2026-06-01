@@ -1,31 +1,45 @@
 <template>
-  <q-page padding style="background-color: #691b31">
-    <q-card flat bordered class="q-pa-md" style="max-width: 1000px; margin: auto">
-      <q-card-section>
-        <div class="text-h5 text-center text-black">Programación de Metas</div>
+  <q-page padding class="metas-page">
+    <q-card flat class="metas-card">
+      <q-card-section class="card-header">
+        <div class="text-h5 text-center text-weight-bold">Programación de Metas</div>
+
+        <div class="text-subtitle2 text-center text-grey-7 q-mt-sm">
+          Seguimiento mensual de indicadores y avances programados
+        </div>
       </q-card-section>
 
-      <q-card-section>
-        <div class="text-caption text-grey-10">Indicadores cargados: {{ indicadores.length }}</div>
-      </q-card-section>
+      <q-separator />
 
-      <q-card-section v-if="indicadores.length">
+      <q-card-section>
+        <q-banner rounded class="bg-blue-1 text-primary q-mb-md" v-if="indicadores.length">
+          <q-icon name="analytics" size="sm" class="q-mr-sm" />
+          Indicadores cargados:
+          <strong>{{ indicadores.length }}</strong>
+        </q-banner>
+
         <q-select
+          v-if="indicadores.length"
           v-model="indiceSeleccionado"
           :options="optionsIndicadores"
           label="Selecciona un indicador"
-          filled
+          outlined
           emit-value
           map-options
-        />
-      </q-card-section>
+        >
+          <template #prepend>
+            <q-icon name="track_changes" color="primary" />
+          </template>
+        </q-select>
 
-      <q-card-section v-else>
-        <div class="text-negative text-center">No hay indicadores disponibles</div>
+        <div v-else class="empty-state text-center q-pa-xl">
+          <q-icon name="warning_amber" size="60px" color="negative" />
+          <div class="text-h6 q-mt-md">No hay indicadores disponibles</div>
+        </div>
       </q-card-section>
 
       <q-card-section v-if="indicadorActivo">
-        <q-markup-table flat bordered>
+        <q-markup-table flat bordered class="tabla-metas">
           <thead>
             <tr>
               <th>Mes</th>
@@ -37,18 +51,24 @@
 
           <tbody>
             <tr v-for="(meta, index) in indicadorActivo.metasProgramadas || []" :key="index">
-              <td>{{ meta.mes ?? index + 1 }}</td>
+              <td>
+                <strong>{{ meta.mes ?? index + 1 }}</strong>
+              </td>
 
               <td>
                 {{ meta.cantidadEsperada ?? meta.cantidad ?? 0 }}
               </td>
 
-              <td style="width: 180px">
-                <q-input v-model.number="meta.alcanzado" type="number" dense filled />
+              <td style="width: 200px">
+                <q-input v-model.number="meta.alcanzado" type="number" dense outlined />
               </td>
 
-              <td style="width: 180px">
-                <q-badge :color="obtenerColorSemaforo(meta)" class="q-pa-sm full-width text-center">
+              <td style="width: 200px">
+                <q-badge
+                  rounded
+                  :color="obtenerColorSemaforo(meta)"
+                  class="full-width q-pa-sm text-center"
+                >
                   {{ obtenerTextoSemaforo(meta) }}
                 </q-badge>
               </td>
@@ -57,22 +77,30 @@
         </q-markup-table>
       </q-card-section>
 
-      <q-card-actions align="between" class="q-mt-md">
+      <q-separator />
+
+      <q-card-actions class="q-pa-lg acciones-footer">
         <q-btn
           color="primary"
+          icon="save"
           label="Guardar cambios"
+          rounded
+          unelevated
           @click="guardarCambios"
           :disable="!indicadorActivo"
         />
 
-        <div class="text-caption text-grey-10">
-          Primero presionar guardar cambios, despues descargar las fichas actualizadas
+        <div class="mensaje-ayuda">
+          <q-icon name="info" color="orange" />
+          Primero guarde los cambios y posteriormente descargue las fichas actualizadas.
         </div>
 
         <q-btn
           color="deep-orange"
           icon="picture_as_pdf"
           label="Descargar fichas actualizadas"
+          rounded
+          unelevated
           @click="descargarPdfActualizado"
         />
       </q-card-actions>
@@ -221,3 +249,80 @@ async function descargarPdfActualizado() {
   }
 }
 </script>
+
+<style scoped>
+.metas-page {
+  background: linear-gradient(135deg, #691b31 0%, #7f1d35 100%);
+  min-height: 100vh;
+}
+
+.metas-card {
+  max-width: 1100px;
+  margin: auto;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  padding: 24px;
+}
+
+.tabla-metas {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tabla-metas thead tr {
+  background: #691b31;
+  color: white;
+}
+
+.tabla-metas th {
+  font-weight: 700;
+  text-align: center;
+}
+
+.tabla-metas td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.acciones-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.mensaje-ayuda {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #555;
+  text-align: center;
+}
+
+.empty-state {
+  color: #666;
+}
+
+:deep(.q-field--outlined .q-field__control) {
+  border-radius: 10px;
+}
+
+:deep(.q-btn) {
+  transition: all 0.25s ease;
+}
+
+:deep(.q-btn:hover) {
+  transform: translateY(-2px);
+}
+
+:deep(.q-badge) {
+  font-weight: 700;
+  font-size: 13px;
+}
+</style>

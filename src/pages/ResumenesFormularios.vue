@@ -1,32 +1,37 @@
 <template>
-  <q-page padding class="resumen-page" style="background-color: #691b31">
-    <q-card flat bordered class="resumen-card q-pa-lg">
-      <q-card-section>
-        <div class="text-h4 text-center text-black q-mb-md">Resúmenes Generales</div>
+  <q-page padding class="resumen-page">
+    <q-card flat class="resumen-card">
+      <q-card-section class="header-section">
+        <div class="text-h4 text-center text-weight-bold titulo-principal">Resúmenes Generales</div>
+
+        <div class="text-subtitle2 text-center text-grey-7 q-mt-sm">
+          Descarga todos los formatos y anexos generados por el sistema
+        </div>
       </q-card-section>
 
-      <q-separator spaced />
+      <q-separator />
 
-      <q-list class="rounded-borders shadow-2 q-pa-sm">
+      <q-list class="q-pa-md">
         <q-expansion-item
-          icon="person_outline"
-          label="Formato Alineación de la Matriz de Indicadores "
+          icon="flag"
+          label="Formato Alineación de la Matriz de Indicadores"
           expand-separator
-          class="expansion-card"
+          class="expansion-card q-mb-sm"
         >
-          <q-card flat bordered class="q-ma-sm formato-card">
+          <q-card flat class="formato-card">
             <q-card-section>
-              <q-item-label
-                >Formato 1 Alineación de la Matriz de Indicadores Para Resultados al Plan Municipal
+              <div class="text-subtitle1 text-weight-medium">
+                Formato 1 Alineación de la Matriz de Indicadores Para Resultados al Plan Municipal
                 de Desarrollo
-              </q-item-label>
+              </div>
             </q-card-section>
+
             <q-card-actions align="right">
               <q-btn
                 color="primary"
                 rounded
-                dense
-                icon="picture_as_pdf"
+                unelevated
+                icon="download"
                 label="Descargar PDF"
                 @click="descargarPdf('FormatoAlineacion')"
               />
@@ -35,21 +40,24 @@
         </q-expansion-item>
 
         <q-expansion-item
-          icon="groups"
-          label="Formato Ficha de Informacion Básica"
+          icon="article"
+          label="Formato Ficha de Información Básica"
           expand-separator
-          class="expansion-card"
+          class="expansion-card q-mb-sm"
         >
-          <q-card flat bordered class="q-ma-sm formato-card">
+          <q-card flat class="formato-card">
             <q-card-section>
-              <q-item-label>Anexo 1 Ficha de Informacion Básica</q-item-label>
+              <div class="text-subtitle1 text-weight-medium">
+                Anexo 1 Ficha de Información Básica
+              </div>
             </q-card-section>
+
             <q-card-actions align="right">
               <q-btn
                 color="primary"
                 rounded
-                dense
-                icon="picture_as_pdf"
+                unelevated
+                icon="download"
                 label="Descargar PDF"
                 @click="descargarPdf('FormatoFichaDeInformacionBasica1')"
               />
@@ -58,21 +66,22 @@
         </q-expansion-item>
 
         <q-expansion-item
-          icon="group_work"
-          label="Formato Definicion Del Problema"
+          icon="crisis_alert"
+          label="Formato Definición del Problema"
           expand-separator
-          class="expansion-card"
+          class="expansion-card q-mb-sm"
         >
-          <q-card flat bordered class="q-ma-sm formato-card">
+          <q-card flat class="formato-card">
             <q-card-section>
-              <q-item-label>Anexo 2 Definicion del Problema</q-item-label>
+              <div class="text-subtitle1 text-weight-medium">Anexo 2 Definición del Problema</div>
             </q-card-section>
+
             <q-card-actions align="right">
               <q-btn
                 color="primary"
                 rounded
-                dense
-                icon="picture_as_pdf"
+                unelevated
+                icon="download"
                 label="Descargar PDF"
                 @click="descargarPdf('FormatoDefinicionDelProblema')"
               />
@@ -81,21 +90,22 @@
         </q-expansion-item>
 
         <q-expansion-item
-          icon="analytics"
-          label="Formato Analisis de Involucrados"
+          icon="groups"
+          label="Formato Análisis de Involucrados"
           expand-separator
-          class="expansion-card"
+          class="expansion-card q-mb-sm"
         >
-          <q-card flat bordered class="q-ma-sm formato-card">
+          <q-card flat class="formato-card">
             <q-card-section>
-              <q-item-label>Anexo 3 Análisis de Involucrados </q-item-label>
+              <div class="text-subtitle1 text-weight-medium">Anexo 3 Análisis de Involucrados</div>
             </q-card-section>
+
             <q-card-actions align="right">
               <q-btn
                 color="primary"
                 rounded
-                dense
-                icon="picture_as_pdf"
+                unelevated
+                icon="download"
                 label="Descargar PDF"
                 @click="descargarPdf('FormatoAnalisisDeInvolucrados')"
               />
@@ -104,21 +114,24 @@
         </q-expansion-item>
 
         <q-expansion-item
-          icon="description"
-          label="Formato Arbol de Problemas y Objetivos"
+          icon="account_tree"
+          label="Árbol de Problemas y Objetivos"
           expand-separator
-          class="expansion-card"
+          class="expansion-card q-mb-sm"
         >
-          <q-card flat bordered class="q-ma-sm formato-card">
+          <q-card flat class="formato-card">
             <q-card-section>
-              <q-item-label>Anexo 4 y 5: Árbol de Problemas y objetivos </q-item-label>
+              <div class="text-subtitle1 text-weight-medium">
+                Anexos 4 y 5: Árbol de Problemas y Objetivos
+              </div>
             </q-card-section>
+
             <q-card-actions align="right">
               <q-btn
                 color="primary"
                 rounded
-                dense
-                icon="picture_as_pdf"
+                unelevated
+                icon="download"
                 label="Descargar PDF"
                 @click="descargarArboles"
               />
@@ -127,21 +140,22 @@
         </q-expansion-item>
 
         <q-expansion-item
-          icon="account_tree"
-          label="Formato Analisis de Alternativas"
+          icon="hub"
+          label="Formato Análisis de Alternativas"
           expand-separator
-          class="expansion-card"
+          class="expansion-card q-mb-sm"
         >
-          <q-card flat bordered class="q-ma-sm formato-card">
+          <q-card flat class="formato-card">
             <q-card-section>
-              <q-item-label>Anexo 6 Análisis de Alternativas </q-item-label>
+              <div class="text-subtitle1 text-weight-medium">Anexo 6 Análisis de Alternativas</div>
             </q-card-section>
+
             <q-card-actions align="right">
               <q-btn
                 color="primary"
                 rounded
-                dense
-                icon="picture_as_pdf"
+                unelevated
+                icon="download"
                 label="Descargar PDF"
                 @click="descargarPdf('FormatoAnalisisInvolucrados')"
               />
@@ -150,21 +164,22 @@
         </q-expansion-item>
 
         <q-expansion-item
-          icon="description"
-          label="Formato Estructura Analitica"
+          icon="schema"
+          label="Formato Estructura Analítica"
           expand-separator
-          class="expansion-card"
+          class="expansion-card q-mb-sm"
         >
-          <q-card flat bordered class="q-ma-sm formato-card">
+          <q-card flat class="formato-card">
             <q-card-section>
-              <q-item-label>Anexo 7 Estructura Analitica</q-item-label>
+              <div class="text-subtitle1 text-weight-medium">Anexo 7 Estructura Analítica</div>
             </q-card-section>
+
             <q-card-actions align="right">
               <q-btn
                 color="primary"
                 rounded
-                dense
-                icon="picture_as_pdf"
+                unelevated
+                icon="download"
                 label="Descargar PDF"
                 @click="descargarPdf('FormatoEstructuraAnalitica')"
               />
@@ -173,21 +188,24 @@
         </q-expansion-item>
 
         <q-expansion-item
-          icon="groups"
-          label="Formato Matriz"
+          icon="table_chart"
+          label="Matriz de Indicadores"
           expand-separator
-          class="expansion-card"
+          class="expansion-card q-mb-sm"
         >
-          <q-card flat bordered class="q-ma-sm formato-card">
+          <q-card flat class="formato-card">
             <q-card-section>
-              <q-item-label>Matriz Indicadores</q-item-label>
+              <div class="text-subtitle1 text-weight-medium">
+                Matriz de Indicadores para Resultados
+              </div>
             </q-card-section>
+
             <q-card-actions align="right">
               <q-btn
                 color="primary"
                 rounded
-                dense
-                icon="picture_as_pdf"
+                unelevated
+                icon="download"
                 label="Descargar PDF"
                 @click="descargarPdf('FormatoMatriz')"
               />
@@ -196,21 +214,22 @@
         </q-expansion-item>
 
         <q-expansion-item
-          icon="account_tree"
-          label="Formato Ficha Tecnica Del Indicador"
+          icon="monitoring"
+          label="Ficha Técnica del Indicador"
           expand-separator
           class="expansion-card"
         >
-          <q-card flat bordered class="q-ma-sm formato-card">
+          <q-card flat class="formato-card">
             <q-card-section>
-              <q-item-label>Ficha del Indicador</q-item-label>
+              <div class="text-subtitle1 text-weight-medium">Ficha Técnica del Indicador</div>
             </q-card-section>
+
             <q-card-actions align="right">
               <q-btn
                 color="primary"
                 rounded
-                dense
-                icon="picture_as_pdf"
+                unelevated
+                icon="download"
                 label="Descargar PDF"
                 @click="descargarPdf('FormatoFichaFinal')"
               />
@@ -219,15 +238,18 @@
         </q-expansion-item>
       </q-list>
 
-      <q-separator spaced class="q-my-lg" />
+      <q-separator class="q-my-lg" />
 
-      <q-card-actions align="center">
+      <q-card-actions align="center" class="q-pb-xl">
         <q-btn
           color="deep-orange"
+          size="lg"
           rounded
-          icon="picture_as_pdf"
+          unelevated
+          icon="download_for_offline"
           label="Descargar TODOS los PDF"
           @click="descargarTodos"
+          class="btn-descargar"
         />
       </q-card-actions>
     </q-card>
@@ -242,29 +264,72 @@ const { descargarPdf, descargarTodos, descargarArboles } = useResumenDownload()
 
 <style scoped>
 .resumen-page {
+  background: linear-gradient(135deg, #691b31, #7f1d35);
   display: flex;
   justify-content: center;
-  padding-top: 20px;
+  align-items: flex-start;
+  min-height: 100vh;
 }
 
 .resumen-card {
-  max-width: 1100px;
   width: 100%;
-  background-color: #ffffff;
-  border-radius: 12px;
+  max-width: 1150px;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.header-section {
+  padding-top: 30px;
+  padding-bottom: 25px;
+}
+
+.titulo-principal {
+  color: #691b31;
+  letter-spacing: 1px;
 }
 
 .expansion-card {
-  transition: transform 0.2s;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  border: 1px solid #ececec;
+  margin-bottom: 12px;
 }
 
 .expansion-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(105, 27, 49, 0.15);
 }
 
 .formato-card {
-  background-color: #fafafa;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  background: #fafafa;
+  border-radius: 12px;
+  margin: 10px;
+}
+
+.btn-descargar {
+  font-weight: 700;
+  padding-left: 40px;
+  padding-right: 40px;
+  min-height: 52px;
+  box-shadow: 0 6px 15px rgba(255, 87, 34, 0.35);
+}
+
+:deep(.q-expansion-item__container) {
+  background: white;
+}
+
+:deep(.q-expansion-item__toggle-icon) {
+  color: #691b31;
+}
+
+:deep(.q-item__label) {
+  font-weight: 600;
+}
+
+:deep(.q-btn) {
+  text-transform: none;
 }
 </style>
