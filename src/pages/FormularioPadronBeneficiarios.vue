@@ -1,7 +1,6 @@
 <template>
   <q-page class="page-container">
     <div class="content-wrapper">
-      <!-- HEADER -->
       <div class="page-header">
         <h1 class="page-title">Padrón de Beneficiarios</h1>
         <p class="page-subtitle">
@@ -10,7 +9,6 @@
         </p>
       </div>
 
-      <!-- FORM -->
       <q-form @submit.prevent="guardarPadron">
         <q-card class="modern-card">
           <q-card-section>
@@ -18,7 +16,6 @@
           </q-card-section>
 
           <q-card-section class="form-grid">
-            <!-- OPCIÓN -->
             <div>
               <div class="text-subtitle1 text-weight-medium q-mb-md">
                 ¿Cuenta con padrón de beneficiarios?
@@ -36,7 +33,6 @@
               />
             </div>
 
-            <!-- CONTENIDO -->
             <div v-if="form.tienePadron" class="upload-box">
               <q-banner rounded class="info-banner q-mb-md">
                 <template v-slot:avatar>
@@ -47,7 +43,6 @@
                 existe.
               </q-banner>
 
-              <!-- ARCHIVO -->
               <q-file
                 filled
                 bg-color="white"
@@ -68,7 +63,6 @@
                 {{ archivoSeleccionado.name || archivoSeleccionado.file?.name }}
               </div>
 
-              <!-- LIGA -->
               <q-input
                 filled
                 bg-color="white"
@@ -92,7 +86,6 @@
             </q-banner>
           </q-card-section>
 
-          <!-- BOTONES -->
           <q-card-actions align="right" class="q-pa-lg actions-container">
             <q-btn
               label="Pantalla anterior"
@@ -104,7 +97,7 @@
 
             <q-btn
               :loading="subiendo"
-              label="Guardar y continuar"
+              label="Continuar"
               type="submit"
               class="primary-btn"
               unelevated

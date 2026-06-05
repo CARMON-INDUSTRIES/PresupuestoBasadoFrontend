@@ -10,7 +10,6 @@
 
       <q-card flat class="modern-card q-pa-xl">
         <div class="arbol-container">
-          <!-- EFECTO SUPERIOR -->
           <div class="nivel efecto">
             <div class="label">Efecto superior o fin</div>
 
@@ -19,7 +18,6 @@
             </div>
           </div>
 
-          <!-- EFECTOS -->
           <div class="nivel resultados" v-if="hayResultados">
             <div class="label">Efectos</div>
 
@@ -40,7 +38,6 @@
             </div>
           </div>
 
-          <!-- PROBLEMA CENTRAL -->
           <div class="nivel problema">
             <div class="label">Problema central</div>
 
@@ -49,7 +46,6 @@
             </div>
           </div>
 
-          <!-- COMPONENTES -->
           <div class="nivel componentes" v-if="resumen.disenio?.componentes?.length">
             <div class="label">Componentes y actividades</div>
 

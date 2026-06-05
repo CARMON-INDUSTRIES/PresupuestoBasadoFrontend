@@ -1,7 +1,6 @@
 <template>
   <q-page class="page-container">
     <div class="content-wrapper">
-      <!-- HEADER -->
       <div class="page-header">
         <div>
           <h1 class="page-title">Antecedentes</h1>
@@ -11,7 +10,6 @@
           </p>
         </div>
 
-        <!-- AUTOGUARDADO -->
         <div class="autosave-status">
           <q-chip
             v-if="autosaveLoading"
@@ -35,7 +33,6 @@
         </div>
       </div>
 
-      <!-- STEPPER -->
       <q-stepper flat bordered color="primary" animated class="modern-stepper">
         <q-step :name="1" title="Alineación" icon="account_tree" done />
 
@@ -48,9 +45,7 @@
         <q-step :name="5" title="Metas" icon="track_changes" />
       </q-stepper>
 
-      <!-- FORM -->
       <q-form @submit.prevent="submitForm">
-        <!-- CARD -->
         <q-card class="modern-card">
           <q-card-section class="q-pb-none">
             <div class="section-title">Información general del programa</div>
@@ -60,9 +55,7 @@
             </div>
           </q-card-section>
 
-          <!-- CAMPOS -->
           <q-card-section class="form-column">
-            <!-- 1 -->
             <div class="question-block">
               <div class="question-title">1.1 Entorno operativo del programa</div>
 
@@ -81,7 +74,6 @@
               </q-input>
             </div>
 
-            <!-- 2 -->
             <div class="question-block">
               <div class="question-title">1.2 Información estadística y cualitativa</div>
 
@@ -100,7 +92,6 @@
               </q-input>
             </div>
 
-            <!-- 3 -->
             <div class="question-block">
               <div class="question-title">1.3 Actores involucrados</div>
 
@@ -119,7 +110,6 @@
               </q-input>
             </div>
 
-            <!-- 4 -->
             <div class="question-block">
               <div class="question-title">1.4 Evolución y resultados del programa</div>
 
@@ -139,7 +129,6 @@
             </div>
           </q-card-section>
 
-          <!-- INFO -->
           <q-card-section>
             <q-banner rounded class="info-banner">
               <template v-slot:avatar>
@@ -150,7 +139,6 @@
             </q-banner>
           </q-card-section>
 
-          <!-- ACTIONS -->
           <q-card-actions align="right" class="q-pa-lg actions-container">
             <q-btn
               label="Pantalla anterior"

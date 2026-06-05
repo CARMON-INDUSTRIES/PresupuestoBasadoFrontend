@@ -1,7 +1,6 @@
 <template>
   <q-page class="page-container">
     <div class="content-wrapper">
-      <!-- HEADER -->
       <div class="page-header">
         <h1 class="page-title">Reglas de Operación</h1>
 
@@ -11,7 +10,6 @@
         </p>
       </div>
 
-      <!-- FORM -->
       <q-form @submit.prevent="guardarReglasOperacion">
         <q-card class="modern-card">
           <q-card-section>
@@ -19,7 +17,6 @@
           </q-card-section>
 
           <q-card-section class="form-grid">
-            <!-- OPCIÓN -->
             <div>
               <div class="text-subtitle1 text-weight-medium q-mb-md">
                 ¿Tiene reglas de operación?
@@ -37,7 +34,6 @@
               />
             </div>
 
-            <!-- CONTENIDO -->
             <div v-if="form.tieneReglasOperacion" class="upload-box">
               <q-banner rounded class="info-banner q-mb-md">
                 <template v-slot:avatar>
@@ -48,7 +44,6 @@
                 si se encuentra disponible.
               </q-banner>
 
-              <!-- ARCHIVO -->
               <q-file
                 filled
                 bg-color="white"
@@ -63,14 +58,12 @@
                 </template>
               </q-file>
 
-              <!-- PREVIEW -->
               <div v-if="archivoSeleccionado" class="file-preview">
                 <q-icon name="description" class="q-mr-sm" />
 
                 {{ archivoSeleccionado.name || archivoSeleccionado.file?.name }}
               </div>
 
-              <!-- LINK -->
               <q-input
                 filled
                 bg-color="white"
@@ -85,7 +78,6 @@
               </q-input>
             </div>
 
-            <!-- ALERTA -->
             <q-banner
               v-else-if="form.tieneReglasOperacion === false"
               rounded
@@ -99,7 +91,6 @@
             </q-banner>
           </q-card-section>
 
-          <!-- ACTIONS -->
           <q-card-actions align="right" class="q-pa-lg actions-container">
             <q-btn
               label="Pantalla anterior"
@@ -108,7 +99,7 @@
               to="formulario-padron-beneficiarios"
             />
 
-            <q-btn label="Guardar y continuar" type="submit" class="primary-btn" unelevated />
+            <q-btn label="Continuar" type="submit" class="primary-btn" unelevated />
           </q-card-actions>
         </q-card>
       </q-form>

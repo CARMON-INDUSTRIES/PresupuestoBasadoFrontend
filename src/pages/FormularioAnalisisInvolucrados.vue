@@ -1,7 +1,6 @@
 <template>
   <q-page class="page-container">
     <div class="content-wrapper">
-      <!-- Header -->
       <div class="page-header">
         <h1 class="page-title">Análisis de Involucrados</h1>
         <p class="page-subtitle">

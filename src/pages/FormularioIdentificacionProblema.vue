@@ -1,7 +1,6 @@
 <template>
   <q-page class="page-container">
     <div class="content-wrapper">
-      <!-- HEADER -->
       <div class="page-header">
         <div>
           <h1 class="page-title">Identificación y Descripción del Problema</h1>
@@ -12,7 +11,6 @@
           </p>
         </div>
 
-        <!-- ESTADO -->
         <div class="autosave-status">
           <q-chip
             v-if="saving"
@@ -36,7 +34,6 @@
         </div>
       </div>
 
-      <!-- STEPPER -->
       <q-stepper flat bordered animated color="primary" class="modern-stepper">
         <q-step :name="1" title="Alineación" icon="account_tree" done />
 
@@ -51,10 +48,8 @@
         <q-step :name="6" title="Metas" icon="track_changes" />
       </q-stepper>
 
-      <!-- FORM -->
       <q-form @submit.prevent="submitForm">
         <q-card class="modern-card">
-          <!-- HEADER CARD -->
           <q-card-section class="q-pb-none">
             <div class="section-title">Diagnóstico del problema público</div>
 
@@ -64,9 +59,7 @@
             </div>
           </q-card-section>
 
-          <!-- FORM -->
           <q-card-section class="form-column">
-            <!-- PROBLEMA CENTRAL -->
             <div class="question-block">
               <div class="question-title">2.1 Problema central o necesidad principal</div>
 
@@ -85,7 +78,6 @@
               </q-input>
             </div>
 
-            <!-- INVOLUCRADOS -->
             <div class="question-block">
               <div class="question-title">2.2 Actores involucrados</div>
 
@@ -94,9 +86,7 @@
                 problemática.
               </div>
 
-              <!-- GRID -->
               <div class="actors-grid">
-                <!-- BENEFICIADOS -->
                 <q-card class="actor-card positive-card">
                   <q-card-section>
                     <div class="actor-title">Beneficiados</div>
@@ -116,7 +106,6 @@
                   </q-card-section>
                 </q-card>
 
-                <!-- OPOSITORES -->
                 <q-card class="actor-card negative-card">
                   <q-card-section>
                     <div class="actor-title">Opositores</div>
@@ -136,7 +125,6 @@
                   </q-card-section>
                 </q-card>
 
-                <!-- EJECUTORES -->
                 <q-card class="actor-card info-card">
                   <q-card-section>
                     <div class="actor-title">Ejecutores</div>
@@ -156,7 +144,6 @@
                   </q-card-section>
                 </q-card>
 
-                <!-- INDIFERENTES -->
                 <q-card class="actor-card neutral-card">
                   <q-card-section>
                     <div class="actor-title">Indiferentes</div>
@@ -178,7 +165,6 @@
               </div>
             </div>
 
-            <!-- CAUSAS -->
             <div class="question-block">
               <div class="question-title">2.3 Causas del problema</div>
 
@@ -197,7 +183,6 @@
               </q-input>
             </div>
 
-            <!-- EFECTOS -->
             <div class="question-block">
               <div class="question-title">2.4 Efectos del problema</div>
 
@@ -216,7 +201,6 @@
               </q-input>
             </div>
 
-            <!-- EVOLUCION -->
             <div class="question-block">
               <div class="question-title">2.5 Evolución histórica del problema</div>
 
@@ -236,7 +220,6 @@
             </div>
           </q-card-section>
 
-          <!-- INFO -->
           <q-card-section>
             <q-banner rounded class="info-banner">
               <template v-slot:avatar>
@@ -247,7 +230,6 @@
             </q-banner>
           </q-card-section>
 
-          <!-- ACTIONS -->
           <q-card-actions align="right" class="q-pa-lg actions-container">
             <q-btn
               label="Pantalla anterior"

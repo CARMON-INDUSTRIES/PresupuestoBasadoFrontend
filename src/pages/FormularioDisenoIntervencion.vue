@@ -10,13 +10,25 @@
           </p>
         </div>
 
-        <div class="autosave-chip">
+        <div class="autosave-status">
           <q-chip
-            :color="autosaveLoading ? 'orange' : 'positive'"
-            text-color="white"
-            icon="cloud_done"
+            v-if="autosaveLoading"
+            color="orange-1"
+            text-color="orange-9"
+            icon="sync"
+            class="autosave-chip"
           >
-            {{ autosaveLoading ? 'Guardando...' : 'Guardado automático' }}
+            Guardando...
+          </q-chip>
+
+          <q-chip
+            v-else
+            color="green-1"
+            text-color="green-9"
+            icon="check_circle"
+            class="autosave-chip"
+          >
+            Autoguardado activo
           </q-chip>
         </div>
       </div>

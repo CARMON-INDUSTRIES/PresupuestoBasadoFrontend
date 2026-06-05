@@ -1,7 +1,6 @@
 <template>
   <q-page class="page-container">
     <div class="content-wrapper">
-      <!-- HEADER -->
       <div class="page-header">
         <div>
           <h1 class="page-title">Alineación</h1>
@@ -11,7 +10,6 @@
         </div>
       </div>
 
-      <!-- PROGRESO -->
       <q-stepper flat bordered color="primary" animated class="modern-stepper">
         <q-step :name="1" title="Alineación" icon="account_tree" :done="ambasCompletas" active />
 
@@ -20,16 +18,13 @@
         <q-step :name="3" title="Metas" icon="track_changes" />
       </q-stepper>
 
-      <!-- FORM -->
       <q-form @submit.prevent="submitForm">
-        <!-- CARD PRINCIPAL -->
         <q-card class="modern-card">
           <q-card-section class="q-pb-none">
             <div class="section-title">Información de alineación</div>
           </q-card-section>
 
           <q-card-section class="form-grid">
-            <!-- TIPO -->
             <q-select
               outlined
               bg-color="white"
@@ -44,7 +39,6 @@
               </template>
             </q-select>
 
-            <!-- ACUERDO -->
             <q-select
               outlined
               bg-color="white"
@@ -71,7 +65,6 @@
               </template>
             </q-select>
 
-            <!-- OBJETIVO -->
             <q-select
               outlined
               bg-color="white"
@@ -102,7 +95,6 @@
               </template>
             </q-select>
 
-            <!-- ESTRATEGIAS -->
             <q-select
               outlined
               bg-color="white"
@@ -134,7 +126,6 @@
               </template>
             </q-select>
 
-            <!-- LINEAS -->
             <q-select
               outlined
               bg-color="white"
@@ -165,7 +156,6 @@
               </template>
             </q-select>
 
-            <!-- RAMO -->
             <q-select
               v-if="form.tipo === 'Municipio'"
               outlined
@@ -181,7 +171,6 @@
             </q-select>
           </q-card-section>
 
-          <!-- ALERTAS -->
           <q-card-section>
             <q-banner v-if="ambasCompletas" rounded class="success-banner">
               <template v-slot:avatar>
@@ -206,7 +195,6 @@
             </q-banner>
           </q-card-section>
 
-          <!-- BOTONES -->
           <q-card-actions align="right" class="q-pa-lg actions-container">
             <q-btn
               label="Registrar alineación"

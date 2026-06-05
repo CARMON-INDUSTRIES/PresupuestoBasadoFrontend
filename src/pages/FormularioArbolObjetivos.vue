@@ -9,7 +9,6 @@
       </div>
 
       <q-card flat class="modern-card q-pa-xl">
-        <!-- FIN -->
         <div class="row justify-center q-mb-xl">
           <div class="col-12 col-lg-8">
             <div class="tree-card tree-fin">
@@ -34,7 +33,6 @@
           </div>
         </div>
 
-        <!-- EFECTOS -->
         <div class="row q-col-gutter-xl justify-center q-mb-xl">
           <div
             v-for="(comp, cIndex) in arbolObjetivos.componentes"
@@ -68,7 +66,6 @@
           </div>
         </div>
 
-        <!-- OBJETIVO CENTRAL -->
         <div class="row justify-center q-mb-xl">
           <div class="col-12 col-lg-8">
             <div class="tree-card tree-objective">
@@ -93,7 +90,6 @@
           </div>
         </div>
 
-        <!-- COMPONENTES -->
         <div class="row q-col-gutter-xl justify-center q-mb-xl">
           <div
             v-for="(comp, cIndex) in arbolObjetivos.componentes"
@@ -121,7 +117,6 @@
           </div>
         </div>
 
-        <!-- MEDIOS -->
         <div class="row q-col-gutter-xl justify-center">
           <div
             v-for="(comp, cIndex) in arbolObjetivos.componentes"
@@ -155,7 +150,6 @@
 
         <q-separator class="q-my-xl" />
 
-        <!-- BOTONES -->
         <div class="row justify-end actions-container">
           <q-btn
             label="Pantalla Anterior"

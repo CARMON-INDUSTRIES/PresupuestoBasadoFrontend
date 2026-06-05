@@ -1,7 +1,6 @@
 <template>
   <q-page class="page-container">
     <div class="content-wrapper">
-      <!-- Header -->
       <div class="page-header">
         <h1 class="page-title">Definición del Problema</h1>
         <p class="page-subtitle">
@@ -154,15 +153,14 @@
           />
 
           <q-btn
-            color="primary"
-            label="Guardar"
+            label="Continuar"
+            class="primary-btn"
             text-color="white"
             :loading="loading"
             rounded
             unelevated
-            class="primary-btn"
-            icon="save"
             @click="guardarEfectoSuperior"
+            icon="arrow_forward"
           />
         </q-card-actions>
       </q-card>

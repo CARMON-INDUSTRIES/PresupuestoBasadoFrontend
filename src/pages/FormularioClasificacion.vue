@@ -1,7 +1,6 @@
 <template>
   <q-page class="page-container">
     <div class="content-wrapper">
-      <!-- HEADER -->
       <div class="page-header">
         <div>
           <h1 class="page-title">Clasificación Funcional</h1>
@@ -12,7 +11,6 @@
         </div>
       </div>
 
-      <!-- STEPPER -->
       <q-stepper flat bordered color="primary" animated class="modern-stepper">
         <q-step :name="1" title="Alineación" icon="account_tree" done />
 
@@ -23,9 +21,7 @@
         <q-step :name="4" title="Metas" icon="track_changes" />
       </q-stepper>
 
-      <!-- FORM -->
       <q-form @submit.prevent="submitForm">
-        <!-- CARD -->
         <q-card class="modern-card">
           <q-card-section class="q-pb-none">
             <div class="section-title">Información funcional</div>
@@ -35,9 +31,7 @@
             </div>
           </q-card-section>
 
-          <!-- FORM GRID -->
           <q-card-section class="form-grid">
-            <!-- SUBFUNCION -->
             <q-select
               outlined
               bg-color="white"
@@ -54,7 +48,6 @@
               </template>
             </q-select>
 
-            <!-- FUNCION -->
             <q-select
               outlined
               bg-color="white"
@@ -71,7 +64,6 @@
               </template>
             </q-select>
 
-            <!-- FINALIDAD -->
             <q-select
               outlined
               bg-color="white"
@@ -88,7 +80,6 @@
               </template>
             </q-select>
 
-            <!-- AÑO -->
             <q-select
               outlined
               bg-color="white"
@@ -102,7 +93,6 @@
               </template>
             </q-select>
 
-            <!-- ENTREGA -->
             <q-select
               outlined
               bg-color="white"
@@ -117,7 +107,6 @@
             </q-select>
           </q-card-section>
 
-          <!-- INFO -->
           <q-card-section>
             <q-banner rounded class="info-banner">
               <template v-slot:avatar>
@@ -129,7 +118,6 @@
             </q-banner>
           </q-card-section>
 
-          <!-- ACTIONS -->
           <q-card-actions align="right" class="q-pa-lg actions-container">
             <q-btn
               label="Pantalla anterior"

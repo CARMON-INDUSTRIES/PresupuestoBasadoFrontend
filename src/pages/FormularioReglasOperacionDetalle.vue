@@ -1,7 +1,6 @@
 <template>
   <q-page class="page-container">
     <div class="content-wrapper">
-      <!-- HEADER -->
       <div class="page-header">
         <div>
           <h1 class="page-title">Programa Social</h1>
@@ -11,14 +10,12 @@
         </div>
       </div>
 
-      <!-- STEPPER -->
       <q-stepper flat bordered color="primary" animated class="modern-stepper">
         <q-step :name="1" title="Intervención" icon="widgets" done />
         <q-step :name="2" title="Programa Social" icon="groups" active />
         <q-step :name="3" title="Continuar" icon="arrow_forward" />
       </q-stepper>
 
-      <!-- CARD -->
       <q-form @submit.prevent="guardarDetalle">
         <q-card class="modern-card">
           <q-card-section>
@@ -29,7 +26,6 @@
           </q-card-section>
 
           <q-card-section class="form-grid">
-            <!-- REGLAS -->
             <div class="option-card">
               <div class="option-title">
                 <q-icon name="gavel" color="primary" size="24px" />
@@ -50,7 +46,6 @@
               />
             </div>
 
-            <!-- SUBSIDIOS -->
             <div class="option-card">
               <div class="option-title">
                 <q-icon name="volunteer_activism" color="primary" size="24px" />
@@ -71,7 +66,6 @@
               />
             </div>
 
-            <!-- SERVICIOS -->
             <div class="option-card">
               <div class="option-title">
                 <q-icon name="miscellaneous_services" color="primary" size="24px" />
@@ -92,7 +86,6 @@
               />
             </div>
 
-            <!-- BIENES -->
             <div class="option-card">
               <div class="option-title">
                 <q-icon name="inventory_2" color="primary" size="24px" />
@@ -114,7 +107,6 @@
             </div>
           </q-card-section>
 
-          <!-- ACTIONS -->
           <q-card-actions align="right" class="q-pa-lg actions-container">
             <q-btn
               label="Pantalla anterior"

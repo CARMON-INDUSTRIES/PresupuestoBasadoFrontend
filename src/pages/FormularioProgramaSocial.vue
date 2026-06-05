@@ -1,7 +1,6 @@
 <template>
   <q-page class="page-container">
     <div class="content-wrapper">
-      <!-- HEADER -->
       <div class="page-header">
         <div>
           <h1 class="page-title">Programa Social</h1>
@@ -12,7 +11,6 @@
         </div>
       </div>
 
-      <!-- CARD PRINCIPAL -->
       <q-form @submit.prevent="guardarProgramaSocial">
         <q-card class="modern-card">
           <q-card-section>
@@ -31,7 +29,6 @@
             />
           </q-card-section>
 
-          <!-- CATEGORÍAS -->
           <q-card-section v-if="form.esProgramaSocial">
             <div class="section-title q-mb-lg">Categorías del programa</div>
 
@@ -73,7 +70,6 @@
             </div>
           </q-card-section>
 
-          <!-- ACCIONES -->
           <q-card-actions align="right" class="q-pa-lg actions-container">
             <q-btn
               label="Pantalla anterior"

@@ -1,7 +1,6 @@
 <template>
   <q-page class="page-container">
     <div class="content-wrapper">
-      <!-- HEADER -->
       <div class="page-header">
         <div>
           <h1 class="page-title">Cobertura</h1>
@@ -12,7 +11,6 @@
           </p>
         </div>
 
-        <!-- AUTOSAVE -->
         <div class="autosave-status">
           <q-chip color="green-1" text-color="green-9" icon="cloud_done" class="autosave-chip">
             Autoguardado activo
@@ -20,7 +18,6 @@
         </div>
       </div>
 
-      <!-- STEPPER -->
       <q-stepper flat bordered animated color="primary" class="modern-stepper">
         <q-step :name="1" title="Alineación" icon="account_tree" done />
 
@@ -37,10 +34,8 @@
         <q-step :name="7" title="Intervención" icon="schema" />
       </q-stepper>
 
-      <!-- FORM -->
       <q-form @submit.prevent="submitForm">
         <q-card class="modern-card">
-          <!-- TITULO -->
           <q-card-section class="q-pb-none">
             <div class="section-title">Cobertura y población objetivo</div>
 
@@ -50,9 +45,7 @@
             </div>
           </q-card-section>
 
-          <!-- CONTENIDO -->
           <q-card-section class="form-column">
-            <!-- POBLACION POTENCIAL -->
             <div class="question-block">
               <div class="question-title">
                 4.1 Identificación y caracterización de la población potencial
@@ -78,7 +71,6 @@
               </q-input>
             </div>
 
-            <!-- POBLACION OBJETIVO -->
             <div class="question-block">
               <div class="question-title">
                 4.2 Identificación y caracterización de la población objetivo
@@ -103,7 +95,6 @@
               </q-input>
             </div>
 
-            <!-- UNIDAD DE MEDIDA -->
             <div class="question-block">
               <div class="question-title">Unidad de medida</div>
 
@@ -124,7 +115,6 @@
               </q-input>
             </div>
 
-            <!-- CUANTIFICACION -->
             <div class="stats-section">
               <div class="section-mini-title">4.3 Cuantificación de las poblaciones</div>
 
@@ -173,7 +163,6 @@
               </div>
             </div>
 
-            <!-- FRECUENCIA -->
             <div class="question-block">
               <div class="question-title">4.4 Frecuencia de actualización de la población</div>
 
@@ -199,7 +188,6 @@
               </q-select>
             </div>
 
-            <!-- PROCESO POTENCIAL -->
             <div class="question-block">
               <div class="question-title">Proceso de identificación de la población potencial</div>
 
@@ -218,7 +206,6 @@
               </q-input>
             </div>
 
-            <!-- PROCESO OBJETIVO -->
             <div class="question-block">
               <div class="question-title">Proceso de identificación de la población objetivo</div>
 
@@ -238,7 +225,6 @@
             </div>
           </q-card-section>
 
-          <!-- ALERTA -->
           <q-card-section>
             <q-banner rounded class="info-banner">
               <template v-slot:avatar>
@@ -249,7 +235,6 @@
             </q-banner>
           </q-card-section>
 
-          <!-- BOTONES -->
           <q-card-actions align="right" class="q-pa-lg actions-container">
             <q-btn
               label="Pantalla anterior"
