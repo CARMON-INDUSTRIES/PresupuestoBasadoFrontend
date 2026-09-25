@@ -1,0 +1,69 @@
+.resumen-page {
+  background: linear-gradient(135deg, #691b31, #7f1d35);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.resumen-card {
+  width: 100%;
+  max-width: 1150px;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.header-section {
+  padding-top: 30px;
+  padding-bottom: 25px;
+}
+
+.titulo-principal {
+  color: #691b31;
+  letter-spacing: 1px;
+}
+
+.expansion-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  border: 1px solid #ececec;
+  margin-bottom: 12px;
+}
+
+.expansion-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(105, 27, 49, 0.15);
+}
+
+.formato-card {
+  background: #fafafa;
+  border-radius: 12px;
+  margin: 10px;
+}
+
+.btn-descargar {
+  font-weight: 700;
+  padding-left: 40px;
+  padding-right: 40px;
+  min-height: 52px;
+  box-shadow: 0 6px 15px rgba(255, 87, 34, 0.35);
+}
+
+:deep(.q-expansion-item__container) {
+  background: white;
+}
+
+:deep(.q-expansion-item__toggle-icon) {
+  color: #691b31;
+}
+
+:deep(.q-item__label) {
+  font-weight: 600;
+}
+
+:deep(.q-btn) {
+  text-transform: none;
+}

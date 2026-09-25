@@ -1,0 +1,47 @@
+.perfil-page {
+  background: linear-gradient(135deg, #691b31 0%, #7f1d35 100%);
+  min-height: 100vh;
+}
+
+.perfil-card {
+  max-width: 1200px;
+  margin: auto;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+}
+
+.perfil-header {
+  padding: 24px;
+}
+
+.guardar-btn {
+  font-weight: 700;
+  padding: 12px 30px;
+  min-width: 220px;
+}
+
+.password-card {
+  width: 450px;
+  border-radius: 18px;
+}
+
+.q-field {
+  margin-bottom: 10px;
+}
+
+:deep(.q-field--outlined .q-field__control) {
+  border-radius: 12px;
+}
+
+:deep(.q-btn) {
+  transition: all 0.25s ease;
+}
+
+:deep(.q-btn:hover) {
+  transform: translateY(-2px);
+}
+
+:deep(.q-card) {
+  overflow: hidden;
+}

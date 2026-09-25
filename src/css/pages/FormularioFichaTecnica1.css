@@ -1,0 +1,21 @@
+.scroll-x {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}

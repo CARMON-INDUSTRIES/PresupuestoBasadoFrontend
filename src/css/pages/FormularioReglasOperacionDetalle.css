@@ -1,0 +1,140 @@
+.page-container {
+  background: #f4f6f9;
+  min-height: 100vh;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: auto;
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #691b31;
+  margin: 0;
+}
+
+.page-subtitle {
+  color: #6b7280;
+  margin-top: 8px;
+  font-size: 1rem;
+}
+
+.modern-stepper {
+  border-radius: 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+.modern-card {
+  border-radius: 24px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  border: none;
+  background: white;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.option-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 22px;
+  transition: all 0.2s ease;
+}
+
+.option-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.option-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.option-description {
+  color: #6b7280;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.modern-radio {
+  padding-top: 8px;
+}
+
+.actions-container {
+  gap: 12px;
+}
+
+.primary-btn {
+  background: #c5a46d;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.primary-btn:hover {
+  opacity: 0.95;
+}
+
+.secondary-btn {
+  background: #691b31;
+  color: white;
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.secondary-btn:hover {
+  opacity: 0.95;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.7rem;
+  }
+
+  .actions-container {
+    flex-direction: column;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
+
+  .content-wrapper {
+    padding: 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

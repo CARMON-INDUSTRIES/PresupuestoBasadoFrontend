@@ -68,262 +68,38 @@
           to="formulario-estructura-analitica"
           :loading="loading"
         />
-        <q-btn color="primary" label="Guardar" rounded class="submit-btn" @click="guardar" />
+        <q-btn
+          color="primary"
+          label="Guardar"
+          :loading="loading"
+          rounded
+          class="submit-btn"
+          @click="guardar"
+        />
       </q-card-actions>
     </q-card>
   </q-page>
 </template>
+
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { Notify } from 'quasar'
-import api from 'src/boot/api'
-import DatosBasicosIndicador from './DatosBasicosIndicador.vue'
-import FormulaIndicador from './FormulaIndicador.vue'
-import MetasIndicador from './MetasIndicador.vue'
+import { useFormularioFichaTecnica1 } from 'src/composables/pages/useFormularioFichaTecnica1'
 
-const usuario = ref({})
-const claveIndicador = ref('')
-const tipoIndicador = ref('')
-const indicadores = ref([])
-const indiceSeleccionado = ref(0)
-
-const siglas = ref({ resultadoEsperado: '', numerador: '', denominador: '' })
-let siglasInterval = null
-
-const indicadorActivo = computed({
-  get: () => indicadores.value[indiceSeleccionado.value] || null,
-  set: (nuevoValor) => {
-    indicadores.value[indiceSeleccionado.value] = nuevoValor
-  },
-})
-
-const filtradas = computed(() => {
-  const municipal = JSON.parse(localStorage.getItem('LineaMunicipal') || '{}')
-  const estatal = JSON.parse(localStorage.getItem('LineaEstatal') || '{}')
-
-  const lineasM =
-    municipal.lineasSeleccionadas?.map((l) => ({
-      id: l.id,
-      lineaAccion: l.nombre,
-      tipo: 'Municipal',
-    })) || []
-
-  const lineasE =
-    estatal.lineasSeleccionadas?.map((l) => ({
-      id: l.id,
-      lineaAccion: l.nombre,
-      tipo: 'Estatal',
-    })) || []
-
-  const todas = [...lineasM, ...lineasE]
-  const idsPermitidos = todas.map((l) => l.id)
-
-  return indicadorActivo.value?.lineasAccion?.filter((l) => idsPermitidos.includes(l.id)) || []
-})
-
-function generarSiglas(texto) {
-  if (!texto) return ''
-  const blacklist = ['de', 'la', 'el', 'y', 'del', 'para', 'con', 'las', 'los']
-  return texto
-    .split(/[\s\-/]+/)
-    .filter((w) => w && !blacklist.includes(w.toLowerCase()))
-    .map((w) => w[0]?.toUpperCase() || '')
-    .join('')
-}
-
-onMounted(async () => {
-  try {
-    const local = localStorage.getItem('fichaIndicador')
-    if (local) {
-      const ficha = JSON.parse(local)
-      usuario.value = ficha.usuario || {}
-      claveIndicador.value = ficha.claveIndicador || ''
-      tipoIndicador.value = ficha.tipoIndicador || ''
-      indicadores.value = ficha.indicadores || []
-    }
-
-    const me = await api.get('/Cuentas/me')
-    usuario.value = me.data || {}
-
-    const mir = await api.get('/MatrizIndicadores/ultimo')
-    const filas = mir.data?.filas || []
-
-    indicadores.value = filas.map((f) => ({
-      id: f.id,
-      nivel: f.nivel || '',
-      indicadores: f.indicadores || '',
-      resultadoEsperado: f.resumenNarrativo || '',
-      dimension: '',
-      sentido: '',
-      definicion: '',
-      unidadMedida: 'Número / Porcentaje',
-      rangoValor: '0-100',
-      frecuenciaMedicion: '',
-      cobertura: 'Municipal',
-      numerador: f.numerador || '',
-      denominador: f.denominador || '',
-      descripcion: f.descripcion || '',
-      fuentes: {
-        resultadoEsperado: f.fuentes?.resultadoEsperado || '',
-        numerador: f.fuentes?.numerador || '',
-        denominador: f.fuentes?.denominador || '',
-      },
-      metas: f.metas || [],
-
-      metasProgramadas: Array.from({ length: 12 }, (_, i) => ({
-        mes: `Mes ${i + 1}`,
-        cantidad: 0,
-        alcanzado: 0,
-        fecha: '',
-      })),
-
-      lineaBaseValor: f.lineaBase?.valor ?? null,
-      lineaBaseUnidad: f.lineaBase?.unidad ?? '',
-      lineaBaseAnio: f.lineaBase?.anio ?? '',
-      lineaBasePeriodo: f.lineaBase?.periodo ?? '',
-      lineasAccion: f.lineasAccion || [],
-      lineaAccionSeleccionada: null,
-      crema: {
-        claro: 'No',
-        relevante: 'No',
-        economico: 'No',
-        monitoreable: 'No',
-        adecuado: 'No',
-      },
-    }))
-
-    await cargarLineasAccion()
-
-    const nivelActual = (indicadores.value[0]?.nivel || '').toString().toLowerCase()
-    tipoIndicador.value =
-      nivelActual === 'fin' || nivelActual.includes('prop') ? 'Estratégico' : 'De Gestión'
-
-    siglasInterval = setInterval(() => {
-      const activo = indicadorActivo.value
-      if (!activo) return
-      siglas.value = {
-        resultadoEsperado: generarSiglas(activo.resultadoEsperado),
-        numerador: generarSiglas(activo.numerador),
-        denominador: generarSiglas(activo.denominador),
-      }
-    }, 3000)
-  } catch (error) {
-    console.error('Error al cargar datos:', error)
-    Notify.create({ type: 'negative', message: 'Error al cargar datos' })
-  }
-})
-
-async function cargarLineasAccion() {
-  try {
-    const municipal = JSON.parse(localStorage.getItem('LineaMunicipal') || '{}')
-    const estatal = JSON.parse(localStorage.getItem('LineaEstatal') || '{}')
-
-    const lineasM =
-      municipal.lineasSeleccionadas?.map((l) => ({
-        id: l.id,
-        lineaAccion: l.nombre,
-        tipo: 'Municipal',
-      })) || []
-
-    const lineasE =
-      estatal.lineasSeleccionadas?.map((l) => ({
-        id: l.id,
-        lineaAccion: l.nombre,
-        tipo: 'Estatal',
-      })) || []
-
-    const lineasSeleccionadas = [...lineasM, ...lineasE]
-
-    if (lineasSeleccionadas.length) {
-      indicadores.value.forEach((ind) => {
-        ind.lineasAccion = lineasSeleccionadas
-      })
-      return
-    }
-
-    const res = await api.get('/AlineacionMunicipio')
-    const data = res.data || []
-
-    indicadores.value.forEach((ind) => {
-      ind.lineasAccion = data.map((la) => ({
-        id: la.id,
-        lineaAccion: la.lineaAccion,
-        tipo: 'Municipal',
-      }))
-    })
-  } catch (err) {
-    console.error('Error al cargar líneas de acción', err)
-    Notify.create({ type: 'negative', message: 'Error al cargar líneas de acción' })
-  }
-}
-
-async function guardar() {
-  try {
-    const fichaPayload = {
-      claveIndicador: claveIndicador.value,
-      tipoIndicador: tipoIndicador.value,
-
-      indicadores: indicadores.value.map((ind) => ({
-        ...ind,
-        lineaBaseAnio:
-          ind.lineaBaseAnio !== null && ind.lineaBaseAnio !== undefined
-            ? String(ind.lineaBaseAnio)
-            : '',
-
-        metasProgramadas: (ind.metasProgramadas || []).map((m, index) => ({
-          metaProgramadaNombre: `Meta ${index + 1}`,
-          cantidad: Number(m.cantidad) || 0,
-          periodoCumplimiento: 'Mensual',
-          mes: index + 1,
-          cantidadEsperada: Number(m.cantidad) || 0,
-          alcanzado: Number(m.alcanzado) || 0,
-        })),
-      })),
-
-      lineasAccion: [],
-    }
-
-    console.log('PAYLOAD CORRECTO:', fichaPayload)
-
-    await api.post('/FichaIndicador', fichaPayload)
-
-    localStorage.setItem('fichaIndicador', JSON.stringify(fichaPayload))
-
-    Notify.create({
-      type: 'positive',
-      message: 'Ficha técnica guardada correctamente',
-    })
-  } catch (err) {
-    console.error('Error al guardar ficha:', err)
-    Notify.create({ type: 'negative', message: 'Error al guardar ficha' })
-  }
-}
-
-onUnmounted(() => {
-  if (siglasInterval) clearInterval(siglasInterval)
-})
+const state = useFormularioFichaTecnica1()
+const {
+  usuario,
+  claveIndicador,
+  tipoIndicador,
+  indicadores,
+  indiceSeleccionado,
+  siglas,
+  loading,
+  indicadorActivo,
+  filtradas,
+  guardar,
+  DatosBasicosIndicador,
+  FormulaIndicador,
+  MetasIndicador,
+} = state
 </script>
 
-<style scoped>
-.scroll-x {
-  overflow-x: auto;
-  white-space: nowrap;
-}
-.submit-btn {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
-}
-
-.registrar {
-  font-weight: 900;
-  font-size: 0.8rem;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 12px;
-  padding-bottom: 12px;
-}
-</style>
+<style scoped src="src/css/pages/FormularioFichaTecnica1.css" />

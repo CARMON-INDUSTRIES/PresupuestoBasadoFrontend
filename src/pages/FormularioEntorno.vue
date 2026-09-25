@@ -40,26 +40,27 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
-
+import { useFormularioPersistente } from 'src/composables/useFormularioPersistente'
 const router = useRouter()
 const loading = ref(false)
-
-const form = ref({
-  factoresInternos: '',
-  factoresExternos: '',
-  riesgosOportunidades: '',
+const form = ref({ factoresInternos: '', factoresExternos: '', riesgosOportunidades: '' })
+const { guardarDatos } = useFormularioPersistente({
+  form,
+  storageKey: 'FormularioEntorno',
+  load: async () => (await api.get('/AnalisisEntorno/ultimo')).data,
+  save: async (data) => (await api.post('/AnalisisEntorno', data)).data,
 })
-
 async function submitForm() {
+  if (loading.value) return
   loading.value = true
   try {
-    await api.post('/AnalisisEntorno', form.value)
-    localStorage.setItem('ultimaRutaRegistro', '/resumen-final')
-    router.push('/resumen-final')
+    await guardarDatos()
+    Notify.create({ type: 'positive', message: 'Datos guardados correctamente' })
+    await router.push('/resumen-final')
   } catch (error) {
     Notify.create({
       type: 'negative',
-      message: error.response?.data?.message || 'Error al guardar el formulario',
+      message: error.response?.data?.message || 'No se pudo guardar. Tu borrador se conserva.',
     })
   } finally {
     loading.value = false

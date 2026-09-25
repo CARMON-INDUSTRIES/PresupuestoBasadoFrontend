@@ -1,3 +1,4 @@
+import { userStorage } from 'src/utils/userStorage'
 import { defineRouter } from '#q-app/wrappers'
 import {
   createRouter,
@@ -20,16 +21,13 @@ export default defineRouter(function () {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   })
 
-  Router.afterEach((to) => {
-    const rutasRegistro = [
-      '/formulario-alineacion',
-      '/formulario-identificacion',
-      '/formulario-diseno',
-      '/formulario-ficha-tecnica-1',
-    ]
-
-    if (rutasRegistro.includes(to.path)) {
-      localStorage.setItem('ultimaRutaRegistro', to.path)
+  Router.afterEach((to, from, failure) => {
+    if (
+      !failure &&
+      to.matched.some((record) => record.meta.requiresAuth) &&
+      to.path !== '/registro-usuario-detalle'
+    ) {
+      userStorage.setItem('ultimaRutaRegistro', to.path)
     }
   })
 

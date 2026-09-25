@@ -38,88 +38,7 @@
         </div>
       </div>
 
-      <div class="q-mt-md">
-        <q-markup-table flat bordered>
-          <thead>
-            <tr>
-              <th>Sigla</th>
-              <th>Unidad de medida</th>
-              <th>Descripción</th>
-              <th>Fuente</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{{ siglas.resultadoEsperado || 'RE' }}</td>
-              <td>
-                <q-input
-                  :model-value="modelValue.unidadMedida"
-                  @update:model-value="updateField('unidadMedida', $event)"
-                  dense
-                  filled
-                  placeholder="Unidad"
-                />
-              </td>
-              <td>{{ modelValue.resultadoEsperado }}</td>
-              <td>
-                <q-input
-                  :model-value="modelValue.fuentes.resultadoEsperado"
-                  @update:model-value="updateFuente('resultadoEsperado', $event)"
-                  dense
-                  filled
-                  placeholder="Fuente"
-                />
-              </td>
-            </tr>
-
-            <tr>
-              <td>{{ siglas.numerador || 'NUM' }}</td>
-              <td>
-                <q-input
-                  :model-value="modelValue.unidadMedida"
-                  @update:model-value="updateField('unidadMedida', $event)"
-                  dense
-                  filled
-                  placeholder="Unidad"
-                />
-              </td>
-              <td>{{ modelValue.numerador }}</td>
-              <td>
-                <q-input
-                  :model-value="modelValue.fuentes.numerador"
-                  @update:model-value="updateFuente('numerador', $event)"
-                  dense
-                  filled
-                  placeholder="Fuente"
-                />
-              </td>
-            </tr>
-
-            <tr>
-              <td>{{ siglas.denominador || 'DEN' }}</td>
-              <td>
-                <q-input
-                  :model-value="modelValue.unidadMedida"
-                  @update:model-value="updateField('unidadMedida', $event)"
-                  dense
-                  filled
-                  placeholder="Unidad"
-                />
-              </td>
-              <td>{{ modelValue.denominador }}</td>
-              <td>
-                <q-input
-                  :model-value="modelValue.fuentes.denominador"
-                  @update:model-value="updateFuente('denominador', $event)"
-                  dense
-                  filled
-                  placeholder="Fuente"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </q-markup-table>
-      </div>
+      <FormulaIndicadorSection1 />
     </q-card-section>
 
     <!-- CREMA
@@ -188,42 +107,18 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
-
-const props = defineProps({
-  modelValue: {
-    type: Object,
-    required: true,
-  },
-  siglas: {
-    type: Object,
-    default: () => ({ resultadoEsperado: '', numerador: '', denominador: '' }),
-  },
-})
-
-const emit = defineEmits(['update:modelValue'])
-
-function updateField(field, value) {
-  emit('update:modelValue', { ...props.modelValue, [field]: value })
-}
-
-function updateFuente(field, value) {
-  emit('update:modelValue', {
-    ...props.modelValue,
-    fuentes: { ...props.modelValue.fuentes, [field]: value },
-  })
-}
-
-// function updateCrema(field, value) {
-//   emit('update:modelValue', {
-//     ...props.modelValue,
-//     crema: { ...props.modelValue.crema, [field]: value },
-//   })
-// }
+import { provide, toRefs } from 'vue'
+import {
+  useFormulaIndicador,
+  propsOptions,
+  emitsOptions,
+} from 'src/composables/pages/useFormulaIndicador'
+import FormulaIndicadorSection1 from 'src/components/sections/FormulaIndicador/FormulaIndicadorSection1.vue'
+const pageProps = defineProps(propsOptions)
+const pageEmit = defineEmits(emitsOptions)
+const state = useFormulaIndicador(pageProps, pageEmit)
+provide('FormulaIndicador', { ...toRefs(pageProps), ...state })
+const { updateField } = state
 </script>
 
-<style scoped>
-.q-markup-table td {
-  vertical-align: middle;
-}
-</style>
+<style scoped src="src/css/pages/FormulaIndicador.css" />

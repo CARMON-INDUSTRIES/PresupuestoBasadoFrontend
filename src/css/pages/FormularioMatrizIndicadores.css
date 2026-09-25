@@ -1,0 +1,42 @@
+.q-markup-table td.bg-primary {
+  background: #7f1d35 !important;
+}
+
+.q-markup-table td {
+  vertical-align: middle;
+}
+
+.mir-table .q-td {
+  white-space: normal !important;
+  word-break: break-word;
+  vertical-align: top;
+}
+
+.texto-celda {
+  white-space: pre-line;
+  line-height: 1.5;
+}
+
+.modal-card {
+  min-width: 650px;
+  max-width: 850px;
+  border-radius: 14px;
+}
+
+.submit-btn {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.registrar {
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}

@@ -1,0 +1,66 @@
+.registro-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  background: linear-gradient(135deg, #691b31 0%, #7f2944 50%, #8f3651 100%);
+}
+
+.registro-card {
+  width: 100%;
+  max-width: 1100px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.login-dialog {
+  min-width: 420px;
+  border-radius: 18px;
+}
+
+.registrar-btn {
+  min-width: 260px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 12px 30px;
+  transition: all 0.3s ease;
+}
+
+.registrar-btn:hover {
+  transform: translateY(-2px);
+}
+
+:deep(.q-field--filled .q-field__control) {
+  border-radius: 12px;
+}
+
+:deep(.q-select),
+:deep(.q-input) {
+  transition: all 0.25s ease;
+}
+
+:deep(.q-select:hover),
+:deep(.q-input:hover) {
+  transform: translateY(-1px);
+}
+
+.text-primary {
+  color: #691b31 !important;
+}
+
+@media (max-width: 768px) {
+  .registro-card {
+    margin: 10px;
+  }
+
+  .login-dialog {
+    min-width: 90%;
+  }
+
+  .registrar-btn {
+    width: 100%;
+  }
+}

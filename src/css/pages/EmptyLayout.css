@@ -1,0 +1,113 @@
+.navbar {
+  background: linear-gradient(135deg, #691b31 0%, #8c2345 50%, #bc995b 100%);
+  color: white;
+  height: 68px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.navbar .q-toolbar-title {
+  letter-spacing: 0.5px;
+  font-size: 1.05rem;
+}
+
+.sidebar {
+  background: #691b31;
+  border-right: none;
+}
+
+.sidebar > div {
+  background: linear-gradient(180deg, #691b31 0%, #5a172a 45%, #45111f 100%) !important;
+}
+
+.avatar-border {
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 0 0 4px rgba(188, 153, 91, 0.3),
+    0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.text-h6 {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-content,
+.sidebar-content .q-item,
+.sidebar-content .q-expansion-item,
+.sidebar-content .q-expansion-item__container,
+.sidebar-content .q-expansion-item__content,
+.sidebar-content .q-list {
+  background: transparent !important;
+  color: white;
+}
+
+.hover-item {
+  border-radius: 12px;
+  margin-bottom: 4px;
+  transition: all 0.25s ease;
+}
+
+.hover-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateX(6px);
+}
+
+.hover-item:hover .q-icon {
+  color: #bc995b;
+}
+
+.q-item .q-icon {
+  font-size: 22px;
+  transition: all 0.25s ease;
+}
+
+.q-expansion-item {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.q-expansion-item--expanded {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.q-expansion-item__toggle-icon {
+  color: #bc995b;
+}
+
+.q-separator {
+  opacity: 0.3;
+}
+
+.q-btn[text-color='white'] {
+  font-weight: 600;
+}
+
+.q-btn[text-color='white']:hover {
+  transform: translateY(-1px);
+}
+
+.sidebar-content {
+  overflow-y: auto;
+}
+
+.sidebar-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: #bc995b;
+  border-radius: 20px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: #d6b579;
+}
+
+.menu-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+}
