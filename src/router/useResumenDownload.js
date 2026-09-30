@@ -1,280 +1,136 @@
+import { ref } from 'vue'
 import { Notify } from 'quasar'
-
-const isLocal = window.location.hostname === 'localhost'
-const API_BASE_URL = isLocal
-  ? 'https://localhost:7125/api'
-  : 'https://presupuesto-basado.somee.com/api'
+import api from 'src/boot/api'
 
 export function useResumenDownload() {
-  function getToken() {
-    return localStorage.getItem('token') || sessionStorage.getItem('token')
-  }
+  const descargando = ref(false)
 
   async function fetchPdfArrayBuffer(formato, indicadorId = null) {
-    const token = getToken()
-    if (!token) throw new Error('NoAuth')
-
-    let url = `${API_BASE_URL}/${formato}/ultimo`
-
-    if (indicadorId) {
-      url += `?indicadorId=${indicadorId}`
-    }
-
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    const response = await api.get('/' + formato + '/ultimo', {
+      responseType: 'arraybuffer',
+      params: indicadorId ? { indicadorId } : undefined,
     })
+    if (!(response.headers['content-type'] || '').includes('application/pdf'))
+      throw new Error('El servidor no devolvió un PDF')
+    return response.data
+  }
 
-    if (!res.ok) {
-      const txt = await res.text().catch(() => '')
-      const msg = `Error en ${formato}: ${res.status} ${res.statusText}${txt ? ' - ' + txt : ''}`
-      const error = new Error(msg)
-      error.status = res.status
-      throw error
-    }
-
-    const contentType = res.headers.get('content-type') || ''
-    if (!contentType.includes('application/pdf')) {
-      const txt = await res.text().catch(() => '')
-      throw new Error(`Respuesta de ${formato} no es PDF. ${txt}`)
-    }
-
-    return await res.arrayBuffer()
+  function guardarArchivo(bytes, nombre) {
+    const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = nombre
+    link.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   async function descargarPdf(formato, indicadorId = null) {
-    const token = getToken()
-
-    if (!token) {
-      Notify.create({
-        type: 'warning',
-        message: 'Debes iniciar sesión para descargar el PDF',
-      })
-      return
-    }
-
+    if (descargando.value) return
+    descargando.value = true
     try {
-      let url = `${API_BASE_URL}/${formato}/ultimo`
-
-      if (indicadorId) {
-        url += `?indicadorId=${indicadorId}`
-      }
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => '')
-        console.error('Error del servidor:', errorText)
-        throw new Error('Error al generar el PDF')
-      }
-
-      const blob = await response.blob()
-      const objectUrl = window.URL.createObjectURL(blob)
-
-      const link = document.createElement('a')
-      link.href = objectUrl
-      link.download = `${formato}.pdf`
-      link.click()
-
-      window.URL.revokeObjectURL(objectUrl)
-
-      Notify.create({
-        type: 'positive',
-        message: `Descarga completa: ${formato}.pdf`,
-      })
-    } catch (error) {
-      console.error(error)
-
+      const bytes = await fetchPdfArrayBuffer(formato, indicadorId)
+      guardarArchivo(bytes, formato + '.pdf')
+      Notify.create({ type: 'positive', message: 'PDF generado; descarga iniciada.' })
+    } catch {
       Notify.create({
         type: 'negative',
-        message: `Error al descargar ${formato}`,
+        message:
+          'No se pudo descargar ' + formato + '. Reintenta cuando el servicio esté disponible.',
       })
+    } finally {
+      descargando.value = false
     }
   }
 
   async function obtenerIndicadores() {
-    const token = getToken()
-
-    if (!token) return []
-
     try {
-      const response = await fetch(`${API_BASE_URL}/FormatoFichaFinal/indicadores`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      return (await api.get('/FormatoFichaFinal/indicadores')).data
+    } catch {
+      Notify.create({
+        type: 'negative',
+        message: 'No se pudieron cargar los indicadores para descarga.',
       })
-
-      if (!response.ok) {
-        return []
-      }
-
-      return await response.json()
-    } catch (err) {
-      console.error(err)
       return []
     }
   }
 
-  async function descargarTodasLasFichas() {
-    await descargarPdf('FormatoFichaFinal')
-  }
-
-  async function descargarFicha(indicadorId) {
-    await descargarPdf('FormatoFichaFinal', indicadorId)
-  }
-
-  async function descargarTodos() {
-    const token = getToken()
-
-    if (!token) {
-      Notify.create({
-        type: 'warning',
-        message: 'Debes iniciar sesión para descargar los PDFs',
-      })
-      return
-    }
-
-    const formatos = [
-      'FormatoAlineacion',
-      'FormatoFichaDeInformacionBasica1',
-      'FormatoDefinicionDelProblema',
-      'FormatoAnalisisDeInvolucrados',
-      'FormatoArbolDeProblemas',
-      'FormatoArbolDeObjetivos',
-      'FormatoAnalisisInvolucrados',
-      'FormatoEstructuraAnalitica',
-      'FormatoMatriz',
-    ]
-
-    Notify.create({
-      type: 'info',
-      message: 'Preparando descarga general...',
-    })
-
-    const { PDFDocument } = await import('pdf-lib')
-    const mergedPdf = await PDFDocument.create()
-
-    for (const formato of formatos) {
-      try {
-        const buffer = await fetchPdfArrayBuffer(formato)
-
-        const pdf = await PDFDocument.load(buffer)
-        const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices())
-
-        pages.forEach((p) => mergedPdf.addPage(p))
-      } catch (err) {
-        console.warn(`No se pudo descargar ${formato}`, err)
-        Notify.create({
-          type: 'warning',
-          message: `El documento no incluye ${formato}: no se pudo descargar.`,
-        })
-      }
-    }
-
+  async function descargarConjunto(formatos, nombre) {
+    if (descargando.value) return
+    descargando.value = true
+    const cerrarAviso = Notify.create({ type: 'info', message: 'Preparando PDF...', timeout: 0 })
     try {
-      const buffer = await fetchPdfArrayBuffer('FormatoFichaFinal')
-      const pdf = await PDFDocument.load(buffer)
-      const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices())
-      pages.forEach((p) => mergedPdf.addPage(p))
+      const { PDFDocument } = await import('pdf-lib')
+      const merged = await PDFDocument.create()
+      const faltantes = []
+      for (let i = 0; i < formatos.length; i += 3) {
+        const lote = formatos.slice(i, i + 3)
+        const results = await Promise.allSettled(
+          lote.map((formato) => fetchPdfArrayBuffer(formato)),
+        )
+        for (let j = 0; j < lote.length; j++) {
+          try {
+            if (results[j].status !== 'fulfilled') throw new Error('Descarga fallida')
+            const pdf = await PDFDocument.load(results[j].value)
+            const pages = await merged.copyPages(pdf, pdf.getPageIndices())
+            pages.forEach((p) => merged.addPage(p))
+          } catch {
+            faltantes.push(lote[j])
+          }
+        }
+      }
+      if (!merged.getPageCount()) throw new Error('Sin documentos')
+      const fecha = new Date().toISOString().slice(0, 10)
+      guardarArchivo(
+        await merged.save(),
+        nombre + (faltantes.length ? '_INCOMPLETO' : '') + '_' + fecha + '.pdf',
+      )
+      Notify.create(
+        faltantes.length
+          ? {
+              type: 'warning',
+              message: 'PDF INCOMPLETO. Faltan: ' + faltantes.join(', '),
+              timeout: 0,
+              closeBtn: true,
+            }
+          : { type: 'positive', message: 'PDF completo generado; descarga iniciada.' },
+      )
     } catch {
       Notify.create({
-        type: 'warning',
-        message: 'El PDF general no incluye fichas: no se pudieron obtener.',
+        type: 'negative',
+        message: 'No se pudo generar el PDF. Reintenta cuando el servicio esté disponible.',
       })
+    } finally {
+      if (typeof cerrarAviso === 'function') cerrarAviso()
+      descargando.value = false
     }
-
-    const mergedBytes = await mergedPdf.save()
-
-    const blob = new Blob([mergedBytes], {
-      type: 'application/pdf',
-    })
-
-    const url = URL.createObjectURL(blob)
-
-    const a = document.createElement('a')
-    const today = new Date().toISOString().slice(0, 10)
-
-    a.href = url
-    a.download = `FormatosGenerales_${today}.pdf`
-    a.click()
-
-    URL.revokeObjectURL(url)
-
-    Notify.create({
-      type: 'positive',
-      message: 'PDF consolidado descargado.',
-    })
   }
 
-  async function descargarArboles() {
-    const token = getToken()
-
-    if (!token) {
-      Notify.create({
-        type: 'warning',
-        message: 'Debes iniciar sesión para descargar los PDFs',
-      })
-      return
-    }
-
-    const formatos = ['FormatoArbolDeProblemas', 'FormatoArbolDeObjetivos']
-
-    Notify.create({
-      type: 'info',
-      message: 'Preparando árbol de problemas y objetivos...',
-    })
-
-    const { PDFDocument } = await import('pdf-lib')
-    const mergedPdf = await PDFDocument.create()
-
-    for (const formato of formatos) {
-      try {
-        const buffer = await fetchPdfArrayBuffer(formato)
-
-        const pdf = await PDFDocument.load(buffer)
-        const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices())
-
-        pages.forEach((p) => mergedPdf.addPage(p))
-      } catch (err) {
-        console.warn(`No se pudo descargar ${formato}`, err)
-        Notify.create({
-          type: 'warning',
-          message: `El documento no incluye ${formato}: no se pudo descargar.`,
-        })
-      }
-    }
-
-    const mergedBytes = await mergedPdf.save()
-
-    const blob = new Blob([mergedBytes], {
-      type: 'application/pdf',
-    })
-
-    const url = URL.createObjectURL(blob)
-
-    const a = document.createElement('a')
-    const today = new Date().toISOString().slice(0, 10)
-
-    a.href = url
-    a.download = `FormatoArbolProblemasObjetivos_${today}.pdf`
-    a.click()
-
-    URL.revokeObjectURL(url)
-
-    Notify.create({
-      type: 'positive',
-      message: 'PDF de árboles descargado.',
-    })
-  }
+  const descargarTodasLasFichas = () => descargarPdf('FormatoFichaFinal')
+  const descargarFicha = (id) => descargarPdf('FormatoFichaFinal', id)
+  const descargarTodos = () =>
+    descargarConjunto(
+      [
+        'FormatoAlineacion',
+        'FormatoFichaDeInformacionBasica1',
+        'FormatoDefinicionDelProblema',
+        'FormatoAnalisisDeInvolucrados',
+        'FormatoArbolDeProblemas',
+        'FormatoArbolDeObjetivos',
+        'FormatoAnalisisInvolucrados',
+        'FormatoEstructuraAnalitica',
+        'FormatoMatriz',
+        'FormatoFichaFinal',
+      ],
+      'FormatosGenerales',
+    )
+  const descargarArboles = () =>
+    descargarConjunto(
+      ['FormatoArbolDeProblemas', 'FormatoArbolDeObjetivos'],
+      'FormatoArbolProblemasObjetivos',
+    )
 
   return {
+    descargando,
     descargarPdf,
     descargarFicha,
     descargarTodasLasFichas,

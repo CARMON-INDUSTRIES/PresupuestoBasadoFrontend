@@ -5,6 +5,7 @@ export function useResumenesFormularios() {
   const fichas = ref([])
 
   const {
+    descargando,
     descargarPdf,
     descargarTodos,
     descargarArboles,
@@ -18,6 +19,7 @@ export function useResumenesFormularios() {
   })
   return {
     fichas,
+    descargando,
     descargarPdf,
     descargarTodos,
     descargarArboles,

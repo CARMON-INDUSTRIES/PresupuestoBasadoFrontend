@@ -1,5 +1,5 @@
 import { userStorage } from 'src/utils/userStorage'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Notify } from 'quasar'
 import Swal from 'sweetalert2'
 import api from 'src/boot/api'
@@ -10,6 +10,13 @@ export function useFormularioAnalisisAlternativas() {
   const tabla = ref([])
   const confirmado = ref(false)
   const saving = ref(false)
+  watch(
+    tabla,
+    () => {
+      confirmado.value = false
+    },
+    { deep: true, flush: 'sync' },
+  )
 
   const columns = [
     { name: 'nombre', label: 'Alternativas (Componentes y Actividades)', align: 'left' },
@@ -145,6 +152,7 @@ export function useFormularioAnalisisAlternativas() {
   async function guardarAnalisis() {
     if (saving.value) return false
     saving.value = true
+    const snapshot = JSON.stringify(tabla.value)
     try {
       const payload = {
         alternativas: tabla.value.map((row) => ({
@@ -160,6 +168,13 @@ export function useFormularioAnalisisAlternativas() {
       }
 
       await api.post('/AnalisisAlternativas', payload)
+      if (JSON.stringify(tabla.value) !== snapshot) {
+        Notify.create({
+          type: 'warning',
+          message: 'El análisis cambió durante el guardado. Confirma los nuevos valores.',
+        })
+        return false
+      }
       confirmado.value = true
       return true
     } catch (e) {
@@ -171,7 +186,8 @@ export function useFormularioAnalisisAlternativas() {
     }
   }
 
-  function validarConfirmar() {
+  async function validarConfirmar() {
+    if (saving.value) return
     const porcentajes = tabla.value
       .map((row) => {
         const valores = [
@@ -201,8 +217,8 @@ export function useFormularioAnalisisAlternativas() {
       return
     }
 
-    const tieneRojo = porcentajes.some((p) => p <= 69.99)
-    const tieneAmarillo = porcentajes.some((p) => p >= 70 && p <= 84)
+    const tieneRojo = porcentajes.some((p) => p <= 70)
+    const tieneAmarillo = porcentajes.some((p) => p > 70 && p <= 85)
 
     if (tieneRojo) {
       Swal.fire({
@@ -228,18 +244,18 @@ export function useFormularioAnalisisAlternativas() {
         }
       })
     } else {
-      Swal.fire({
+      if (!(await guardarAnalisis())) return
+      await Swal.fire({
         icon: 'success',
         title: '¡Todo en orden!',
         text: 'Todas las alternativas están en verde.',
         confirmButtonText: 'OK',
-      }).then(() => {
-        guardarAnalisis()
       })
     }
   }
 
   async function continuarFlujo() {
+    if (saving.value) return
     if (!confirmado.value) {
       Swal.fire({
         icon: 'info',

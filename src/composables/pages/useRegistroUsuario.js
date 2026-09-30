@@ -21,6 +21,8 @@ export function useRegistroUsuario() {
 
   const unidades = ref([])
   const entidad = ref([])
+  const loadingUnidades = ref(false)
+  const loadingEntidad = ref(false)
   const loading = ref(false)
 
   const mostrarLogin = ref(true)
@@ -40,13 +42,25 @@ export function useRegistroUsuario() {
   }
 
   onMounted(async () => {
-    const results = await Promise.allSettled([
-      api.get('/UnidadAdministrativa'),
-      api.get('/Entidad'),
+    await Promise.all([
+      cargarCatalogo('/UnidadAdministrativa', unidades, loadingUnidades),
+      cargarCatalogo('/Entidad', entidad, loadingEntidad),
     ])
-    if (results[0].status === 'fulfilled') unidades.value = results[0].value.data
-    if (results[1].status === 'fulfilled') entidad.value = results[1].value.data
   })
+
+  async function cargarCatalogo(url, target, busy) {
+    busy.value = true
+    try {
+      target.value = (await api.get(url)).data
+    } catch {
+      Notify.create({
+        type: 'negative',
+        message: `No se pudo cargar ${url.slice(1)}. Recarga para reintentar.`,
+      })
+    } finally {
+      busy.value = false
+    }
+  }
 
   async function registrarUsuario() {
     if (loading.value) return
@@ -71,6 +85,8 @@ export function useRegistroUsuario() {
     roles,
     unidades,
     entidad,
+    loadingUnidades,
+    loadingEntidad,
     loading,
     mostrarLogin,
     passwordAcceso,

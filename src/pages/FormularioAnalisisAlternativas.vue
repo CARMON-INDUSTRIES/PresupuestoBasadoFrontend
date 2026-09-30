@@ -80,7 +80,14 @@
             @click="validarConfirmar"
           />
 
-          <q-btn label="Continuar" rounded unelevated class="primary-btn" @click="continuarFlujo" />
+          <q-btn
+            :disable="saving"
+            label="Continuar"
+            rounded
+            unelevated
+            class="primary-btn"
+            @click="continuarFlujo"
+          />
         </q-card-actions>
       </q-card>
     </div>

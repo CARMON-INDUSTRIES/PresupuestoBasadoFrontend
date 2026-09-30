@@ -45,6 +45,7 @@ const context = vm.createContext({
   localStorage: storage,
   sessionStorage: storage,
   structuredClone,
+  AbortController,
   setTimeout,
   clearTimeout,
   URL,
@@ -108,6 +109,7 @@ function load(key) {
   const m = new vm.SourceTextModule(source, {
     context,
     identifier: key,
+    importModuleDynamically: (specifier) => import(specifier),
     initializeImportMeta: (meta) => {
       meta.env = {}
     },
@@ -324,6 +326,160 @@ assert.equal(
 )
 page.unmount()
 
+// Catálogos: una respuesta lenta no oculta la que ya terminó.
+const originalGet = api.get
+let releaseEntity
+api.get = (url) =>
+  url === '/Entidad'
+    ? new Promise((resolve) => {
+        releaseEntity = resolve
+      })
+    : Promise.resolve({ data: [{ id: 1, unidad: 'Unidad visible' }] })
+const { useRegistroUsuario } = await moduleAt('src/composables/pages/useRegistroUsuario.js')
+page = mount(useRegistroUsuario)
+await settle()
+assert.equal(page.state.unidades.value[0].id, 1)
+assert.equal(page.state.loadingUnidades.value, false)
+assert.equal(page.state.loadingEntidad.value, true)
+releaseEntity({ data: [] })
+await settle()
+page.unmount()
+
+// Recuperación paralela y rechazo de respuestas de selecciones anteriores.
+const pendingCatalogs = new Map()
+api.get = (url) => new Promise((resolve) => pendingCatalogs.set(url, resolve))
+storage.setItem(
+  'pbr:ana:formAlineacion',
+  JSON.stringify({ tipo: 'Estado', acuerdo: 1, objetivo: 2, estrategias: [3], lineasAccion: [4] }),
+)
+const { useFormularioAlineacion } = await moduleAt(
+  'src/composables/pages/useFormularioAlineacion.js',
+)
+page = mount(useFormularioAlineacion)
+assert.equal(pendingCatalogs.size, 4)
+for (const resolve of pendingCatalogs.values()) resolve({ data: [{ id: 4, nombre: 'Catálogo' }] })
+await settle()
+assert.equal(page.state.form.value.lineasAccion[0], 4)
+const oldRequest = page.state.onAcuerdoChange(5)
+const newRequest = page.state.onAcuerdoChange(6)
+pendingCatalogs.get('/PlanEstatal/acuerdo/6/objetivos')({ data: [{ id: 60, nombre: 'Actual' }] })
+await newRequest
+pendingCatalogs.get('/PlanEstatal/acuerdo/5/objetivos')({ data: [{ id: 50, nombre: 'Antiguo' }] })
+await oldRequest
+assert.equal(page.state.objetivos.value[0].value, 60)
+page.unmount()
+storage.removeItem('pbr:ana:formAlineacion')
+api.get = originalGet
+
+// MIR/ficha: actualizar títulos, incluir filas nuevas, conservar capturas y texto completo.
+const { reconciliarIndicadores } = await moduleAt('src/utils/indicadores.js')
+const merged = reconciliarIndicadores(
+  [{ nivel: 'Fin: nuevo' }, { nivel: 'Actividad: nueva' }],
+  [{ nivel: 'Fin: anterior', definicion: 'Conservar' }],
+)
+assert.equal(merged.length, 2)
+assert.equal(merged[0].definicion, 'Conservar')
+const leftovers = reconciliarIndicadores(
+  [{ nivel: 'Fin: nuevo' }],
+  [{ nivel: 'Actividad: anterior', definicion: 'No borrar' }],
+)
+assert.equal(leftovers[1].definicion, 'No borrar')
+const { useFormularioMatrizIndicadores } = await moduleAt(
+  'src/composables/pages/useFormularioMatrizIndicadores.js',
+)
+page = mount(useFormularioMatrizIndicadores)
+await settle()
+const narrative = {
+  nivel: 'Fin: prueba',
+  resumenNarrativo: 'Contribuir al bienestar de toda la población',
+}
+page.state.abrirModal(narrative)
+page.state.guardarNarrativo()
+assert.equal(narrative.resumenNarrativo, 'Contribuir al bienestar de toda la población')
+page.unmount()
+records.set('/MatrizIndicadores/ultimo', {
+  filas: [
+    { nivel: 'Fin', indicadores: 'Actualizado' },
+    { nivel: 'Actividad: nueva', indicadores: 'Nuevo' },
+  ],
+})
+storage.removeItem('pbr:ana:fichaIndicador')
+page = mount(useFormularioFichaTecnica1)
+await settle()
+assert.equal(page.state.indicadores.value.length, 2)
+assert.equal(page.state.indicadores.value[0].dimension, 'Calidad')
+assert.equal(page.state.indicadores.value[1].indicadores, 'Nuevo')
+page.unmount()
+
+// Confirmación: no navegar mientras guarda ni validar cambios posteriores.
+const { useFormularioAnalisisAlternativas } = await moduleAt(
+  'src/composables/pages/useFormularioAnalisisAlternativas.js',
+)
+page = mount(useFormularioAnalisisAlternativas)
+await settle()
+page.state.tabla.value = [
+  {
+    nombre: 'Componente',
+    facultad: 3,
+    presupuesto: 3,
+    cortoPlazo: 3,
+    recursosTecnicos: 3,
+    recursosAdm: 3,
+    cultural: 3,
+    impacto: 3,
+  },
+]
+const originalPost = api.post
+let finishConfirmation
+api.post = () =>
+  new Promise((resolve) => {
+    finishConfirmation = resolve
+  })
+const confirmation = page.state.validarConfirmar()
+assert.equal(page.state.saving.value, true)
+const navigationCount = calls.filter((c) => c[0] === 'navigate').length
+await page.state.continuarFlujo()
+assert.equal(calls.filter((c) => c[0] === 'navigate').length, navigationCount)
+finishConfirmation({ data: {} })
+await confirmation
+assert.equal(page.state.confirmado.value, true)
+page.state.tabla.value[0].facultad = 1
+assert.equal(page.state.confirmado.value, false)
+page.unmount()
+api.post = originalPost
+
+// PDF parcial: nombre y aviso inequívocos, sin afirmar éxito completo.
+const { PDFDocument } = await import('pdf-lib')
+const sample = await PDFDocument.create()
+sample.addPage()
+const pdfBytes = await sample.save()
+const downloads = []
+context.document = {
+  createElement: () => ({
+    click() {
+      downloads.push(this.download)
+    },
+  }),
+}
+api.get = async (url) => {
+  if (url.includes('FormatoAlineacion')) throw Error('Servicio no disponible')
+  return { data: pdfBytes, headers: { 'content-type': 'application/pdf' } }
+}
+const { useResumenDownload } = await moduleAt('src/router/useResumenDownload.js')
+const pdfDownloads = useResumenDownload()
+const noticeStart = notices.length
+await pdfDownloads.descargarTodos()
+assert.equal(downloads.length, 1)
+assert.ok(downloads[0].includes('_INCOMPLETO_'))
+assert.ok(
+  notices
+    .slice(noticeStart)
+    .some((n) => n.type === 'warning' && n.message.includes('FormatoAlineacion')),
+)
+assert.ok(!notices.slice(noticeStart).some((n) => n.type === 'positive'))
+assert.equal(pdfDownloads.descargando.value, false)
+api.get = originalGet
+
 // Montar las pantallas y sus secciones detecta referencias perdidas al separarlas.
 const slotComponent = {
   setup(props, { slots }) {
@@ -430,3 +586,138 @@ for (const directory of ['src/pages', 'src/layouts', 'src/components']) {
   }
 }
 console.log('OK: caché, invalidación después de guardar y límite de 150 líneas por componente.')
+
+// Guardar formularios conserva catálogos; editarlos sí los invalida.
+const beforeCatalog = requests
+await cachedApi.get('/UnidadAdministrativa')
+await cachedApi.put('/Cobertura/autosave', {})
+await cachedApi.get('/UnidadAdministrativa')
+assert.equal(requests - beforeCatalog, 2)
+await cachedApi.put('/UnidadAdministrativa/1', {})
+await cachedApi.get('/UnidadAdministrativa')
+assert.equal(requests - beforeCatalog, 4)
+console.log(
+  'OK: catálogos independientes, restauración paralela, respuestas tardías, sincronización y PDF parcial.',
+)
+
+// Gemini: una llamada por árbol, conservar ediciones, no aplicar respuestas parciales ni mezclar sesiones.
+const { useFormularioArbolObjetivos } = await moduleAt(
+  'src/composables/pages/useFormularioArbolObjetivos.js',
+)
+const { completarEstructura, normalizarComponentes, destinosVacios, aplicarPropuestas } =
+  await import('../src/utils/arbolObjetivos.js')
+const fuenteIA = normalizarComponentes({
+  componentes: [
+    {
+      nombre: 'Causa',
+      acciones: ['Acción', { nombre: 'Otra' }],
+      resultado: { descripcion: 'Efecto' },
+    },
+  ],
+})
+const conservado = completarEstructura(
+  {
+    fin: 'Fin escrito',
+    componentes: [
+      {
+        nombre: 'Nombre escrito',
+        medios: ['Medio escrito'],
+        resultados: ['Resultado escrito', 'Extra'],
+      },
+      { nombre: 'Histórico', medios: [], resultados: [] },
+    ],
+  },
+  fuenteIA,
+)
+assert.equal(conservado.componentes.length, 2)
+assert.equal(conservado.componentes[0].medios[0], 'Medio escrito')
+assert.equal(conservado.componentes[0].medios[1], '')
+assert.equal(conservado.componentes[0].resultados[1], 'Extra')
+const vacio = completarEstructura({ componentes: [] }, fuenteIA)
+assert.equal(vacio.componentes[0].medios.length, 2)
+const destinosIA = destinosVacios({ componentes: fuenteIA }, vacio)
+assert.throws(() => aplicarPropuestas(destinosIA, []))
+assert.equal(vacio.componentes[0].nombre, '')
+const duplicadas = destinosIA.map(() => ({ id: destinosIA[0].nodo.id, textoPositivo: 'Propuesta' }))
+assert.throws(() => aplicarPropuestas(destinosIA, duplicadas))
+assert.equal(vacio.componentes[0].nombre, '')
+
+storage.setItem('token', 'ana-token')
+storage.setItem('userNameActual', 'ana')
+values.delete('pbr:ana:arbolObjetivos')
+values.delete('arbolObjetivos')
+records.set('/EfectoSuperior/ultimo', { descripcion: 'Baja calidad de vida' })
+records.set('/IdentificacionDescripcionProblema/ultimo', { problemaCentral: 'Falta de agua' })
+records.set('/DisenoIntervencionPublica/ultimo', {
+  componentes: [{ nombre: 'Causa', acciones: [{ nombre: 'Acción' }], resultado: 'Efecto' }],
+})
+records.set('/ArbolObjetivos/ultimo', { fin: 'Fin manual', objetivoCentral: '', componentes: [] })
+const postAnteriorIA = api.post
+let liberarIA,
+  llamadasIA = 0
+api.post = async (url, datos) => {
+  assert.equal(url, '/ArbolObjetivos/convertir-arbol')
+  llamadasIA++
+  await new Promise((resolve) => {
+    liberarIA = resolve
+  })
+  return {
+    data: [...datos]
+      .reverse()
+      .map((n) => ({ id: n.id, textoPositivo: 'Positivo: ' + n.textoBase })),
+  }
+}
+let arbolIA = mount(() => useFormularioArbolObjetivos(() => {}))
+await settle()
+const generacionIA = arbolIA.state.generarObjetivosAutomaticamente()
+await arbolIA.state.generarObjetivosAutomaticamente()
+assert.equal(llamadasIA, 1)
+arbolIA.state.arbolObjetivos.value.objetivoCentral = 'Edición durante generación'
+liberarIA()
+await generacionIA
+assert.equal(arbolIA.state.arbolObjetivos.value.fin, 'Fin manual')
+assert.equal(arbolIA.state.arbolObjetivos.value.objetivoCentral, 'Edición durante generación')
+assert.equal(arbolIA.state.arbolObjetivos.value.componentes[0].medios[0], 'Positivo: Acción')
+assert.ok(
+  calls.some(
+    ([verb, url, data]) =>
+      verb === 'put' &&
+      url === '/ArbolObjetivos/autosave' &&
+      data.componentes[0]?.medios[0] === 'Positivo: Acción',
+  ),
+)
+await arbolIA.state.generarObjetivosAutomaticamente()
+assert.equal(llamadasIA, 1)
+records.set(
+  '/ArbolObjetivos/ultimo',
+  JSON.parse(JSON.stringify(arbolIA.state.arbolObjetivos.value)),
+)
+arbolIA.unmount()
+values.delete('pbr:ana:arbolObjetivos')
+arbolIA = mount(() => useFormularioArbolObjetivos(() => {}))
+await settle()
+assert.equal(arbolIA.state.arbolObjetivos.value.componentes[0].medios[0], 'Positivo: Acción')
+arbolIA.state.arbolObjetivos.value.objetivoCentral = ''
+api.post = async () => {
+  throw { response: { status: 429, data: { mensaje: 'Cuota agotada' } } }
+}
+await arbolIA.state.generarObjetivosAutomaticamente()
+assert.equal(arbolIA.state.arbolObjetivos.value.objetivoCentral, '')
+assert.ok(notices.some((n) => n.message === 'Cuota agotada'))
+api.post = async () => {
+  await new Promise((resolve) => {
+    liberarIA = resolve
+  })
+  return { data: [{ id: 'central', textoPositivo: 'Respuesta tardía' }] }
+}
+const otraSesionIA = arbolIA.state.generarObjetivosAutomaticamente()
+storage.setItem('token', 'otro-token')
+liberarIA()
+await otraSesionIA
+assert.equal(arbolIA.state.arbolObjetivos.value.objetivoCentral, '')
+arbolIA.unmount()
+api.post = postAnteriorIA
+assert.deepEqual(errors, [])
+console.log(
+  'OK: Gemini por árbol, datos guardados y borradores, ediciones concurrentes, cuotas y cambio de sesión.',
+)

@@ -6,6 +6,10 @@ export const baseURL =
     : 'https://presupuesto-basado.somee.com/api'
 const api = axios.create({ baseURL, timeout: 20000 })
 const reads = new Map()
+const catalog = (url = '') =>
+  /^\/?(PlanEstatal|PlanMunicipal|ClasificadorFuncional|UnidadAdministrativa|Entidad)(\/|$)/.test(
+    url,
+  )
 let generation = 0
 export function clearApiCache() {
   generation++
@@ -17,7 +21,12 @@ api.interceptors.request.use((config) => {
   return config
 })
 api.interceptors.response.use((response) => {
-  if (!['get', 'head', 'options'].includes(response.config.method)) clearApiCache()
+  if (!['get', 'head', 'options'].includes(response.config.method)) {
+    if (catalog(response.config.url)) clearApiCache()
+    else {
+      for (const [key, entry] of reads) if (!entry.catalog) reads.delete(key)
+    }
+  }
   return response
 })
 const get = api.get.bind(api)
@@ -37,7 +46,7 @@ api.get = (url, config = {}) => {
     )
       ? 300000
       : 30000
-  const entry = { expires: Infinity }
+  const entry = { expires: Infinity, catalog: catalog(url) }
   entry.promise = get(url, config)
     .then((response) => {
       entry.expires = Date.now() + ttl

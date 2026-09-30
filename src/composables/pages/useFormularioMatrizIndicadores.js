@@ -3,6 +3,7 @@ import { Notify } from 'quasar'
 import { useRouter } from 'vue-router'
 import api from 'src/boot/api'
 import { useFormularioPersistente } from 'src/composables/useFormularioPersistente'
+import { reconciliarIndicadores } from 'src/utils/indicadores'
 
 export function useFormularioMatrizIndicadores() {
   const router = useRouter()
@@ -79,7 +80,21 @@ export function useFormularioMatrizIndicadores() {
         }),
       ])
       usuario.value = me.data || {}
-      return matriz.data?.filas ?? construirEstructura(objetivo.data).map(crearFila)
+      if (
+        !objetivo.data?.fin &&
+        !objetivo.data?.objetivoCentral &&
+        !objetivo.data?.componentes?.length
+      )
+        return matriz.data?.filas || []
+      const estructura = construirEstructura(objetivo.data).map((nivel) => ({ nivel }))
+      const reconciliadas = reconciliarIndicadores(estructura, matriz.data?.filas || [])
+      if (reconciliadas.length > estructura.length)
+        Notify.create({
+          type: 'warning',
+          message:
+            'Se conservaron capturas de la MIR sin correspondencia con el árbol actual. Revisa sus niveles.',
+        })
+      return reconciliadas.map((fila) => ({ ...crearFila(fila.nivel), ...fila }))
     },
     save: (data) =>
       api.post('/MatrizIndicadores/borrador', {
@@ -121,7 +136,9 @@ export function useFormularioMatrizIndicadores() {
     labelsNarrativos.value = obtenerLabelsParaNivel(row.nivel)
 
     const partes = (row.resumenNarrativo || '').split(' ')
-    camposNarrativos.value = labelsNarrativos.value.map((_, i) => partes[i] ?? '')
+    camposNarrativos.value = labelsNarrativos.value.map((_, i) =>
+      i === labelsNarrativos.value.length - 1 ? partes.slice(i).join(' ') : (partes[i] ?? ''),
+    )
 
     indicadoresTemp.value = row.indicadores || ''
     mediosTemp.value = row.medios || ''

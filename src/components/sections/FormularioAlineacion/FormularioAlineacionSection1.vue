@@ -11,7 +11,7 @@
     class="modern-input"
     @update:model-value="onEstrategiasChange"
     :loading="loadingEstrategias"
-    :disable="!form.objetivo"
+    :disable="!form.objetivo || loadingEstrategias"
   >
     <template v-slot:prepend>
       <q-icon name="lightbulb" color="primary" />

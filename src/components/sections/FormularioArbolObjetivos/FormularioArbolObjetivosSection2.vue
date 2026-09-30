@@ -1,5 +1,15 @@
 <template>
   <div class="row q-col-gutter-xl justify-center">
+    <div class="col-12">
+      <q-btn
+        label="Completar campos vacíos con IA"
+        icon="auto_awesome"
+        color="primary"
+        :loading="generandoIA"
+        :disable="loading || cargandoDatos || !fuentesListas || generandoIA"
+        @click="generarObjetivosAutomaticamente"
+      />
+    </div>
     <div
       v-for="(comp, cIndex) in arbolObjetivos.componentes"
       :key="'medio-' + cIndex"

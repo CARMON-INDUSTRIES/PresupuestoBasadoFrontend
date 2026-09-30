@@ -63,215 +63,105 @@ export function useFormularioAlineacion() {
     return found ? found.label : ''
   }
 
-  const onTipoChange = async (tipo, restore = true) => {
-    const captured = restore
-      ? JSON.parse(
-          userStorage.getItem(tipo === 'Estado' ? 'alineacionEstatal' : 'alineacionMunicipal') ||
-            'null',
-        )
-      : null
-    form.value.acuerdo = null
-    form.value.objetivo = null
-    form.value.estrategias = []
-    form.value.lineasAccion = []
-    acuerdos.value = []
-    objetivos.value = []
-    estrategias.value = []
-    lineasAccion.value = []
+  const lists = [acuerdos, objetivos, estrategias, lineasAccion]
+  const busy = [loadingAcuerdos, loadingObjetivos, loadingEstrategias, loadingLineas]
+  const requests = [0, 0, 0, 0]
 
+  function invalidate(from) {
+    for (let i = from; i < lists.length; i++) {
+      requests[i]++
+      lists[i].value = []
+      busy[i].value = false
+    }
+  }
+
+  async function cargarCatalogo(index, paths) {
+    if (!paths.length) return
+    const version = ++requests[index]
+    const plan = form.value.tipo === 'Estado' ? '/PlanEstatal/' : '/PlanMunicipal/'
+    busy[index].value = true
+    try {
+      const results = await Promise.all(paths.map((path) => api.get(plan + path)))
+      if (version !== requests[index]) return
+      lists[index].value = [
+        ...new Map(
+          results
+            .flatMap((r) => r.data)
+            .map((item) => {
+              const value = item.id ?? item.Id
+              return [value, { value, label: item.nombre ?? item.Nombre }]
+            }),
+        ).values(),
+      ]
+    } catch (error) {
+      if (version !== requests[index]) return
+      Notify.create({
+        type: 'negative',
+        message:
+          error.response?.status === 401
+            ? 'Tu sesión ha expirado. Inicia sesión nuevamente.'
+            : 'No se pudo cargar el catálogo. Vuelve a seleccionar para reintentar.',
+      })
+    } finally {
+      if (version === requests[index]) busy[index].value = false
+    }
+  }
+
+  async function restaurar(snapshot) {
+    invalidate(0)
+    Object.assign(form.value, snapshot)
+    await Promise.all([
+      cargarCatalogo(0, ['acuerdos']),
+      cargarCatalogo(1, snapshot.acuerdo ? ['acuerdo/' + snapshot.acuerdo + '/objetivos'] : []),
+      cargarCatalogo(
+        2,
+        snapshot.objetivo ? ['objetivo/' + snapshot.objetivo + '/estrategias'] : [],
+      ),
+      cargarCatalogo(
+        3,
+        (snapshot.estrategias || []).map((id) => 'estrategia/' + id + '/lineas'),
+      ),
+    ])
+  }
+
+  const onTipoChange = async (tipo) => {
+    const captured = JSON.parse(
+      userStorage.getItem(tipo === 'Estado' ? 'alineacionEstatal' : 'alineacionMunicipal') ||
+        'null',
+    )
+    invalidate(0)
+    form.value = {
+      tipo,
+      ramo: '',
+      acuerdo: null,
+      objetivo: null,
+      estrategias: [],
+      lineasAccion: [],
+    }
     if (!tipo) return
-
-    const endpoint = tipo === 'Estado' ? '/PlanEstatal/acuerdos' : '/PlanMunicipal/acuerdos'
-
-    loadingAcuerdos.value = true
-    try {
-      const { data } = await api.get(endpoint)
-
-      if (!data || data.length === 0) {
-        Notify.create({
-          type: 'warning',
-          message: `No hay acuerdos disponibles para ${tipo}. Contacta al administrador.`,
-          timeout: 3000,
-        })
-        acuerdos.value = []
-        return
-      }
-
-      acuerdos.value = data.map((a) => ({ label: a.nombre ?? a.Nombre, value: a.id ?? a.Id }))
-      if (captured) {
-        form.value.tipo = tipo
-        await onAcuerdoChange(captured.acuerdo)
-        await onObjetivoChange(captured.objetivo)
-        await onEstrategiasChange(captured.estrategias || [])
-        Object.assign(form.value, captured)
-      }
-    } catch (error) {
-      console.error('Error al cargar acuerdos:', error)
-
-      const mensaje =
-        error.response?.status === 401
-          ? 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.'
-          : error.response?.status === 403
-            ? 'No tienes permisos para acceder a estos datos.'
-            : `Error al cargar acuerdos de ${tipo}`
-
-      Notify.create({
-        type: 'negative',
-        message: mensaje,
-        timeout: 3000,
-      })
-
-      acuerdos.value = []
-
-      if (error.response?.status === 401) {
-        userStorage.removeItem('token')
-        setTimeout(() => router.push('/login'), 1500)
-      }
-    } finally {
-      loadingAcuerdos.value = false
-    }
+    if (captured) return restaurar({ ...captured, tipo })
+    await cargarCatalogo(0, ['acuerdos'])
   }
 
-  const onAcuerdoChange = async (acuerdoId) => {
-    form.value.objetivo = null
-    form.value.estrategias = []
-    form.value.lineasAccion = []
-    objetivos.value = []
-    estrategias.value = []
-    lineasAccion.value = []
-
-    if (!acuerdoId) return
-
-    const endpoint =
-      form.value.tipo === 'Estado'
-        ? `/PlanEstatal/acuerdo/${acuerdoId}/objetivos`
-        : `/PlanMunicipal/acuerdo/${acuerdoId}/objetivos`
-
-    loadingObjetivos.value = true
-    try {
-      const { data } = await api.get(endpoint)
-
-      if (!data || data.length === 0) {
-        Notify.create({
-          type: 'warning',
-          message: 'No hay objetivos disponibles para este acuerdo.',
-          timeout: 3000,
-        })
-        objetivos.value = []
-        return
-      }
-
-      objetivos.value = data.map((o) => ({
-        label: o.nombre ?? o.Nombre,
-        value: o.id ?? o.Id,
-      }))
-    } catch (error) {
-      console.error('Error al cargar objetivos:', error)
-      Notify.create({
-        type: 'negative',
-        message: 'Error al cargar objetivos',
-        timeout: 3000,
-      })
-      objetivos.value = []
-    } finally {
-      loadingObjetivos.value = false
-    }
+  const onAcuerdoChange = async (id) => {
+    invalidate(1)
+    Object.assign(form.value, { acuerdo: id, objetivo: null, estrategias: [], lineasAccion: [] })
+    await cargarCatalogo(1, id ? ['acuerdo/' + id + '/objetivos'] : [])
   }
 
-  const onObjetivoChange = async (objetivoId) => {
-    form.value.estrategias = []
-    form.value.lineasAccion = []
-    estrategias.value = []
-    lineasAccion.value = []
-
-    if (!objetivoId) return
-
-    const endpoint =
-      form.value.tipo === 'Estado'
-        ? `/PlanEstatal/objetivo/${objetivoId}/estrategias`
-        : `/PlanMunicipal/objetivo/${objetivoId}/estrategias`
-
-    loadingEstrategias.value = true
-    try {
-      const { data } = await api.get(endpoint)
-
-      if (!data || data.length === 0) {
-        Notify.create({
-          type: 'warning',
-          message: 'No hay estrategias disponibles para este objetivo.',
-          timeout: 3000,
-        })
-        estrategias.value = []
-        return
-      }
-
-      estrategias.value = data.map((e) => ({
-        label: e.nombre ?? e.Nombre,
-        value: e.id ?? e.Id,
-      }))
-    } catch (error) {
-      console.error('Error al cargar estrategias:', error)
-      Notify.create({
-        type: 'negative',
-        message: 'Error al cargar estrategias',
-        timeout: 3000,
-      })
-      estrategias.value = []
-    } finally {
-      loadingEstrategias.value = false
-    }
+  const onObjetivoChange = async (id) => {
+    invalidate(2)
+    Object.assign(form.value, { objetivo: id, estrategias: [], lineasAccion: [] })
+    await cargarCatalogo(2, id ? ['objetivo/' + id + '/estrategias'] : [])
   }
 
-  const onEstrategiasChange = async (selectedIds) => {
-    form.value.lineasAccion = []
-    lineasAccion.value = []
-
-    if (!selectedIds.length) return
-
-    const promises = selectedIds.map((id) => {
-      const endpoint =
-        form.value.tipo === 'Estado'
-          ? `/PlanEstatal/estrategia/${id}/lineas`
-          : `/PlanMunicipal/estrategia/${id}/lineas`
-      return api.get(endpoint)
-    })
-
-    loadingLineas.value = true
-    try {
-      const results = await Promise.all(promises)
-      const allLineas = results.flatMap((r) => r.data)
-
-      if (allLineas.length === 0) {
-        Notify.create({
-          type: 'warning',
-          message: 'No hay líneas de acción disponibles para estas estrategias.',
-          timeout: 3000,
-        })
-        lineasAccion.value = []
-        return
-      }
-
-      const unique = []
-      const idsSet = new Set()
-      allLineas.forEach((l) => {
-        const val = l.id ?? l.Id
-        if (!idsSet.has(val)) {
-          idsSet.add(val)
-          unique.push({ label: l.nombre ?? l.Nombre, value: val })
-        }
-      })
-      lineasAccion.value = unique
-    } catch (error) {
-      console.error('Error al cargar líneas de acción:', error)
-      Notify.create({
-        type: 'negative',
-        message: 'Error al cargar líneas de acción',
-        timeout: 3000,
-      })
-      lineasAccion.value = []
-    } finally {
-      loadingLineas.value = false
-    }
+  const onEstrategiasChange = async (ids) => {
+    invalidate(3)
+    Object.assign(form.value, { estrategias: ids, lineasAccion: [] })
+    await cargarCatalogo(
+      3,
+      ids.map((id) => 'estrategia/' + id + '/lineas'),
+    )
   }
 
   onMounted(async () => {
@@ -280,16 +170,11 @@ export function useFormularioAlineacion() {
       draft && JSON.parse(draft).tipo
         ? draft
         : userStorage.getItem('alineacionMunicipal') || userStorage.getItem('alineacionEstatal')
+    verificarAlineaciones()
     if (saved) {
       const snapshot = JSON.parse(saved)
-      form.value.tipo = snapshot.tipo
-      if (snapshot.tipo) await onTipoChange(snapshot.tipo, false)
-      if (snapshot.acuerdo) await onAcuerdoChange(snapshot.acuerdo)
-      if (snapshot.objetivo) await onObjetivoChange(snapshot.objetivo)
-      if (snapshot.estrategias?.length) await onEstrategiasChange(snapshot.estrategias)
-      Object.assign(form.value, snapshot)
+      if (snapshot.tipo) await restaurar(snapshot)
     }
-    verificarAlineaciones()
   })
 
   watch(

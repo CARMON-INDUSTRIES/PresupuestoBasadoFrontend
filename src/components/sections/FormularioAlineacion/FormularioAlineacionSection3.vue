@@ -25,7 +25,7 @@
       class="modern-input"
       @update:model-value="onAcuerdoChange"
       :loading="loadingAcuerdos"
-      :disable="!form.tipo"
+      :disable="!form.tipo || loadingAcuerdos"
     >
       <template v-slot:prepend>
         <q-icon name="article" color="primary" />
@@ -51,7 +51,7 @@
       class="modern-input"
       @update:model-value="onObjetivoChange"
       :loading="loadingObjetivos"
-      :disable="!form.acuerdo"
+      :disable="!form.acuerdo || loadingObjetivos"
     >
       <template v-slot:prepend>
         <q-icon name="flag" color="primary" />

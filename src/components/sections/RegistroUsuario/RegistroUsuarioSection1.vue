@@ -55,6 +55,8 @@
         <q-select
           v-model="form.unidadAdministrativaId"
           :options="unidades"
+          :loading="loadingUnidades"
+          :disable="loadingUnidades"
           label="Unidad Administrativa"
           option-value="id"
           option-label="unidad"
@@ -74,6 +76,8 @@
         <q-select
           v-model="form.EntidadId"
           :options="entidad"
+          :loading="loadingEntidad"
+          :disable="loadingEntidad"
           label="Entidad Federal"
           option-value="id"
           option-label="nombre"

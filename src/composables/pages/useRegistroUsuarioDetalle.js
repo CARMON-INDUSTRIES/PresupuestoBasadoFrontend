@@ -39,17 +39,23 @@ export function useRegistroUsuarioDetalle() {
 
       userStorage.removeItem('usuarioBasico')
 
-      const [resUnidades, resEntidades, perfil] = await Promise.all([
-        api.get('/UnidadAdministrativa'),
-        api.get('/Entidad'),
-        api.get('/Cuentas/me'),
+      await Promise.all([
+        api.get('/UnidadAdministrativa').then((r) => {
+          unidades.value = r.data
+        }),
+        api.get('/Entidad').then((r) => {
+          entidad.value = r.data
+        }),
+        api.get('/Cuentas/me').then(({ data }) => {
+          form.value = { ...form.value, ...data, User: data.userName || form.value.User }
+        }),
       ])
-
-      form.value = { ...form.value, ...perfil.data, User: perfil.data.userName || form.value.User }
-      unidades.value = resUnidades.data
-      entidad.value = resEntidades.data
     } catch (err) {
       console.error('Error cargando datos:', err)
+      Notify.create({
+        type: 'negative',
+        message: 'No se pudo cargar parte de la información. Recarga para reintentar.',
+      })
     }
   })
 

@@ -9,6 +9,7 @@
       </div>
 
       <q-card flat class="modern-card q-pa-xl">
+        <FormularioArbolObjetivosSection2 />
         <div class="row justify-center q-mb-xl">
           <div class="col-12 col-lg-8">
             <div class="tree-card tree-fin">
@@ -85,8 +86,6 @@
             </div>
           </div>
         </div>
-
-        <FormularioArbolObjetivosSection2 />
 
         <q-separator class="q-my-xl" />
 

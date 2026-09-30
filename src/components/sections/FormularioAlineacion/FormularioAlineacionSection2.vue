@@ -10,7 +10,7 @@
     map-options
     class="modern-input"
     :loading="loadingLineas"
-    :disable="!form.estrategias.length"
+    :disable="!form.estrategias.length || loadingLineas"
   >
     <template v-slot:prepend>
       <q-icon name="track_changes" color="primary" />

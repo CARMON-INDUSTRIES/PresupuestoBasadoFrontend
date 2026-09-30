@@ -23,7 +23,9 @@ export function useFormularioDisenoIntervencion() {
     resultado: '',
   })
 
-  const proximoIndiceComp = computed(() => form.value.componentes.length + 1)
+  const proximoIndiceComp = computed(() =>
+    modoEdicion.value ? indiceEditando.value + 1 : form.value.componentes.length + 1,
+  )
 
   const { guardarDatos, saving: autosaveLoading } = useFormularioPersistente({
     form,

@@ -6,6 +6,7 @@ import { useFormularioPersistente } from 'src/composables/useFormularioPersisten
 import DatosBasicosIndicador from 'src/pages/DatosBasicosIndicador.vue'
 import FormulaIndicador from 'src/pages/FormulaIndicador.vue'
 import MetasIndicador from 'src/pages/MetasIndicador.vue'
+import { reconciliarIndicadores } from 'src/utils/indicadores'
 
 export function useFormularioFichaTecnica1() {
   const usuario = ref({})
@@ -90,8 +91,27 @@ export function useFormularioFichaTecnica1() {
       ])
       usuario.value = me.data || {}
       const ultima = [...(fichas.data || [])].sort((a, b) => b.id - a.id)[0]
-      const filas = ultima?.indicadores || mir.data?.filas || []
-      const anteriores = indicadores.value
+      const actuales = mir.data?.filas || []
+      const filas = actuales.length
+        ? reconciliarIndicadores(
+            actuales.map(({ nivel, indicadores, resumenNarrativo }) => ({
+              nivel,
+              indicadores,
+              resumenNarrativo,
+            })),
+            ultima?.indicadores || [],
+          )
+        : ultima?.indicadores || []
+      const anteriores = reconciliarIndicadores(
+        filas.map(({ nivel }) => ({ nivel })),
+        indicadores.value,
+      )
+      if (actuales.length && filas.length > actuales.length)
+        Notify.create({
+          type: 'warning',
+          message:
+            'Se conservaron fichas sin correspondencia con la MIR actual. Revisa los indicadores.',
+        })
       const restaurados = filas.map((f, index) => ({
         id: f.id,
         nivel: f.nivel || '',

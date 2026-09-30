@@ -24,6 +24,7 @@
           icon="download_for_offline"
           label="Descargar TODOS los PDF"
           @click="descargarTodos"
+          :loading="descargando"
           class="btn-descargar"
         />
       </q-card-actions>
@@ -37,7 +38,7 @@ import { useResumenesFormularios } from 'src/composables/pages/useResumenesFormu
 import ResumenesFormulariosSection6 from 'src/components/sections/ResumenesFormularios/ResumenesFormulariosSection6.vue'
 const state = useResumenesFormularios()
 provide('ResumenesFormularios', state)
-const { descargarTodos } = state
+const { descargarTodos, descargando } = state
 </script>
 
 <style scoped src="src/css/pages/ResumenesFormularios.css" />
