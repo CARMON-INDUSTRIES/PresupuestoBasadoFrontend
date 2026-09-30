@@ -721,3 +721,65 @@ assert.deepEqual(errors, [])
 console.log(
   'OK: Gemini por árbol, datos guardados y borradores, ediciones concurrentes, cuotas y cambio de sesión.',
 )
+
+// El contrato de IdentificacionDescripcionProblema exige Id numérico, incluso al crear un borrador.
+const { useFormularioIdentificacionProblema } = await moduleAt(
+  'src/composables/pages/useFormularioIdentificacionProblema.js',
+)
+const putAntesIdentificacion = api.put
+const endpointIdentificacion = '/IdentificacionDescripcionProblema/ultimo'
+const textosIdentificacion = {
+  problemaCentral: 'Problema de prueba',
+  involucrados: 'Causas de prueba',
+  causaBeneficiados: 'Beneficiados',
+  causaOpositores: 'Opositores',
+  causaEjecutores: 'Ejecutores',
+  causaIndiferentes: 'Indiferentes',
+  efectos: 'Efectos',
+  evolucion: 'Evolución',
+}
+storage.setItem('token', 'ana-token')
+storage.setItem('userNameActual', 'ana')
+for (const caso of ['nuevo', 'borrador-null', 'existente']) {
+  values.delete('pbr:ana:FormularioIdentificacionProblema')
+  values.delete('FormularioIdentificacionProblema')
+  records.delete(endpointIdentificacion)
+  if (caso === 'borrador-null')
+    storage.setItem(
+      'pbr:ana:FormularioIdentificacionProblema',
+      JSON.stringify({
+        data: { ...textosIdentificacion, id: null },
+        dirty: true,
+      }),
+    )
+  if (caso === 'existente') records.set(endpointIdentificacion, { ...textosIdentificacion, id: 37 })
+  let enviadosIdentificacion = 0
+  api.put = async (url, data) => {
+    assert.equal(url, '/IdentificacionDescripcionProblema/autosave')
+    assert.equal(data.id, caso === 'existente' ? 37 : 0, 'Id compatible con int del backend')
+    for (const campo of Object.keys(textosIdentificacion))
+      assert.equal(typeof data[campo], 'string')
+    records.set(endpointIdentificacion, { ...structuredClone(data), id: 37 })
+    enviadosIdentificacion++
+    return { data }
+  }
+  const identificacion = mount(useFormularioIdentificacionProblema)
+  await settle()
+  Object.assign(identificacion.state.form.value, textosIdentificacion)
+  identificacion.state.form.value.efectos += ' editados'
+  // Antes de corregirlo, esta escritura reproduce el rechazo de id:null.
+  await identificacion.state.guardarDatos()
+  identificacion.state.form.value.evolucion += ' actualizada'
+  await new Promise((resolve) => setTimeout(resolve, 1300))
+  assert.equal(enviadosIdentificacion, 2, 'El guardado automático también debe funcionar')
+  identificacion.state.form.value.causaBeneficiados += ' actualizados'
+  assert.equal(await guards.at(-1)({ path: '/formulario-antecedente' }), true)
+  await identificacion.state.submitForm()
+  assert.equal(calls.at(-1)[1], '/formulario-determinacion-justificacion')
+  assert.equal(records.get(endpointIdentificacion).efectos, 'Efectos editados')
+  identificacion.unmount()
+}
+api.put = putAntesIdentificacion
+console.log(
+  'OK: identificación nueva, borrador antiguo, actualización, autoguardado y navegación en ambos sentidos.',
+)

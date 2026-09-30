@@ -9,7 +9,7 @@ export function useFormularioIdentificacionProblema() {
 
   const loading = ref(false)
   const form = ref({
-    id: null,
+    id: 0,
     problemaCentral: '',
     involucrados: '',
     causaBeneficiados: '',
@@ -25,7 +25,10 @@ export function useFormularioIdentificacionProblema() {
     storageKey: 'FormularioIdentificacionProblema',
     autosave: true,
     load: async () => (await api.get('/IdentificacionDescripcionProblema/ultimo')).data,
-    save: async (data) => (await api.put('/IdentificacionDescripcionProblema/autosave', data)).data,
+    // Los borradores antiguos pueden conservar id:null; la API requiere un int incluso al crear.
+    save: async (data) =>
+      (await api.put('/IdentificacionDescripcionProblema/autosave', { ...data, id: data.id ?? 0 }))
+        .data,
   })
   function validarFormulario() {
     if (!form.value.problemaCentral.trim()) return 'Debes escribir el problema central'
