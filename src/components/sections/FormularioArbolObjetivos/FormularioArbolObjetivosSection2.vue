@@ -2,7 +2,7 @@
   <div class="row q-col-gutter-xl justify-center">
     <div class="col-12">
       <q-btn
-        label="Completar campos vacíos con IA"
+        label="Completar campos vacíos"
         icon="auto_awesome"
         color="primary"
         :loading="generandoIA"

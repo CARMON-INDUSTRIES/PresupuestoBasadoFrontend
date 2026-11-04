@@ -1,5 +1,5 @@
 <template>
-  <q-page padding style="background-color: #691b31">
+  <q-page padding>
     <q-card flat bordered class="q-pa-md" style="max-width: 1000px; margin: auto">
       <q-card-section class="row items-center justify-between">
         <div class="form-title">Editar Componentes</div>

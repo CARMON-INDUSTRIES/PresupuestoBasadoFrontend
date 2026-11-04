@@ -7,9 +7,12 @@ import DatosBasicosIndicador from 'src/pages/DatosBasicosIndicador.vue'
 import FormulaIndicador from 'src/pages/FormulaIndicador.vue'
 import MetasIndicador from 'src/pages/MetasIndicador.vue'
 import { reconciliarIndicadores } from 'src/utils/indicadores'
+import { prepararFicha, confirmarFicha } from 'src/utils/fichaPersistencia'
 
 export function useFormularioFichaTecnica1() {
   const usuario = ref({})
+  const fichaId = ref(0)
+  const version = ref('00000000-0000-0000-0000-000000000000')
   const claveIndicador = ref('')
   const tipoIndicador = ref('')
   const indicadores = ref([])
@@ -67,17 +70,21 @@ export function useFormularioFichaTecnica1() {
 
   const ficha = computed({
     get: () => ({
+      id: fichaId.value,
+      version: version.value,
       claveIndicador: claveIndicador.value,
       tipoIndicador: tipoIndicador.value,
       indicadores: indicadores.value,
     }),
     set: (value) => {
+      fichaId.value = value.id || 0
+      version.value = value.version || '00000000-0000-0000-0000-000000000000'
       claveIndicador.value = value.claveIndicador || ''
       tipoIndicador.value = value.tipoIndicador || ''
       indicadores.value = value.indicadores || []
     },
   })
-  const { guardarDatos } = useFormularioPersistente({
+  const { guardarDatos, notificarErrorGuardado } = useFormularioPersistente({
     form: ficha,
     storageKey: 'fichaIndicador',
     load: async () => {
@@ -87,7 +94,7 @@ export function useFormularioFichaTecnica1() {
           if (e.response?.status !== 404) throw e
           return { data: {} }
         }),
-        api.get('/FichaIndicador'),
+        api.get('/FichaIndicador', { cache: false }),
       ])
       usuario.value = me.data || {}
       const ultima = [...(fichas.data || [])].sort((a, b) => b.id - a.id)[0]
@@ -137,14 +144,13 @@ export function useFormularioFichaTecnica1() {
           ? f.metasProgramadas
           : Array.from({ length: 12 }, (_, i) => ({ mes: i + 1, cantidad: 0, alcanzado: 0 }))
         ).map((m, i) => ({ ...anteriores[index]?.metasProgramadas?.[i], ...m })),
-        crema: anteriores[index]?.crema ||
-          f.crema || {
-            claro: 'No',
-            relevante: 'No',
-            economico: 'No',
-            monitoreable: 'No',
-            adecuado: 'No',
-          },
+        crema: (Object.keys(f.crema || {}).length ? f.crema : anteriores[index]?.crema) || {
+          claro: 'No',
+          relevante: 'No',
+          economico: 'No',
+          monitoreable: 'No',
+          adecuado: 'No',
+        },
         lineaAccionSeleccionada:
           anteriores[index]?.lineaAccionSeleccionada ?? f.lineaAccionSeleccionada ?? null,
         indicadores:
@@ -160,6 +166,8 @@ export function useFormularioFichaTecnica1() {
         lineasAccion: anteriores[index]?.lineasAccion || f.lineasAccion || [],
       }))
       return {
+        id: ultima?.id || 0,
+        version: ultima?.version || '00000000-0000-0000-0000-000000000000',
         claveIndicador: ultima?.claveIndicador || claveIndicador.value,
         tipoIndicador:
           ultima?.tipoIndicador ||
@@ -169,25 +177,10 @@ export function useFormularioFichaTecnica1() {
       }
     },
     save: (data) =>
-      api.post('/FichaIndicador', {
-        ...data,
-        lineasAccion: [],
-        indicadores: data.indicadores.map((ind) => ({
-          ...ind,
-          fuenteResultado: ind.fuentes?.resultadoEsperado || '',
-          fuenteNumerador: ind.fuentes?.numerador || '',
-          fuenteDenominador: ind.fuentes?.denominador || '',
-          lineaBaseAnio: String(ind.lineaBaseAnio ?? ''),
-          metasProgramadas: (ind.metasProgramadas || []).map((m, index) => ({
-            metaProgramadaNombre: m.metaProgramadaNombre || 'Meta ' + (index + 1),
-            cantidad: Number(m.cantidad) || 0,
-            periodoCumplimiento: m.periodoCumplimiento || 'Mensual',
-            mes: index + 1,
-            cantidadEsperada: Number(m.cantidad) || 0,
-            alcanzado: Number(m.alcanzado) || 0,
-          })),
-        })),
-      }),
+      data.id
+        ? api.put(`/FichaIndicador/${data.id}`, prepararFicha(data))
+        : api.post('/FichaIndicador', prepararFicha(data)),
+    onSaved: (response, snapshot) => confirmarFicha(ficha, snapshot, response.data),
   })
   async function guardar() {
     if (loading.value) return
@@ -195,11 +188,8 @@ export function useFormularioFichaTecnica1() {
     try {
       await guardarDatos()
       Notify.create({ type: 'positive', message: 'Ficha técnica guardada correctamente' })
-    } catch {
-      Notify.create({
-        type: 'negative',
-        message: 'No se pudo guardar la ficha; se conserva tu borrador.',
-      })
+    } catch (error) {
+      notificarErrorGuardado(error)
     } finally {
       loading.value = false
     }

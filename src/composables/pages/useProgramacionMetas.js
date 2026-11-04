@@ -1,146 +1,100 @@
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
+import { useFormularioPersistente } from 'src/composables/useFormularioPersistente'
+import { evaluarMeta } from 'src/utils/semaforoMetas'
 
 export function useProgramacionMetas() {
-  const saving = ref(false)
-  const ficha = ref(null)
-  const indicadores = ref([])
-  const indiceSeleccionado = ref(null)
-
+  const ficha = ref({ indicadores: [] })
+  const indicadores = computed(() => ficha.value.indicadores || [])
+  const indiceSeleccionado = ref(0)
+  const metasDe = (data) => (data.indicadores || []).flatMap((i) => i.metasProgramadas || [])
   const optionsIndicadores = computed(() =>
     indicadores.value.map((i, idx) => ({
       label: `${idx + 1}. ${i.resultadoEsperado || i.descripcion || 'Indicador'}`,
       value: idx,
     })),
   )
-
-  const indicadorActivo = computed(() => {
-    if (indiceSeleccionado.value === null) return null
-    return indicadores.value[indiceSeleccionado.value] || null
-  })
-
-  onMounted(async () => {
-    try {
-      const res = await api.get('/ProgramacionMetas/ultima')
-
-      const fichaData = res.data
-
-      if (!fichaData || !fichaData.indicadores) {
-        Notify.create({
-          type: 'warning',
-          message: 'No hay ficha o indicadores disponibles',
-        })
-        return
-      }
-
-      ficha.value = fichaData
-
-      indicadores.value = [...fichaData.indicadores]
-
-      if (indicadores.value.length > 0) {
-        indiceSeleccionado.value = 0
-      }
-    } catch (err) {
-      console.error('ERROR API:', err)
-
-      Notify.create({
-        type: 'negative',
-        message: 'Error al cargar datos',
+  const indicadorActivo = computed(() => indicadores.value[indiceSeleccionado.value] || null)
+  const { guardarDatos, saving, loading, notificarErrorGuardado } = useFormularioPersistente({
+    form: ficha,
+    storageKey: 'programacionMetas',
+    autosave: true,
+    load: async () => {
+      const { data } = await api.get('/ProgramacionMetas/ultima', { cache: false })
+      metasDe(data).forEach((m) => {
+        m.alcanzadoAnterior = m.alcanzado
       })
-    }
+      return data
+    },
+    save: async (data) => {
+      const metas = metasDe(data).filter(
+        (m) =>
+          m.alcanzado === '' || m.alcanzado == null || Number(m.alcanzado) !== m.alcanzadoAnterior,
+      )
+      if (
+        metas.some(
+          (m) =>
+            m.alcanzado === '' ||
+            m.alcanzado == null ||
+            !Number.isFinite(Number(m.alcanzado)) ||
+            Number(m.alcanzado) < 0,
+        )
+      )
+        throw new Error('Los avances deben ser números no negativos.')
+      if (metas.length)
+        await api.put(
+          '/ProgramacionMetas/actualizar-avances',
+          metas.map((m) => ({
+            id: m.id,
+            alcanzado: Number(m.alcanzado),
+            alcanzadoAnterior: m.alcanzadoAnterior,
+          })),
+        )
+    },
+    onSaved: (_, snapshot) => {
+      const actuales = new Map(metasDe(ficha.value).map((m) => [m.id, m]))
+      for (const meta of metasDe(snapshot)) {
+        meta.alcanzadoAnterior = Number(meta.alcanzado)
+        const actual = actuales.get(meta.id)
+        if (actual) actual.alcanzadoAnterior = meta.alcanzadoAnterior
+      }
+      return snapshot
+    },
   })
-
   async function guardarCambios() {
-    if (saving.value) return
-    saving.value = true
+    if (saving.value || loading.value || !indicadorActivo.value) return
     try {
-      if (!indicadorActivo.value) return
-
-      const metas = indicadorActivo.value.metasProgramadas.map((m) => ({
-        id: m.id,
-        alcanzado: Number(m.alcanzado) || 0,
-      }))
-
-      console.log('METAS ENVIADAS:', metas)
-
-      await api.put('/ProgramacionMetas/actualizar-avances', metas)
-
-      Notify.create({
-        type: 'positive',
-        message: 'Avances guardados correctamente',
-      })
-    } catch (err) {
-      console.error('ERROR GUARDAR:', err)
-
-      console.log(err.response?.data)
-
-      Notify.create({
-        type: 'negative',
-        message: 'Error al guardar',
-      })
-    } finally {
-      saving.value = false
+      await guardarDatos(false)
+      Notify.create({ type: 'positive', message: 'Avances guardados correctamente' })
+    } catch (error) {
+      notificarErrorGuardado(error)
     }
   }
-
-  function obtenerPorcentaje(meta) {
-    const esperado = Number(meta.cantidadEsperada ?? meta.cantidad ?? 0)
-    const alcanzado = Number(meta.alcanzado ?? 0)
-
-    if (esperado <= 0) return 0
-
-    return (alcanzado / esperado) * 100
-  }
-
-  function obtenerColorSemaforo(meta) {
-    const porcentaje = obtenerPorcentaje(meta)
-
-    if (porcentaje >= 100) return 'positive'
-
-    if (porcentaje >= 70) return 'warning'
-
-    return 'negative'
-  }
-
-  function obtenerTextoSemaforo(meta) {
-    const porcentaje = obtenerPorcentaje(meta)
-
-    if (porcentaje >= 100) return 'Cumplido'
-
-    if (porcentaje >= 70) return 'En riesgo'
-
-    return 'Rezago'
-  }
+  const evaluar = (meta) => evaluarMeta(meta, indicadorActivo.value?.sentido)
+  const obtenerPorcentaje = (meta) => evaluar(meta).porcentaje
+  const obtenerColorSemaforo = (meta) => evaluar(meta).color
+  const obtenerTextoSemaforo = (meta) => evaluar(meta).texto
 
   async function descargarPdfActualizado() {
     try {
+      await guardarDatos(false)
       const response = await api.get('/FormatoFichaFinal/ultimo', {
         responseType: 'blob',
         timeout: 120000,
       })
-
-      const blob = new Blob([response.data], {
-        type: 'application/pdf',
-      })
-
-      const url = window.URL.createObjectURL(blob)
-
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }))
       const link = document.createElement('a')
       link.href = url
       link.download = 'FichasActualizadas.pdf'
-
       document.body.appendChild(link)
       link.click()
-
       link.remove()
       window.URL.revokeObjectURL(url)
-    } catch (err) {
-      console.error('ERROR PDF:', err)
-
+    } catch {
       Notify.create({
         type: 'negative',
-        message: 'Error al descargar PDF',
+        message: 'No se pudo guardar o descargar la ficha actualizada.',
       })
     }
   }
@@ -150,6 +104,8 @@ export function useProgramacionMetas() {
     indiceSeleccionado,
     optionsIndicadores,
     indicadorActivo,
+    saving,
+    loading,
     guardarCambios,
     obtenerPorcentaje,
     obtenerColorSemaforo,

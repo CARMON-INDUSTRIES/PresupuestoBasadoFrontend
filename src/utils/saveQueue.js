@@ -16,7 +16,8 @@ export function createSaveQueue(read, write, saved = () => {}) {
           const snapshot = JSON.stringify(read())
           const result = await write(JSON.parse(snapshot))
           lastSaved = snapshot
-          saved(result, JSON.parse(snapshot))
+          const acknowledged = saved(result, JSON.parse(snapshot))
+          if (acknowledged !== undefined) lastSaved = JSON.stringify(acknowledged)
         }
       })().finally(() => {
         pending = null

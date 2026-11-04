@@ -1,5 +1,5 @@
 <template>
-  <q-page padding style="background-color: #691b31">
+  <q-page padding>
     <q-form @submit.prevent="submitForm" class="q-gutter-md">
       <q-card flat bordered class="q-pa-md">
         <q-card-section>

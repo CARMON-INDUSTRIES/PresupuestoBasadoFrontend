@@ -4,7 +4,7 @@
       <div class="col-5 flex flex-center form-side q-pa-xl">
         <q-form @submit.prevent="handleLogin" style="width: 100%; max-width: 320px">
           <div class="flex flex-center q-mb-md">
-            <q-img src="/images/smg.png" position="50% 50%" style="width: 100%; height: 100%" />
+            <q-img src="/images/smg.png" fit="contain" class="login-logo" alt="Logotipo institucional" />
           </div>
 
           <div class="text-h5 text-dark text-bold text-center q-mb-sm">Iniciar Sesión</div>
@@ -12,7 +12,7 @@
             Bienvenido, ingresa tus credenciales para continuar
           </div>
 
-          <q-input v-model="login.user" label="Usuario" filled dense class="q-mb-md custom-input">
+          <q-input v-model="login.user" label="Usuario" autocomplete="username" filled dense class="q-mb-md custom-input">
             <template v-slot:prepend>
               <q-icon name="person" color="grey-7" />
             </template>
@@ -22,6 +22,7 @@
             v-model="login.password"
             :type="showPassword ? 'text' : 'password'"
             label="Contraseña"
+            autocomplete="current-password"
             filled
             dense
             class="q-mb-lg custom-input"
@@ -30,8 +31,9 @@
               <q-icon name="lock" color="grey-7" />
             </template>
             <template v-slot:append>
-              <q-icon
-                :name="showPassword ? 'visibility_off' : 'visibility'"
+              <q-btn flat round dense type="button"
+                :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                :icon="showPassword ? 'visibility_off' : 'visibility'"
                 class="cursor-pointer"
                 @click="showPassword = !showPassword"
               />

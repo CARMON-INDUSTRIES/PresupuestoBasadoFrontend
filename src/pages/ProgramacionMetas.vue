@@ -60,7 +60,7 @@
               </td>
 
               <td style="width: 200px">
-                <q-input v-model.number="meta.alcanzado" type="number" dense outlined />
+                <q-input v-model.number="meta.alcanzado" type="number" min="0" :disable="loading" dense outlined />
               </td>
 
               <td style="width: 200px">
@@ -87,12 +87,13 @@
           rounded
           unelevated
           @click="guardarCambios"
-          :disable="!indicadorActivo"
+          :disable="!indicadorActivo || loading"
+          :loading="saving"
         />
 
         <div class="mensaje-ayuda">
           <q-icon name="info" color="orange" />
-          Primero guarde los cambios y posteriormente descargue las fichas actualizadas.
+          Los avances se guardan automáticamente. Antes de descargar se confirma el guardado.
         </div>
 
         <q-btn
@@ -102,6 +103,7 @@
           rounded
           unelevated
           @click="descargarPdfActualizado"
+          :disable="!indicadorActivo || loading || saving"
         />
       </q-card-actions>
     </q-card>
@@ -113,6 +115,8 @@ import { useProgramacionMetas } from 'src/composables/pages/useProgramacionMetas
 
 const state = useProgramacionMetas()
 const {
+  saving,
+  loading,
   indicadores,
   indiceSeleccionado,
   optionsIndicadores,

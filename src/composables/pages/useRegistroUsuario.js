@@ -3,7 +3,6 @@ import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
 export function useRegistroUsuario() {
-  const mostrarPassword = ref(false)
   const mostrarPasswordRegistro = ref(false)
 
   const form = ref({
@@ -15,7 +14,7 @@ export function useRegistroUsuario() {
   })
 
   const roles = [
-    { label: 'Administador', value: 'Administador' },
+    { label: 'Administrador', value: 'Administrador' },
     { label: 'Usuario', value: 'Usuario' },
   ]
 
@@ -24,22 +23,6 @@ export function useRegistroUsuario() {
   const loadingUnidades = ref(false)
   const loadingEntidad = ref(false)
   const loading = ref(false)
-
-  const mostrarLogin = ref(true)
-  const passwordAcceso = ref('')
-
-  const PASSWORD_CORRECTA = 'Wishyouwerehere.1950'
-
-  function validarAcceso() {
-    if (passwordAcceso.value === PASSWORD_CORRECTA) {
-      mostrarLogin.value = false
-    } else {
-      Notify.create({
-        type: 'negative',
-        message: 'Contraseña incorrecta',
-      })
-    }
-  }
 
   onMounted(async () => {
     await Promise.all([
@@ -79,7 +62,6 @@ export function useRegistroUsuario() {
     }
   }
   return {
-    mostrarPassword,
     mostrarPasswordRegistro,
     form,
     roles,
@@ -88,10 +70,6 @@ export function useRegistroUsuario() {
     loadingUnidades,
     loadingEntidad,
     loading,
-    mostrarLogin,
-    passwordAcceso,
-    PASSWORD_CORRECTA,
-    validarAcceso,
     registrarUsuario,
   }
 }

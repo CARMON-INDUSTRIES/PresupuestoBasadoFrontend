@@ -45,6 +45,7 @@
               </q-banner>
 
               <q-file
+                :disable="subiendo || loading"
                 filled
                 bg-color="white"
                 v-model="archivoSeleccionado"
@@ -57,6 +58,13 @@
                   <q-icon name="attach_file" color="primary" />
                 </template>
               </q-file>
+              <a
+                v-if="/^https?:\/\//i.test(form.archivoAdjunto || '')"
+                :href="form.archivoAdjunto"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Ver archivo guardado</a
+              >
 
               <div v-if="archivoSeleccionado" class="file-preview">
                 <q-icon name="description" class="q-mr-sm" />
@@ -99,7 +107,14 @@
               to="formulario-padron-beneficiarios"
             />
 
-            <q-btn label="Continuar" type="submit" class="primary-btn" unelevated />
+            <q-btn
+              label="Continuar"
+              type="submit"
+              class="primary-btn"
+              :loading="subiendo"
+              :disable="loading"
+              unelevated
+            />
           </q-card-actions>
         </q-card>
       </q-form>
@@ -111,7 +126,7 @@
 import { useFormularioReglasOperacion } from 'src/composables/pages/useFormularioReglasOperacion'
 
 const state = useFormularioReglasOperacion()
-const { form, archivoSeleccionado, guardarReglasOperacion } = state
+const { form, archivoSeleccionado, subiendo, loading, guardarReglasOperacion } = state
 </script>
 
 <style scoped src="src/css/pages/FormularioReglasOperacion.css" />

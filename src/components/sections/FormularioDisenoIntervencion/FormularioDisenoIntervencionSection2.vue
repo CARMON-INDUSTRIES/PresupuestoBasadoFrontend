@@ -14,7 +14,7 @@
       </div>
 
       <div class="row q-gutter-sm">
-        <q-btn dense round flat icon="edit" color="primary" @click="editarComponente(comp, cIdx)">
+        <q-btn dense round flat aria-label="Editar componente" icon="edit" color="primary" @click="editarComponente(comp, cIdx)">
           <q-tooltip>Editar componente</q-tooltip>
         </q-btn>
 
@@ -23,6 +23,7 @@
           round
           flat
           icon="delete"
+          aria-label="Eliminar componente"
           color="negative"
           @click="form.componentes.splice(cIdx, 1)"
         >

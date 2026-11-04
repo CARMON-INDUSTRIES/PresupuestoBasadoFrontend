@@ -10,6 +10,7 @@ export function useEmptyLayout() {
   const sidebarOpen = ref(false)
   const hoverLogout = ref(false)
   const nombreUsuario = ref('')
+  const esAdministrador = ref(false)
   const fotoActual = ref('/images/default-avatar.png') // imagen por defecto
 
   const dialogCambiarPassword = ref(false)
@@ -28,6 +29,7 @@ export function useEmptyLayout() {
     try {
       const { data } = await api.get('/Cuentas/me')
       nombreUsuario.value = data.userName || data.nombre || 'Usuario'
+      esAdministrador.value = data.roles?.includes('Administrador') === true
 
       if (data.fotoUrl) {
         // Si la URL empieza con "/uploads/", se concatena el dominio del backend
@@ -113,15 +115,19 @@ export function useEmptyLayout() {
     }
 
     try {
+      await guardarFormulariosPendientes()
       await api.put('/Cuentas/CambiarPassword', {
-        User: nombreUsuario.value,
+        PasswordActual: passwordActual.value,
         Password: nuevaPassword.value,
       })
 
       dialogCambiarPassword.value = false
       passwordActual.value = ''
       nuevaPassword.value = ''
-      Notify.create({ type: 'positive', message: 'Contraseña cambiada correctamente' })
+      Notify.create({ type: 'positive', message: 'Contraseña cambiada. Inicia sesión nuevamente.' })
+      userStorage.removeItem('token')
+      clearApiCache()
+      await router.push('/login')
     } catch (err) {
       console.error('Error al cambiar contraseña:', err)
       Notify.create({ type: 'negative', message: 'Error al cambiar contraseña' })
@@ -131,12 +137,14 @@ export function useEmptyLayout() {
   async function cerrarSesion() {
     try {
       await guardarFormulariosPendientes()
-    } catch {
-      Notify.create({
-        type: 'negative',
-        message: 'No se pudo guardar el último cambio. Intenta de nuevo antes de cerrar sesión.',
-      })
-      return
+    } catch (error) {
+      if (error.response?.status !== 401 && localStorage.getItem('token')) {
+        Notify.create({
+          type: 'negative',
+          message: 'No se pudo guardar el último cambio. Intenta de nuevo antes de cerrar sesión.',
+        })
+        return
+      }
     }
     try {
       await api.post('/Cuentas/logout', null, { timeout: 5000 })
@@ -152,6 +160,7 @@ export function useEmptyLayout() {
     sidebarOpen,
     hoverLogout,
     nombreUsuario,
+    esAdministrador,
     fotoActual,
     dialogCambiarPassword,
     dialogCambiarFoto,

@@ -20,15 +20,31 @@ api.interceptors.request.use((config) => {
   if (token && !config.headers.Authorization) config.headers.Authorization = `Bearer ${token}`
   return config
 })
-api.interceptors.response.use((response) => {
-  if (!['get', 'head', 'options'].includes(response.config.method)) {
-    if (catalog(response.config.url)) clearApiCache()
-    else {
-      for (const [key, entry] of reads) if (!entry.catalog) reads.delete(key)
+api.interceptors.response.use(
+  (response) => {
+    if (!['get', 'head', 'options'].includes(response.config.method)) {
+      if (catalog(response.config.url)) clearApiCache()
+      else {
+        for (const [key, entry] of reads) if (!entry.catalog) reads.delete(key)
+      }
     }
-  }
-  return response
-})
+    return response
+  },
+  (error) => {
+    const token = localStorage.getItem('token')
+    if (
+      error.response?.status === 401 &&
+      token &&
+      error.config?.headers?.Authorization === `Bearer ${token}` &&
+      !/\/Cuentas\/Login$/i.test(error.config?.url || '')
+    ) {
+      localStorage.removeItem('token')
+      clearApiCache()
+      if (typeof window !== 'undefined') window.dispatchEvent(new Event('sesion-expirada'))
+    }
+    return Promise.reject(error)
+  },
+)
 const get = api.get.bind(api)
 api.get = (url, config = {}) => {
   if (config.responseType || config.signal || config.headers || config.cache === false)

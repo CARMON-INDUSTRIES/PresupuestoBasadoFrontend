@@ -1,5 +1,5 @@
 .resumen-page {
-  background: linear-gradient(135deg, #691b31, #7f1d35);
+  background: var(--pbr-ground);
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -9,9 +9,9 @@
 .resumen-card {
   width: 100%;
   max-width: 1150px;
-  border-radius: 20px;
+  border-radius: 12px;
   background: white;
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18);
+  box-shadow: none;
   overflow: hidden;
 }
 
@@ -34,8 +34,8 @@
 }
 
 .expansion-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(105, 27, 49, 0.15);
+  transform: none;
+  box-shadow: none;
 }
 
 .formato-card {
@@ -45,11 +45,11 @@
 }
 
 .btn-descargar {
-  font-weight: 700;
+  font-weight: 600;
   padding-left: 40px;
   padding-right: 40px;
   min-height: 52px;
-  box-shadow: 0 6px 15px rgba(255, 87, 34, 0.35);
+  box-shadow: none;
 }
 
 :deep(.q-expansion-item__container) {

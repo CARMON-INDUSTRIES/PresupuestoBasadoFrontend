@@ -2,13 +2,18 @@ import { ref } from 'vue'
 import { Notify } from 'quasar'
 import api from 'src/boot/api'
 
-export function useResumenDownload() {
+export function useResumenDownload({
+  usuarioId = null,
+  usuarioNombre = '',
+  alDescargar = () => {},
+} = {}) {
   const descargando = ref(false)
 
   async function fetchPdfArrayBuffer(formato, indicadorId = null) {
     const response = await api.get('/' + formato + '/ultimo', {
       responseType: 'arraybuffer',
-      params: indicadorId ? { indicadorId } : undefined,
+      params: { ...(indicadorId ? { indicadorId } : {}), ...(usuarioId ? { usuarioId } : {}) },
+      timeout: 120000,
     })
     if (!(response.headers['content-type'] || '').includes('application/pdf'))
       throw new Error('El servidor no devolvió un PDF')
@@ -19,8 +24,11 @@ export function useResumenDownload() {
     const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }))
     const link = document.createElement('a')
     link.href = url
-    link.download = nombre
+    link.download = usuarioId
+      ? `${usuarioNombre.replace(/[^a-zA-Z0-9_-]/g, '_')}_${nombre}`
+      : nombre
     link.click()
+    alDescargar()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
@@ -29,7 +37,7 @@ export function useResumenDownload() {
     descargando.value = true
     try {
       const bytes = await fetchPdfArrayBuffer(formato, indicadorId)
-      guardarArchivo(bytes, formato + '.pdf')
+      guardarArchivo(bytes, formato + '_' + new Date().toISOString().slice(0, 10) + '.pdf')
       Notify.create({ type: 'positive', message: 'PDF generado; descarga iniciada.' })
     } catch {
       Notify.create({
@@ -44,7 +52,12 @@ export function useResumenDownload() {
 
   async function obtenerIndicadores() {
     try {
-      return (await api.get('/FormatoFichaFinal/indicadores')).data
+      return (
+        await api.get('/FormatoFichaFinal/indicadores', {
+          cache: false,
+          params: usuarioId ? { usuarioId } : {},
+        })
+      ).data
     } catch {
       Notify.create({
         type: 'negative',
@@ -112,6 +125,7 @@ export function useResumenDownload() {
       [
         'FormatoAlineacion',
         'FormatoFichaDeInformacionBasica1',
+        ...(usuarioId ? ['FormatoFichaDeInformacionBasica2'] : []),
         'FormatoDefinicionDelProblema',
         'FormatoAnalisisDeInvolucrados',
         'FormatoArbolDeProblemas',

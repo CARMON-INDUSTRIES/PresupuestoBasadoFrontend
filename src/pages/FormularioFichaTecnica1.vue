@@ -1,5 +1,5 @@
 <template>
-  <q-page padding style="background-color: #691b31">
+  <q-page padding>
     <q-card flat bordered class="q-pa-md" style="max-width: 1200px; margin: auto">
       <q-card-section>
         <div class="text-h5 text-center text-black">Ficha Técnica del Indicador</div>
@@ -65,7 +65,7 @@
           rounded
           unelevated
           class="registrar"
-          to="formulario-estructura-analitica"
+          to="formulario-matriz-indicadores"
           :loading="loading"
         />
         <q-btn

@@ -189,7 +189,7 @@ fail = false
 await retry.flush()
 assert.equal(retry.isDirty(), false)
 
-const { useFormularioPersistente, guardarFormulariosPendientes } = await moduleAt(
+const { useFormularioPersistente, guardarFormulariosPendientes, formSaveStates } = await moduleAt(
   'src/composables/useFormularioPersistente.js',
 )
 let saved = { text: 'servidor' },
@@ -212,13 +212,17 @@ function form() {
 let page = mount(form)
 await settle()
 assert.equal(page.state.data.value.text, 'servidor')
+assert.equal(formSaveStates.value[0].status.value, 'ready')
 assert.equal(count, 0)
 page.state.data.value.text = 'guardado'
+assert.equal(formSaveStates.value[0].status.value, 'pending')
 await guardarFormulariosPendientes()
+assert.equal(formSaveStates.value[0].status.value, 'saved')
 assert.equal(count, 1)
 await new Promise((r) => setTimeout(r, 25))
 assert.equal(count, 1)
 page.unmount()
+assert.equal(formSaveStates.value.length, 0)
 storage.removeItem('token')
 storage.setItem('token', 'ana-token-new')
 page = mount(form)
@@ -297,15 +301,17 @@ records.set('/MatrizIndicadores/ultimo', {
 records.set('/FichaIndicador', [
   {
     id: 9,
+    version: 'version-1',
     claveIndicador: 'CLAVE',
     tipoIndicador: 'Estratégico',
     indicadores: [
       {
+        id: 90,
         nivel: 'Fin',
         dimension: 'Calidad',
         resultadoEsperado: 'Capturado',
         fuenteResultado: 'Fuente guardada',
-        metasProgramadas: [{ mes: 1, cantidad: 10, alcanzado: 4 }],
+        metasProgramadas: [{ id: 91, mes: 1, cantidad: 10, alcanzado: 4 }],
       },
     ],
   },
@@ -320,7 +326,7 @@ assert.equal(page.state.indicadores.value[0].metasProgramadas[0].alcanzado, 4)
 page.state.indicadores.value[0].fuentes.resultadoEsperado = 'Nueva fuente'
 await page.state.guardar()
 assert.equal(
-  calls.findLast((c) => c[1] === '/FichaIndicador' && c[0] === 'post')[2].indicadores[0]
+  calls.findLast((c) => c[1] === '/FichaIndicador/9' && c[0] === 'put')[2].indicadores[0]
     .fuenteResultado,
   'Nueva fuente',
 )
@@ -518,7 +524,10 @@ for (const folder of ['src/pages', 'src/layouts'])
       for (const m of source.matchAll(/<(q-[a-z-]+)/g))
         if (!app._context.components[m[1]]) app.component(m[1], slotComponent)
     if (!app._context.components['q-radio']) app.component('q-radio', slotComponent)
+    app.config.globalProperties.$q = { screen: { gt: { xs: true } } }
+    app.config.globalProperties.$route = { path: '/formulario-alineacion' }
     app.component('router-view', slotComponent)
+    app.component('router-link', slotComponent)
     app.directive('ripple', {})
     app.directive('close-popup', {})
     app.config.warnHandler = (message) => {
@@ -782,4 +791,225 @@ for (const caso of ['nuevo', 'borrador-null', 'existente']) {
 api.put = putAntesIdentificacion
 console.log(
   'OK: identificación nueva, borrador antiguo, actualización, autoguardado y navegación en ambos sentidos.',
+)
+
+// Los permisos se consultan sin caché; un fallo de red no concede acceso.
+const { verificarAdministrador } = await moduleAt('src/router/adminGuard.js')
+const { consultarAdmin, errorAdmin } = await moduleAt('src/services/admin.js')
+const getAntesAdmin = api.get
+try {
+  api.get = async (url, config) => {
+    assert.equal(url, '/Cuentas/me')
+    assert.equal(config.cache, false)
+    return { data: { roles: ['Administrador'] } }
+  }
+  assert.equal(await verificarAdministrador(), true)
+  api.get = async () => ({ data: { roles: ['Usuario'] } })
+  assert.equal(await verificarAdministrador(), '/formulario-alineacion')
+  api.get = async () => {
+    throw { response: { status: 401 } }
+  }
+  assert.equal(await verificarAdministrador(), '/login')
+  api.get = async () => {
+    throw new Error('Sin conexión')
+  }
+  assert.equal(await verificarAdministrador(), false)
+  api.get = async (url, config) => {
+    assert.equal(url, '/admin/usuarios')
+    assert.equal(config.cache, false)
+    assert.equal(config.params.pagina, 2)
+    return { data: { total: 0, usuarios: [] } }
+  }
+  await consultarAdmin('usuarios', { pagina: 2 })
+  assert.match(errorAdmin({ response: { status: 403 } }), /permiso/)
+  assert.match(errorAdmin({ response: { status: 401 } }), /sesión/)
+} finally {
+  api.get = getAntesAdmin
+}
+console.log('OK: permisos de administrador, sesión vencida, fallo de red y consultas sin caché.')
+
+// Las descargas administrativas siempre solicitan la cuenta elegida, también al unir PDF.
+const getAntesDocumentosAdmin = api.get
+let documentosAdmin = 0
+api.get = async (url, config) => {
+  assert.equal(config.params.usuarioId, 'cuenta-elegida')
+  documentosAdmin++
+  return { data: pdfBytes, headers: { 'content-type': 'application/pdf' } }
+}
+let descargasAdmin = 0
+const pdfAdmin = useResumenDownload({
+  usuarioId: 'cuenta-elegida',
+  usuarioNombre: 'usuario/prueba',
+  alDescargar: () => descargasAdmin++,
+})
+await pdfAdmin.descargarTodos()
+assert.equal(documentosAdmin, 11)
+assert.equal(descargasAdmin, 1)
+assert.ok(downloads.at(-1).startsWith('usuario_prueba_'))
+assert.ok(!downloads.at(-1).includes('INCOMPLETO'))
+const descargasAntesError = downloads.length
+api.get = async () => ({
+  data: new ArrayBuffer(0),
+  headers: { 'content-type': 'application/json' },
+})
+await pdfAdmin.descargarPdf('FormatoMatriz')
+assert.equal(downloads.length, descargasAntesError, 'No descarga respuestas que no son PDF')
+api.get = getAntesDocumentosAdmin
+
+// Una confirmación incorrecta no llega al servidor y los secretos se limpian incluso si falla.
+const { default: passwordAdminComponent } = await moduleAt(
+  'src/components/admin/PasswordUsuarioAdmin.vue',
+)
+const eventosPassword = []
+const passwordAdmin = mount(() =>
+  passwordAdminComponent.setup(
+    { usuario: { id: 'cuenta-elegida', userName: 'prueba' } },
+    { expose() {}, emit: (...args) => eventosPassword.push(args) },
+  ),
+)
+const postAntesPasswordAdmin = api.post
+let enviosPassword = 0
+api.post = async (url, body) => {
+  assert.equal(url, '/admin/usuarios/cuenta-elegida/restablecer-password')
+  assert.equal(body.nuevaPassword, 'NuevaPrueba123!')
+  enviosPassword++
+  throw { response: { status: 400, data: [{ description: 'Contraseña rechazada' }] } }
+}
+passwordAdmin.state.password.value = 'NuevaPrueba123!'
+passwordAdmin.state.confirmacion.value = 'no coincide'
+passwordAdmin.state.confirmado.value = true
+await passwordAdmin.state.restablecer()
+assert.equal(enviosPassword, 0)
+passwordAdmin.state.confirmacion.value = 'NuevaPrueba123!'
+await passwordAdmin.state.restablecer()
+assert.equal(enviosPassword, 1)
+assert.equal(passwordAdmin.state.password.value, '')
+assert.equal(passwordAdmin.state.confirmacion.value, '')
+assert.match(passwordAdmin.state.error.value, /rechazada/)
+assert.ok(!eventosPassword.some(([evento]) => evento === 'guardado'))
+api.post = async () => {
+  enviosPassword++
+  return { data: null }
+}
+passwordAdmin.state.password.value = 'NuevaPrueba123!'
+passwordAdmin.state.confirmacion.value = 'NuevaPrueba123!'
+await passwordAdmin.state.restablecer()
+assert.equal(enviosPassword, 2)
+assert.ok(eventosPassword.some(([evento]) => evento === 'guardado'))
+assert.equal(passwordAdmin.state.confirmado.value, false)
+passwordAdmin.unmount()
+api.post = postAntesPasswordAdmin
+for (const file of fs.readdirSync('src/components/admin').filter((f) => f.endsWith('.vue'))) {
+  await moduleAt('src/components/admin/' + file)
+  assert.ok(fs.readFileSync('src/components/admin/' + file, 'utf8').split('\n').length <= 150, file)
+}
+console.log(
+  'OK: PDF por usuario, rechazo de respuesta inválida, restablecimiento confirmado y limpieza de contraseñas.',
+)
+
+// Correcciones del flujo: semáforo, confirmaciones de IDs y avances persistentes.
+const { evaluarMeta } = await import('../src/utils/semaforoMetas.js')
+assert.equal(evaluarMeta({ cantidad: 10, alcanzado: 5 }, 'Ascendente').texto, 'Rezago')
+assert.equal(evaluarMeta({ cantidad: 10, alcanzado: 5 }, 'Descendente').texto, 'Cumplido')
+assert.equal(evaluarMeta({ cantidad: 10, alcanzado: 0 }, 'Descendente').texto, 'Cumplido')
+assert.equal(evaluarMeta({ cantidad: 0, alcanzado: 0 }, 'Ascendente').color, 'grey')
+assert.equal(evaluarMeta({ cantidad: 10, alcanzado: 5 }, '').porcentaje, null)
+assert.equal(evaluarMeta({ cantidad: 10, alcanzado: -1 }, 'Ascendente').color, 'grey')
+const { confirmarFicha } = await import('../src/utils/fichaPersistencia.js')
+const pendiente = {
+  id: 0,
+  version: 'old',
+  indicadores: [
+    { nivel: 'Fin', descripcion: 'enviado', metasProgramadas: [{ mes: 1, cantidad: 10 }] },
+  ],
+}
+const vivo = { value: structuredClone(pendiente) }
+vivo.value.indicadores[0].descripcion = 'editado durante el envío'
+const ack = confirmarFicha(vivo, pendiente, {
+  id: 15,
+  version: 'new',
+  indicadores: [{ id: 16, nivel: 'Fin', metasProgramadas: [{ id: 17, mes: 1 }] }],
+})
+assert.equal(vivo.value.id, 15)
+assert.equal(vivo.value.indicadores[0].metasProgramadas[0].id, 17)
+assert.equal(vivo.value.indicadores[0].descripcion, 'editado durante el envío')
+assert.equal(ack.indicadores[0].descripcion, 'enviado')
+
+storage.setItem('userNameActual', 'ana')
+storage.setItem('token', 'ana-token')
+storage.removeItem('pbr:ana:programacionMetas')
+records.set('/ProgramacionMetas/ultima', {
+  id: 9,
+  indicadores: [
+    {
+      id: 90,
+      sentido: 'Descendente',
+      metasProgramadas: [{ id: 91, mes: 1, cantidad: 10, alcanzado: 4 }],
+    },
+  ],
+})
+const { useProgramacionMetas } = await moduleAt('src/composables/pages/useProgramacionMetas.js')
+page = mount(useProgramacionMetas)
+await settle()
+page.state.indicadorActivo.value.metasProgramadas[0].alcanzado = 6
+await page.state.guardarCambios()
+const envioMetas = calls.findLast(
+  (c) => c[0] === 'put' && c[1] === '/ProgramacionMetas/actualizar-avances',
+)
+assert.deepEqual(envioMetas[2], [{ id: 91, alcanzado: 6, alcanzadoAnterior: 4 }])
+const numeroEnvios = calls.filter((c) => c[1] === '/ProgramacionMetas/actualizar-avances').length
+await page.state.guardarCambios()
+assert.equal(
+  calls.filter((c) => c[1] === '/ProgramacionMetas/actualizar-avances').length,
+  numeroEnvios,
+)
+page.state.indicadorActivo.value.metasProgramadas[0].alcanzado = 8
+await guardarFormulariosPendientes()
+assert.equal(
+  calls.findLast((c) => c[1] === '/ProgramacionMetas/actualizar-avances')[2][0].alcanzadoAnterior,
+  6,
+)
+page.unmount()
+
+// Un conflicto permite recuperar el servidor y conserva respaldo del borrador.
+const conflictoForm = () => {
+  const data = Vue.ref({ texto: '' })
+  return {
+    data,
+    ...useFormularioPersistente({
+      form: data,
+      storageKey: 'conflicto-test',
+      load: async () => ({ texto: 'servidor vigente' }),
+      save: async () => {
+        throw { response: { status: 409 } }
+      },
+    }),
+  }
+}
+page = mount(conflictoForm)
+await settle()
+page.state.data.value.texto = 'borrador en conflicto'
+try {
+  await page.state.guardarDatos()
+} catch (error) {
+  page.state.notificarErrorGuardado(error)
+}
+await notices.at(-1).actions[0].handler()
+assert.equal(page.state.data.value.texto, 'servidor vigente')
+assert.match(storage.getItem('pbr:ana:conflicto-test:respaldo-conflicto'), /borrador en conflicto/)
+page.unmount()
+
+// Un 401 antiguo no puede cerrar una sesión nueva; el vigente sí limpia el token.
+cachedApi.defaults.adapter = async (config) => {
+  throw { config, response: { status: 401 } }
+}
+storage.setItem('token', 'sesion-nueva')
+await assert.rejects(
+  cachedApi.get('/prueba', { headers: { Authorization: 'Bearer sesion-vieja' } }),
+)
+assert.equal(storage.getItem('token'), 'sesion-nueva')
+await assert.rejects(cachedApi.get('/prueba', { cache: false }))
+assert.equal(storage.getItem('token'), null)
+console.log(
+  'OK: semáforos por sentido, IDs estables, avances sin duplicados, recuperación de conflictos y sesiones expiradas.',
 )

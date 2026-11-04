@@ -4,33 +4,33 @@
   align-items: center;
   justify-content: center;
   padding: 30px;
-  background: linear-gradient(135deg, #691b31 0%, #7f2944 50%, #8f3651 100%);
+  background: #691b31;
 }
 
 .registro-card {
   width: 100%;
   max-width: 1100px;
-  border-radius: 20px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: none;
 }
 
 .login-dialog {
   min-width: 420px;
-  border-radius: 18px;
+  border-radius: 12px;
 }
 
 .registrar-btn {
   min-width: 260px;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.5px;
   padding: 12px 30px;
   transition: all 0.3s ease;
 }
 
 .registrar-btn:hover {
-  transform: translateY(-2px);
+  transform: none;
 }
 
 :deep(.q-field--filled .q-field__control) {
@@ -44,7 +44,7 @@
 
 :deep(.q-select:hover),
 :deep(.q-input:hover) {
-  transform: translateY(-1px);
+  transform: none;
 }
 
 .text-primary {

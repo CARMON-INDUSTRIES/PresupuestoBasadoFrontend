@@ -1,16 +1,18 @@
 <template>
-  <q-layout view="hHh lpR fFf">
-    <q-header elevated class="navbar">
+  <q-layout view="hHh lpR fFf" class="pbr-workspace">
+    <q-header class="navbar">
       <q-toolbar class="q-pl-md q-pr-md">
         <q-btn
           flat
           dense
           round
           icon="menu"
+          aria-label="Abrir o cerrar el menú"
+          :aria-expanded="sidebarOpen"
           class="q-mr-md menu-btn"
           @click="sidebarOpen = !sidebarOpen"
         />
-        <q-toolbar-title class="text-h6 text-weight-bold">
+        <q-toolbar-title class="system-title">
           Sistema de Presupuesto Basado en Resultados
         </q-toolbar-title>
 
@@ -20,25 +22,25 @@
           flat
           dense
           icon="logout"
-          label="Cerrar sesión"
+          :label="$q.screen.gt.xs ? 'Cerrar sesión' : undefined"
+          aria-label="Cerrar sesión"
           class="q-ml-md text-white"
           @click="cerrarSesion"
-          :style="{ color: hoverLogout ? '#FFD700' : 'white' }"
-          @mouseover="hoverLogout = true"
-          @mouseleave="hoverLogout = false"
         />
       </q-toolbar>
     </q-header>
 
     <EmptyLayoutSection2 />
 
-    <q-page-container>
+    <q-page-container id="contenido-principal">
+      <WorkflowHeader :path="$route.path" />
+      <FormSaveStatus />
       <router-view />
     </q-page-container>
     <q-dialog v-model="dialogCambiarPassword">
       <q-card>
         <q-card-section>
-          <div class="text-h6">ㅤㅤ ­ ­­­Cambio de Contraseña</div>
+          <div class="text-h6">Cambio de Contraseña</div>
           <div class="text-body-1">Incluya mayúscula, números y un carácter especial</div>
         </q-card-section>
 
@@ -109,13 +111,14 @@
 
 <script setup>
 import { provide } from 'vue'
+import FormSaveStatus from 'src/components/workflow/FormSaveStatus.vue'
+import WorkflowHeader from 'src/components/workflow/WorkflowHeader.vue'
 import { useEmptyLayout } from 'src/composables/pages/useEmptyLayout'
 import EmptyLayoutSection2 from 'src/components/sections/EmptyLayout/EmptyLayoutSection2.vue'
 const state = useEmptyLayout()
 provide('EmptyLayout', state)
 const {
   sidebarOpen,
-  hoverLogout,
   dialogCambiarPassword,
   dialogCambiarFoto,
   passwordActual,

@@ -1,7 +1,7 @@
 <template>
   <div class="row q-col-gutter-lg">
     <div class="col-12 col-md-4">
-      <q-input v-model="form.NuevoUserName" label="Nombre de Usuario" outlined stack-label>
+      <q-input :model-value="form.User" label="Nombre de Usuario" readonly outlined stack-label>
         <template #prepend>
           <q-icon name="person" color="primary" />
         </template>

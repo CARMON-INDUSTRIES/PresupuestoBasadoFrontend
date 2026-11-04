@@ -18,22 +18,6 @@
         </div>
       </div>
 
-      <q-stepper flat bordered animated color="primary" class="modern-stepper">
-        <q-step :name="1" title="Alineación" icon="account_tree" done />
-
-        <q-step :name="2" title="Clasificación" icon="dashboard" done />
-
-        <q-step :name="3" title="Antecedentes" icon="history_edu" done />
-
-        <q-step :name="4" title="Problema" icon="warning" done />
-
-        <q-step :name="5" title="Objetivos" icon="fact_check" done />
-
-        <q-step :name="6" title="Cobertura" icon="groups" active />
-
-        <q-step :name="7" title="Intervención" icon="schema" />
-      </q-stepper>
-
       <q-form @submit.prevent="submitForm">
         <q-card class="modern-card">
           <q-card-section class="q-pb-none">

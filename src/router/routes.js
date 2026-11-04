@@ -1,5 +1,11 @@
 const routes = [
   {
+    path: '/admin',
+    component: () => import('layouts/EmptyLayout.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true },
+    children: [{ path: '', component: () => import('pages/admin/DashboardAdmin.vue') }],
+  },
+  {
     path: '/',
     component: () => import('layouts/LoginLayout.vue'),
     children: [
@@ -69,6 +75,7 @@ const routes = [
   },
   {
     path: '/registro-usuario',
+    meta: { requiresAuth: true, requiresAdmin: true },
     component: () => import('layouts/EmptyLayout.vue'),
     children: [
       {

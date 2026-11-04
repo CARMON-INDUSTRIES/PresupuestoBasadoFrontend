@@ -9,40 +9,9 @@
             Define los componentes, actividades y resultados esperados del programa.
           </p>
         </div>
-
-        <div class="autosave-status">
-          <q-chip
-            v-if="autosaveLoading"
-            color="orange-1"
-            text-color="orange-9"
-            icon="sync"
-            class="autosave-chip"
-          >
-            Guardando...
-          </q-chip>
-
-          <q-chip
-            v-else
-            color="green-1"
-            text-color="green-9"
-            icon="check_circle"
-            class="autosave-chip"
-          >
-            Autoguardado activo
-          </q-chip>
-        </div>
       </div>
 
       <!-- STEPPER -->
-      <q-stepper flat bordered color="primary" animated class="modern-stepper">
-        <q-step :name="1" title="Alineación" icon="account_tree" done />
-        <q-step :name="2" title="Clasificación" icon="dashboard" done />
-        <q-step :name="3" title="Antecedentes" icon="history_edu" done />
-        <q-step :name="4" title="Problema" icon="report_problem" done />
-        <q-step :name="5" title="Objetivos" icon="flag" done />
-        <q-step :name="6" title="Cobertura" icon="groups" done />
-        <q-step :name="7" title="Intervención" icon="design_services" active />
-      </q-stepper>
 
       <!-- CARD -->
       <FormularioDisenoIntervencionSection3 />
@@ -93,7 +62,7 @@ import FormularioDisenoIntervencionSection1 from 'src/components/sections/Formul
 import FormularioDisenoIntervencionSection3 from 'src/components/sections/FormularioDisenoIntervencion/FormularioDisenoIntervencionSection3.vue'
 const state = useFormularioDisenoIntervencion()
 provide('FormularioDisenoIntervencion', state)
-const { showModal, modoEdicion, autosaveLoading, guardarComponente } = state
+const { showModal, modoEdicion, guardarComponente } = state
 </script>
 
 <style scoped src="src/css/pages/FormularioDisenoIntervencion.css" />

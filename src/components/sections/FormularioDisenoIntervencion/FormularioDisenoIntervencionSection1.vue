@@ -1,5 +1,6 @@
 <template>
   <q-card-section class="q-pa-lg">
+    <details class="field-example q-mb-lg"><summary>Ver ejemplo de componente y actividad</summary><p>Componente: Talleres de capacitación impartidos. Actividad: Realizar sesiones de capacitación. Cantidad: 12 sesiones. Efecto esperado: Personas participantes con mayores conocimientos. Adapta el ejemplo a tu programa.</p></details>
     <!-- NOMBRE -->
     <q-input
       v-model="nuevoComponente.nombre"

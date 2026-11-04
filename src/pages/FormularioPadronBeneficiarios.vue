@@ -44,6 +44,7 @@
               </q-banner>
 
               <q-file
+                :disable="subiendo || loading"
                 filled
                 bg-color="white"
                 v-model="archivoSeleccionado"
@@ -57,6 +58,13 @@
                   <q-icon name="attach_file" color="primary" />
                 </template>
               </q-file>
+              <a
+                v-if="/^https?:\/\//i.test(form.archivoAdjunto || '')"
+                :href="form.archivoAdjunto"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Ver archivo guardado</a
+              >
 
               <div v-if="archivoSeleccionado" class="file-preview">
                 <q-icon name="description" class="q-mr-sm" />
@@ -97,6 +105,7 @@
 
             <q-btn
               :loading="subiendo"
+              :disable="loading"
               label="Continuar"
               type="submit"
               class="primary-btn"
@@ -113,7 +122,7 @@
 import { useFormularioPadronBeneficiarios } from 'src/composables/pages/useFormularioPadronBeneficiarios'
 
 const state = useFormularioPadronBeneficiarios()
-const { form, archivoSeleccionado, subiendo, guardarPadron } = state
+const { form, archivoSeleccionado, subiendo, loading, guardarPadron } = state
 </script>
 
 <style scoped src="src/css/pages/FormularioPadronBeneficiarios.css" />

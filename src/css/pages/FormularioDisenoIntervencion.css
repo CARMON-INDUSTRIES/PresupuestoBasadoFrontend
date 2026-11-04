@@ -1,90 +1,28 @@
-.page-container {
-  background: #f4f6f9;
-  min-height: 100vh;
-}
-
-.content-wrapper {
-  max-width: 1200px;
-  margin: auto;
-  padding: 24px;
-}
-
-.page-header {
-  margin-bottom: 24px;
-}
-
-.page-title {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #691b31;
-  margin: 0;
-}
-
-.page-subtitle {
-  color: #6b7280;
-  margin-top: 8px;
-  font-size: 1rem;
-}
-
-.modern-stepper {
-  border-radius: 18px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
-}
-
-.modern-card {
-  border-radius: 24px;
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
-  border: none;
-  background: white;
-}
-
-.section-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #374151;
-  margin-bottom: 12px;
-}
-
-.form-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.modern-input {
-  transition: all 0.2s ease;
-}
-
-.modern-input:hover {
-  transform: translateY(-1px);
-}
-
 .component-btn {
   background: #691b31;
   color: white;
   border-radius: 14px;
   padding: 12px 22px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.95rem;
 }
 
 .component-card {
   background: #f9fafb;
   border: 1px solid #e5e7eb;
-  border-radius: 18px;
+  border-radius: 12px;
   padding: 18px;
   transition: all 0.2s ease;
 }
 
 .component-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  transform: none;
+  box-shadow: none;
 }
 
 .component-title {
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #374151;
   display: flex;
   align-items: center;
@@ -110,44 +48,18 @@
   font-weight: 500;
 }
 
-.actions-container {
-  gap: 12px;
-}
-
-.primary-btn {
-  background: #c5a46d;
-  color: white;
-  border-radius: 14px;
-  padding: 12px 28px;
-  font-weight: 700;
-  font-size: 0.95rem;
-}
-
-.primary-btn:hover {
-  opacity: 0.95;
-}
-
-.secondary-btn {
-  background: #691b31;
-  color: white;
-  border-radius: 14px;
-  padding: 12px 28px;
-  font-weight: 700;
-  font-size: 0.95rem;
-}
-
 .secondary-btn:hover {
   opacity: 0.95;
 }
 
 .modern-dialog {
-  border-radius: 24px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
 .dialog-title {
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 600;
   color: #691b31;
 }
 
@@ -163,13 +75,13 @@
 }
 
 .activity-title {
-  font-weight: 700;
+  font-weight: 600;
   color: #374151;
 }
 
 .add-btn {
   border-radius: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .autosave-chip {
@@ -192,21 +104,37 @@
 }
 
 @media (max-width: 768px) {
-  .page-title {
-    font-size: 1.7rem;
-  }
-
-  .actions-container {
-    flex-direction: column;
-  }
 
   .primary-btn,
   .secondary-btn,
   .component-btn {
     width: 100%;
   }
+}
 
-  .content-wrapper {
-    padding: 16px;
-  }
+/* Esta pantalla sigue una secuencia vertical, no una cuadrícula de campos. */
+.intervention-content { display: flex; flex-direction: column; gap: 24px; padding: 24px; }
+.components-toolbar, .component-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.component-header { padding-bottom: 16px; border-bottom: 1px solid #d7d3d0; }
+.component-header > div:first-child { flex: 1; min-width: 0; }
+.component-header > div:first-child > div { min-width: 0; }
+.component-title, .activity-title, .effect-banner { overflow-wrap: anywhere; }
+.component-subtitle, .activity-qty { color: #625e62; font-size: .875rem; margin-top: 4px; }
+.activities-container { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+.activity-item { display: flex; align-items: flex-start; gap: 12px; margin: 0; border: 1px solid #d7d3d0; border-radius: 6px; }
+.activity-icon { color: #691b31; flex-shrink: 0; padding-top: 2px; }
+.activity-content { flex: 1; min-width: 0; }
+.effect-banner { background: #f5ecef; color: #491526; border-radius: 6px; }
+.empty-components { padding: 32px 16px; text-align: center; background: #f5f4f1; border-radius: 8px; }
+.modal-card { width: 760px; max-width: calc(100vw - 32px); border-radius: 12px; }
+.modal-header { padding: 24px; }
+.modal-title { font-size: 1.25rem; line-height: 1.4; font-weight: 600; color: #691b31; }
+.modal-subtitle { color: #625e62; margin-top: 6px; }
+.activity-editor { padding: 16px; margin-bottom: 16px; border: 1px solid #d7d3d0; border-radius: 8px; background: #f5f4f1; }
+.modal-card .primary-btn { background: #691b31; color: white; padding: 10px 24px; }
+@media (max-width: 700px) {
+  .intervention-content { padding: 16px; gap: 20px; }
+  .components-toolbar { align-items: stretch; flex-direction: column; }
+  .component-card { padding: 16px; }
+  .modal-header { padding: 16px; }
 }

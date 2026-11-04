@@ -30,6 +30,10 @@ export function useLoginPage() {
         'userNameActual',
         user.userName || data.username || login.value.user.trim(),
       )
+      if (user.roles?.includes('Administrador')) {
+        await router.push('/admin')
+        return
+      }
       const incomplete = [
         'nombreCompleto',
         'cargo',
@@ -44,7 +48,9 @@ export function useLoginPage() {
         userStorage.getItem('ultimaRutaRegistro') ||
         localStorage.getItem('ultimaRutaRegistro_' + user.userName)
       const destination =
-        previous && router.resolve(previous).matched.some((r) => r.meta.requiresAuth)
+        previous &&
+        router.resolve(previous).matched.some((r) => r.meta.requiresAuth) &&
+        !router.resolve(previous).matched.some((r) => r.meta.requiresAdmin)
           ? previous
           : '/formulario-alineacion'
       if (incomplete)
@@ -54,9 +60,11 @@ export function useLoginPage() {
       Notify.create({
         type: 'negative',
         message:
-          error.response?.status === 401
-            ? 'Credenciales inválidas'
-            : 'No se pudo iniciar sesión. Comprueba tu conexión e intenta nuevamente.',
+          error.response?.status === 429
+            ? 'Demasiados intentos. Espera un minuto antes de volver a intentar.'
+            : error.response?.status === 401
+              ? 'No fue posible iniciar sesión. Revisa tus datos o intenta más tarde.'
+              : 'No se pudo iniciar sesión. Comprueba tu conexión e intenta nuevamente.',
       })
     } finally {
       loading.value = false

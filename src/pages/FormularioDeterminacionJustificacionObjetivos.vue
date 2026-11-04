@@ -21,19 +21,6 @@
       </div>
 
       <!-- STEPPER -->
-      <q-stepper flat bordered animated color="primary" class="modern-stepper">
-        <q-step :name="1" title="Alineación" icon="account_tree" done />
-
-        <q-step :name="2" title="Clasificación" icon="dashboard" done />
-
-        <q-step :name="3" title="Antecedentes" icon="history_edu" done />
-
-        <q-step :name="4" title="Problema" icon="warning" done />
-
-        <q-step :name="5" title="Objetivos" icon="fact_check" active />
-
-        <q-step :name="6" title="Cobertura" icon="groups" />
-      </q-stepper>
 
       <!-- FORM -->
       <FormularioDeterminacionJustificacionObjetivosSection1 />

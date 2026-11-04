@@ -10,14 +10,6 @@
         </div>
       </div>
 
-      <q-stepper flat bordered color="primary" animated class="modern-stepper">
-        <q-step :name="1" title="Alineación" icon="account_tree" :done="ambasCompletas" active />
-
-        <q-step :name="2" title="Clasificación" icon="dashboard" />
-
-        <q-step :name="3" title="Metas" icon="track_changes" />
-      </q-stepper>
-
       <q-form @submit.prevent="submitForm">
         <q-card class="modern-card">
           <q-card-section class="q-pb-none">

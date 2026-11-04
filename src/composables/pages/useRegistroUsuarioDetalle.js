@@ -1,17 +1,20 @@
 import { userStorage } from 'src/utils/userStorage'
 import { ref, onMounted } from 'vue'
 import { Notify } from 'quasar'
-import api from 'src/boot/api'
+import api, { clearApiCache } from 'src/boot/api'
+import { useRouter } from 'vue-router'
 
 export function useRegistroUsuarioDetalle() {
+  const router = useRouter()
   const abrirModal = ref(false)
   const nuevaPassword = ref('')
+  const passwordActual = ref('')
+  const guardandoPassword = ref(false)
   const confirmarPassword = ref('')
   const loading = ref(false)
 
   const form = ref({
     User: '',
-    NuevoUserName: '',
     email: '',
     nombreCompleto: '',
     cargo: '',
@@ -82,27 +85,50 @@ export function useRegistroUsuarioDetalle() {
   }
 
   async function cambiarPassword() {
+    if (guardandoPassword.value) return
+    if (
+      !passwordActual.value ||
+      !nuevaPassword.value ||
+      nuevaPassword.value !== confirmarPassword.value
+    ) {
+      Notify.create({
+        type: 'warning',
+        message: 'Escribe la contraseña actual y confirma la nueva.',
+      })
+      return
+    }
     if (!form.value.User) {
       Notify.create({ type: 'negative', message: 'No se encontró el usuario actual' })
       return
     }
 
+    guardandoPassword.value = true
     try {
       await api.put(`/Cuentas/CambiarPassword`, {
-        user: form.value.User,
+        passwordActual: passwordActual.value,
         password: nuevaPassword.value,
       })
 
       Notify.create({ type: 'positive', message: 'Contraseña actualizada correctamente' })
       abrirModal.value = false
+      passwordActual.value = ''
+      nuevaPassword.value = ''
+      confirmarPassword.value = ''
+      userStorage.removeItem('token')
+      clearApiCache()
+      await router.push('/login')
     } catch (err) {
       console.error('error catastrofico', err)
       Notify.create({ type: 'negative', message: 'Error al cambiar contraseña' })
+    } finally {
+      guardandoPassword.value = false
     }
   }
   return {
     abrirModal,
     nuevaPassword,
+    passwordActual,
+    guardandoPassword,
     confirmarPassword,
     loading,
     form,

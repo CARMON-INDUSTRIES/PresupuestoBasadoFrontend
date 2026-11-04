@@ -10,9 +10,10 @@
         </div>
       </q-card-section>
 
-      <q-card-section class="form-grid">
+      <q-card-section class="intervention-content">
+        <InterventionGuide :form="form" />
         <!-- BOTON AGREGAR -->
-        <div class="full-width row justify-between items-center q-mb-md">
+        <div class="components-toolbar">
           <div class="text-subtitle1 text-weight-medium text-primary">Componentes registrados</div>
 
           <q-btn
@@ -95,10 +96,11 @@
 </template>
 <script>
 import { inject } from 'vue'
+import InterventionGuide from './InterventionGuide.vue'
 import FormularioDisenoIntervencionSection2 from './FormularioDisenoIntervencionSection2.vue'
 
 export default {
-  components: { FormularioDisenoIntervencionSection2 },
+  components: { FormularioDisenoIntervencionSection2, InterventionGuide },
   setup() {
     return inject('FormularioDisenoIntervencion')
   },

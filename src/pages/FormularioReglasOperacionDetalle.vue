@@ -10,12 +10,6 @@
         </div>
       </div>
 
-      <q-stepper flat bordered color="primary" animated class="modern-stepper">
-        <q-step :name="1" title="Intervención" icon="widgets" done />
-        <q-step :name="2" title="Programa Social" icon="groups" active />
-        <q-step :name="3" title="Continuar" icon="arrow_forward" />
-      </q-stepper>
-
       <FormularioReglasOperacionDetalleSection1 />
     </div>
   </q-page>

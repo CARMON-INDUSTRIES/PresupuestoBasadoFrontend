@@ -53,6 +53,14 @@
           </div>
 
           <q-input
+            v-model="passwordActual"
+            type="password"
+            label="Contraseña actual"
+            autocomplete="current-password"
+            outlined
+            class="q-mb-md"
+          />
+          <q-input
             v-model="nuevaPassword"
             type="password"
             label="Nueva contraseña"
@@ -74,7 +82,8 @@
             label="Guardar"
             color="primary"
             rounded
-            :disable="!nuevaPassword || nuevaPassword !== confirmarPassword"
+            :loading="guardandoPassword"
+            :disable="!passwordActual || !nuevaPassword || nuevaPassword !== confirmarPassword"
             @click="cambiarPassword"
           />
         </q-card-actions>
@@ -92,6 +101,8 @@ provide('RegistroUsuarioDetalle', state)
 const {
   abrirModal,
   nuevaPassword,
+  passwordActual,
+  guardandoPassword,
   confirmarPassword,
   loading,
   form,
