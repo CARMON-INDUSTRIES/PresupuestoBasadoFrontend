@@ -30,7 +30,7 @@
               <div class="modal-subtitle">Configura actividades y resultados esperados.</div>
             </div>
 
-            <q-btn flat round dense icon="close" color="grey-7" v-close-popup />
+            <q-btn flat round dense icon="close" color="grey-7" @click="cerrarEditor" />
           </div>
         </q-card-section>
 
@@ -41,7 +41,7 @@
         <q-separator />
 
         <q-card-actions align="right" class="q-pa-md">
-          <q-btn flat label="Cancelar" color="negative" v-close-popup />
+          <q-btn flat label="Cancelar" color="negative" @click="cerrarEditor" />
 
           <q-btn
             unelevated
@@ -62,7 +62,7 @@ import FormularioDisenoIntervencionSection1 from 'src/components/sections/Formul
 import FormularioDisenoIntervencionSection3 from 'src/components/sections/FormularioDisenoIntervencion/FormularioDisenoIntervencionSection3.vue'
 const state = useFormularioDisenoIntervencion()
 provide('FormularioDisenoIntervencion', state)
-const { showModal, modoEdicion, guardarComponente } = state
+const { showModal, modoEdicion, guardarComponente, cerrarEditor } = state
 </script>
 
 <style scoped src="src/css/pages/FormularioDisenoIntervencion.css" />

@@ -73,8 +73,9 @@ synthetic('quasar', {
   useQuasar: () => ({ notify: (n) => notices.push(n) }),
 })
 synthetic('vue-router', { useRouter: () => router, onBeforeRouteLeave: (fn) => guards.push(fn) })
+let confirmResult = true
 synthetic('sweetalert2', {
-  default: { fire: async () => ({ isConfirmed: true }), DismissReason: { cancel: 'cancel' } },
+  default: { fire: async () => ({ isConfirmed: confirmResult }), DismissReason: { cancel: 'cancel' } },
 })
 synthetic(path.resolve('src/boot/api.js'), { default: api, clearApiCache: () => {} })
 function resolve(spec, from) {
@@ -562,7 +563,8 @@ const axiosModule = new vm.SyntheticModule(
 const apiModule = new vm.SourceTextModule(fs.readFileSync('src/boot/api.js', 'utf8'), {
   context: cacheContext,
 })
-await apiModule.link(() => axiosModule)
+const timingModule = new vm.SourceTextModule(fs.readFileSync('src/utils/performanceDiagnostics.js', 'utf8'), { context: cacheContext })
+await apiModule.link(spec => spec === 'axios' ? axiosModule : timingModule)
 await apiModule.evaluate()
 const cachedApi = apiModule.namespace.default
 let requests = 0
@@ -1013,3 +1015,41 @@ assert.equal(storage.getItem('token'), null)
 console.log(
   'OK: semáforos por sentido, IDs estables, avances sin duplicados, recuperación de conflictos y sesiones expiradas.',
 )
+
+// Cancelar una acción peligrosa conserva el registro y la edición.
+const { eliminarConConfirmacion } = await moduleAt('src/utils/confirmarRiesgo.js')
+const list = [{ nombre: 'Conservar' }]
+confirmResult = false
+await eliminarConConfirmacion(list, 0, 'Eliminar')
+assert.equal(list.length, 1)
+confirmResult = true
+await eliminarConConfirmacion(list, 0, 'Eliminar')
+assert.equal(list.length, 0)
+const { useEditorProtegido } = await moduleAt('src/composables/useEditorProtegido.js')
+const editor = mount(() => {
+  const open = Vue.ref(false), data = Vue.ref({ nombre: 'Original' })
+  return { open, data, ...useEditorProtegido(open, data) }
+})
+editor.state.open.value = true
+editor.state.data.value.nombre = 'Cambio'
+confirmResult = false
+await editor.state.cerrarEditor()
+assert.equal(editor.state.open.value, true)
+confirmResult = true
+await editor.state.cerrarEditor()
+assert.equal(editor.state.open.value, false)
+editor.unmount()
+console.log('OK: cancelación de eliminación y protección de ediciones pendientes.')
+
+// Reutilización: llenar vacíos sin sobrescribir textos propios ni perder filas antiguas.
+const { completarCampos, reutilizarMirEnFicha, reutilizarObjetivoEnMir } = await import('../src/utils/reutilizarCaptura.js')
+assert.deepEqual(completarCampos({ n: 0, text: 'Propio' }, { n: 8, text: 'Origen' }, { n: 'n', text: 'text' }), { n: 0, text: 'Propio' })
+assert.equal(reutilizarObjetivoEnMir({ nivel: 'Fin: Mejorar el bienestar', resumenNarrativo: '' }).resumenNarrativo, 'Mejorar el bienestar')
+assert.equal(reutilizarObjetivoEnMir({ nivel: 'Fin: Nuevo', resumenNarrativo: 'Redacción propia' }).resumenNarrativo, 'Redacción propia')
+assert.equal(reutilizarObjetivoEnMir({ nivel: 'Actividad: Actividad 1', resumenNarrativo: '' }).resumenNarrativo, '')
+const reused = reutilizarMirEnFicha([{ nivel: 'Fin: Bienestar', indicadores: 'Indicador MIR', resumenNarrativo: 'Resultado MIR' }], [{ nivel: 'Fin: Bienestar', indicadores: 'Indicador propio', resultadoEsperado: '  ', metas: [{ cantidad: 5 }] }, { nivel: 'Actividad: Anterior', indicadores: 'Conservar' }])
+assert.equal(reused[0].indicadores, 'Indicador propio')
+assert.equal(reused[0].resultadoEsperado, 'Resultado MIR')
+assert.equal(reused[0].metas[0].cantidad, 5)
+assert.equal(reused[1].indicadores, 'Conservar')
+console.log('OK: reutilización de captura, prioridad de edición y conservación de filas.')

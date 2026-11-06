@@ -25,7 +25,7 @@
           icon="delete"
           aria-label="Eliminar componente"
           color="negative"
-          @click="form.componentes.splice(cIdx, 1)"
+          @click="eliminarConConfirmacion(form.componentes, cIdx, 'Se eliminarán el componente, sus actividades y el efecto esperado. El cambio se guardará automáticamente.')"
         >
           <q-tooltip>Eliminar componente</q-tooltip>
         </q-btn>

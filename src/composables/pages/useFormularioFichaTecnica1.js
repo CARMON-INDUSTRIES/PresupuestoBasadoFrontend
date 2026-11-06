@@ -1,3 +1,4 @@
+import { reutilizarMirEnFicha } from 'src/utils/reutilizarCaptura'
 import { userStorage } from 'src/utils/userStorage'
 import { ref, computed } from 'vue'
 import { Notify } from 'quasar'
@@ -100,7 +101,7 @@ export function useFormularioFichaTecnica1() {
       const ultima = [...(fichas.data || [])].sort((a, b) => b.id - a.id)[0]
       const actuales = mir.data?.filas || []
       const filas = actuales.length
-        ? reconciliarIndicadores(
+        ? reutilizarMirEnFicha(
             actuales.map(({ nivel, indicadores, resumenNarrativo }) => ({
               nivel,
               indicadores,

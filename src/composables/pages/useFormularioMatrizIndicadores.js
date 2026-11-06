@@ -1,3 +1,4 @@
+import { reutilizarObjetivoEnMir } from 'src/utils/reutilizarCaptura'
 import { ref } from 'vue'
 import { Notify } from 'quasar'
 import { useRouter } from 'vue-router'
@@ -94,7 +95,7 @@ export function useFormularioMatrizIndicadores() {
           message:
             'Se conservaron capturas de la MIR sin correspondencia con el árbol actual. Revisa sus niveles.',
         })
-      return reconciliadas.map((fila) => ({ ...crearFila(fila.nivel), ...fila }))
+      return reconciliadas.map((fila) => reutilizarObjetivoEnMir({ ...crearFila(fila.nivel), ...fila }))
     },
     save: (data) =>
       api.post('/MatrizIndicadores/borrador', {

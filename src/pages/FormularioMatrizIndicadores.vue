@@ -3,6 +3,7 @@
     <q-card flat bordered class="q-pa-md" style="max-width: 1200px; margin: auto">
       <q-card-section>
         <div class="text-h5 text-center">Matriz de Indicadores para Resultados</div>
+        <p class="text-body2 text-grey-8 q-mt-sm q-mb-none">El resumen narrativo vacío toma como base el árbol de objetivos. Puedes ajustarlo; las capturas existentes se conservan.</p>
       </q-card-section>
 
       <q-markup-table flat bordered class="q-mb-lg">

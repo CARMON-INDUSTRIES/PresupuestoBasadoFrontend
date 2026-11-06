@@ -1,3 +1,5 @@
+import { nextTick } from 'vue'
+import { recordTiming } from 'src/utils/performanceDiagnostics'
 import { userStorage } from 'src/utils/userStorage'
 import { defineRouter } from '#q-app/wrappers'
 import {
@@ -27,7 +29,15 @@ export default defineRouter(function () {
       Router.push('/login')
     })
 
+  const navigationStarts = new WeakMap()
+  Router.beforeEach(to => { navigationStarts.set(to, Date.now()) })
   Router.afterEach((to, from, failure) => {
+    const started = navigationStarts.get(to)
+    if (started !== undefined) recordTiming(to.path, failure ? 'navegación cancelada' : 'navegación', started)
+    if (!failure && process.env.NODE_ENV === 'development') {
+      const rendering = Date.now()
+      nextTick(() => requestAnimationFrame(() => recordTiming(to.path, 'vista inicial', rendering)))
+    }
     if (
       !failure &&
       to.matched.some((record) => record.meta.requiresAuth) &&

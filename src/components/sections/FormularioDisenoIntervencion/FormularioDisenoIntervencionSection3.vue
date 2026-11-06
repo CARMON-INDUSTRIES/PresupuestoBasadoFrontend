@@ -23,7 +23,7 @@
             unelevated
             rounded
             class="primary-btn"
-            @click="showModal = true"
+            @click="nuevoEditor"
           />
         </div>
 

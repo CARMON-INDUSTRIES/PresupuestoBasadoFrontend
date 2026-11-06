@@ -1,3 +1,6 @@
+import { useEditorProtegido } from 'src/composables/useEditorProtegido'
+import { eliminarConConfirmacion } from 'src/utils/confirmarRiesgo'
+import { enfocarPrimerError } from 'src/utils/formValidation'
 import { useFormularioPersistente } from 'src/composables/useFormularioPersistente'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -23,6 +26,8 @@ export function useFormularioDisenoIntervencion() {
     resultado: '',
   })
 
+  const errores = ref({})
+  const { cerrarEditor } = useEditorProtegido(showModal, nuevoComponente)
   const proximoIndiceComp = computed(() =>
     modoEdicion.value ? indiceEditando.value + 1 : form.value.componentes.length + 1,
   )
@@ -34,7 +39,15 @@ export function useFormularioDisenoIntervencion() {
     load: async () => (await api.get('/DisenoIntervencionPublica/ultimo')).data,
     save: async (data) => (await api.put('/DisenoIntervencionPublica/autosave', data)).data,
   })
+  function nuevoEditor() {
+    errores.value = {}
+    modoEdicion.value = false
+    indiceEditando.value = null
+    nuevoComponente.value = { nombre: '', acciones: [{ nombre: '', cantidad: 0 }], resultado: '' }
+    showModal.value = true
+  }
   function editarComponente(comp, index) {
+    errores.value = {}
     modoEdicion.value = true
     indiceEditando.value = index
 
@@ -56,7 +69,10 @@ export function useFormularioDisenoIntervencion() {
   }
 
   function guardarComponente(continuar = false) {
+    errores.value = {}
     if (!nuevoComponente.value.nombre?.trim()) {
+      errores.value.nombre = 'Escribe el nombre del componente.'
+      enfocarPrimerError()
       Notify.create({
         type: 'warning',
         message: 'El componente debe tener un nombre',
@@ -117,6 +133,7 @@ export function useFormularioDisenoIntervencion() {
     }
   }
   return {
+    errores, cerrarEditor, eliminarConConfirmacion, nuevoEditor,
     router,
     loading,
     showModal,

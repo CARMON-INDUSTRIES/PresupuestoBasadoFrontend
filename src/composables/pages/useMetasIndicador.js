@@ -1,3 +1,4 @@
+import { confirmarRiesgo } from 'src/utils/confirmarRiesgo'
 import { ref, computed, watch } from 'vue'
 import { Notify } from 'quasar'
 
@@ -45,7 +46,11 @@ export function useMetasIndicador(pageProps, pageEmit) {
     Notify.create({ type: 'positive', message: 'Meta agregada' })
   }
 
-  function eliminarMeta(idx) {
+  async function eliminarMeta(idx) {
+    const item = props.modelValue.metas[idx]
+    if (!(await confirmarRiesgo('Se eliminará esta meta y sus datos capturados.'))) return
+    idx = props.modelValue.metas.indexOf(item)
+    if (idx < 0) return
     const metasActualizadas = [...props.modelValue.metas]
     metasActualizadas.splice(idx, 1)
     emit('update:modelValue', { ...props.modelValue, metas: metasActualizadas })

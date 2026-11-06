@@ -2,7 +2,7 @@
   <q-card-section>
     <div class="row q-col-gutter-lg">
       <div class="col-12 col-md-6">
-        <q-input v-model="form.user" label="Usuario" filled stack-label required>
+        <q-input v-model="form.user" label="Usuario" filled stack-label aria-required="true" :rules="[v => (Array.isArray(v) ? v.length > 0 : v !== null && v !== undefined && String(v).trim().length > 0) || 'Completa este campo para continuar.']" lazy-rules>
           <template #prepend>
             <q-icon name="person" color="primary" />
           </template>
@@ -16,7 +16,7 @@
           :type="mostrarPasswordRegistro ? 'text' : 'password'"
           filled
           stack-label
-          required
+          aria-required="true" :rules="[v => (Array.isArray(v) ? v.length > 0 : v !== null && v !== undefined && String(v).trim().length > 0) || 'Completa este campo para continuar.']" lazy-rules
         >
           <template #prepend>
             <q-icon name="lock" color="primary" />
@@ -43,7 +43,7 @@
           map-options
           filled
           stack-label
-          required
+          aria-required="true" :rules="[v => (Array.isArray(v) ? v.length > 0 : v !== null && v !== undefined && String(v).trim().length > 0) || 'Completa este campo para continuar.']" lazy-rules
         >
           <template #prepend>
             <q-icon name="security" color="primary" />
@@ -64,7 +64,7 @@
           map-options
           filled
           stack-label
-          required
+          aria-required="true" :rules="[v => (Array.isArray(v) ? v.length > 0 : v !== null && v !== undefined && String(v).trim().length > 0) || 'Completa este campo para continuar.']" lazy-rules
         >
           <template #prepend>
             <q-icon name="domain" color="primary" />
@@ -85,7 +85,7 @@
           map-options
           filled
           stack-label
-          required
+          aria-required="true" :rules="[v => (Array.isArray(v) ? v.length > 0 : v !== null && v !== undefined && String(v).trim().length > 0) || 'Completa este campo para continuar.']" lazy-rules
         >
           <template #prepend>
             <q-icon name="apartment" color="primary" />

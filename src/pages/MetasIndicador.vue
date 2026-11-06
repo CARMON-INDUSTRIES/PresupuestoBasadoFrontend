@@ -15,12 +15,13 @@
           </div>
 
           <div class="col-3">
-            <q-input v-model.number="nuevaMeta.cantidad" label="Cantidad" type="number" filled />
+            <q-input v-model.number="nuevaMeta.cantidad" :rules="[v => (Number.isFinite(Number(v)) && Number(v) > 0) || 'Ingresa una cantidad mayor que cero.']" lazy-rules label="Cantidad" type="number" filled />
           </div>
 
           <div class="col-3">
             <q-select
               v-model="nuevaMeta.periodoCumplimiento"
+              :rules="[v => Boolean(v) || 'Selecciona el periodo de cumplimiento.']" lazy-rules
               :options="periodos"
               label="Periodo de cumplimiento"
               filled

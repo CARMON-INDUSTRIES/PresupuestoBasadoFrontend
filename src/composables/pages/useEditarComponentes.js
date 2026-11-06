@@ -1,3 +1,6 @@
+import { useEditorProtegido } from 'src/composables/useEditorProtegido'
+import { eliminarConConfirmacion } from 'src/utils/confirmarRiesgo'
+import { enfocarPrimerError } from 'src/utils/formValidation'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
@@ -16,6 +19,8 @@ export function useEditarComponentes() {
     resultado: { id: 0, descripcion: '' },
   })
 
+  const errores = ref({})
+  const { cerrarEditor } = useEditorProtegido(showModal, componenteEdit)
   const idRegistroDiseno = ref(0)
   let disenoOriginal = {}
 
@@ -52,7 +57,10 @@ export function useEditarComponentes() {
 
   const guardarEdicionComponente = async () => {
     if (loading.value) return
+    errores.value = {}
     if (!componenteEdit.value.nombre.trim()) {
+      errores.value.nombre = 'Escribe el nombre del componente.'
+      enfocarPrimerError()
       Notify.create({ type: 'warning', message: 'El componente debe tener un nombre' })
       return
     }
@@ -87,6 +95,7 @@ export function useEditarComponentes() {
 
   obtenerComponentes()
   return {
+    errores, cerrarEditor, eliminarConConfirmacion,
     router,
     loading,
     showModal,

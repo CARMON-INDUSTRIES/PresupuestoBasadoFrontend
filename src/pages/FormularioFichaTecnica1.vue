@@ -3,6 +3,7 @@
     <q-card flat bordered class="q-pa-md" style="max-width: 1200px; margin: auto">
       <q-card-section>
         <div class="text-h5 text-center text-black">Ficha Técnica del Indicador</div>
+        <p class="text-body2 text-grey-8 q-mt-sm q-mb-none">El nombre del indicador y el resultado esperado vacíos se recuperan de la MIR. Puedes ajustarlos; las capturas existentes se conservan.</p>
       </q-card-section>
 
       <q-card-section class="q-pa-md bg-grey-2">

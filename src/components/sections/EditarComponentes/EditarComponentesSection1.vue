@@ -8,6 +8,9 @@
       <q-card-section>
         <q-input
           v-model="componenteEdit.nombre"
+          :error="Boolean(errores.nombre)"
+          :error-message="errores.nombre"
+          @update:model-value="errores.nombre = undefined"
           filled
           rounded
           label="Nombre del componente"
@@ -32,7 +35,7 @@
               round
               icon="delete"
               color="negative"
-              @click="componenteEdit.acciones.splice(aIdx, 1)"
+              @click="eliminarConConfirmacion(componenteEdit.acciones, aIdx, 'Se quitará esta actividad al guardar los cambios.')"
             />
           </div>
 
@@ -80,7 +83,7 @@
       <q-separator />
 
       <q-card-actions align="right">
-        <q-btn flat label="Cancelar" color="negative" v-close-popup @click="showModal = false" />
+        <q-btn flat label="Cancelar" color="negative" @click="cerrarEditor" />
         <q-btn flat label="Guardar Cambios" color="primary" @click="guardarEdicionComponente" />
       </q-card-actions>
     </q-card>

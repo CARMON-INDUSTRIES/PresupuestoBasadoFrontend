@@ -1,3 +1,4 @@
+import { recordTiming } from '../utils/performanceDiagnostics.js'
 import axios from 'axios'
 
 export const baseURL =
@@ -16,12 +17,14 @@ export function clearApiCache() {
   reads.clear()
 }
 api.interceptors.request.use((config) => {
+  config.pbrStarted = Date.now()
   const token = localStorage.getItem('token')
   if (token && !config.headers.Authorization) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 api.interceptors.response.use(
   (response) => {
+    recordTiming(response.config.url, 'red', response.config.pbrStarted ?? Date.now(), response.status)
     if (!['get', 'head', 'options'].includes(response.config.method)) {
       if (catalog(response.config.url)) clearApiCache()
       else {
@@ -31,6 +34,7 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
+    recordTiming(error.config?.url, 'error de red', error.config?.pbrStarted ?? Date.now(), error.response?.status || 0)
     const token = localStorage.getItem('token')
     if (
       error.response?.status === 401 &&
@@ -52,8 +56,17 @@ api.get = (url, config = {}) => {
   const token = localStorage.getItem('token') || ''
   const key = JSON.stringify([token, url, config.params])
   const existing = reads.get(key)
-  const clone = (r) => ({ ...r, data: structuredClone(r.data) })
-  if (existing && existing.expires > Date.now()) return existing.promise.then(clone)
+  const clone = (r) => {
+    const started = Date.now()
+    const result = { ...r, data: structuredClone(r.data) }
+    recordTiming(url, 'preparación de datos', started)
+    return result
+  }
+  if (existing && existing.expires > Date.now()) {
+    const started = Date.now()
+    const phase = existing.expires === Infinity ? 'consulta compartida' : 'caché'
+    return existing.promise.then(response => { recordTiming(url, phase, started); return clone(response) })
+  }
   const version = generation
   const ttl =
     url === '/Cuentas/me' ||

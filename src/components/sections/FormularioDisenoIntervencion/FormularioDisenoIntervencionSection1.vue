@@ -4,6 +4,9 @@
     <!-- NOMBRE -->
     <q-input
       v-model="nuevoComponente.nombre"
+          :error="Boolean(errores.nombre)"
+          :error-message="errores.nombre"
+          @update:model-value="errores.nombre = undefined"
       outlined
       bg-color="white"
       :label="`Componente ${proximoIndiceComp}`"
@@ -49,7 +52,7 @@
           flat
           icon="delete"
           color="negative"
-          @click="nuevoComponente.acciones.splice(aIdx, 1)"
+          @click="eliminarConConfirmacion(nuevoComponente.acciones, aIdx, 'Se quitará esta actividad del componente.')"
         />
       </div>
 
